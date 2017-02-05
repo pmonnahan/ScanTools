@@ -61,8 +61,7 @@ class scantools:
 
 
     def removePop(self, popname):
-        '''Call: removePop(self, popname)
-           Purpose: remove population from all object and recalculate min_ind'''
+        '''Purpose: remove population from all object and recalculate min_ind'''
         popname = str(popname)
         if popname in self.pops:
             self.pops.remove(popname)
@@ -75,10 +74,19 @@ class scantools:
             print("Population does not exist")
 
 
+    def combinePops(self, pops, popname):
+        new_samps = []
+        for pop in pops:
+            for samp in self.samps[pop]:
+                new_samps.append(samp)
+        self.pops.append(popname)
+        self.samps[popname] = new_samps
+        self.samp_nums[popname] = len(new_samps)
+
+
     def splitVCFs(self, vcf_dir, ref_path, repolarization_key, min_dp, mffg, pops='all', mem=16000, numcores=1, print1=False, overwrite=False, partition="long", keep_intermediates=False):
-        '''Call: splitVCFs(self, vcf_dir, ref_path, min_dp, mem=16000, numcores=1, print1=False, overwrite=False)
-           Purpose:  Find all vcfs in vcf_dir and split them by population according to samples associated with said population.said
-                    Then, take only biallelic snps and convert vcf to table containing scaff, pos, ac, an, dp, and genotype fields.vcf
+        '''Purpose:  Find all vcfs in vcf_dir and split them by population according to samples associated with said population.
+                    Then, take only biallelic snps and convert vcf to table containing scaff, pos, ac, an, dp, and genotype fields.
                     Finally, concatenate all per-scaffold tables to one giant table. Resulting files will be put into ~/Working_Dir/VCFs/
             Notes: mffg is maximum fraction of filtered genotypes.  Number of actual genotypes allowed will be rounded up'''
 
@@ -195,8 +203,7 @@ class scantools:
 
 
     def getPloidies(self, recode_dir):
-        '''Call: getPloidies(self, recode_dir)
-           Purpose: Create new methods of scantools object containing ploidy of each population (.ploidies) as well as a list of dips (.dips) and tetraploid populations (.tets)
+        '''Purpose: Create new methods of scantools object containing ploidy of each population (.ploidies) as well as a list of dips (.dips) and tetraploid populations (.tets)
            Notes: Can only be executed after recode has been executed on vcfs'''
 
         print("Be sure that 'recode' scripts have all finished")
@@ -226,10 +233,10 @@ class scantools:
         else:
             print("recode_dir does not exist")
 
+
     # CALCULATE WITHIN POPULATION METRICS
     def calcwpm(self, recode_dir, window_size, min_snps, population="all", print1=False, mem=16000, numcores=1, sampind="-99", partition="medium"):
-        '''Call: calcwpm(self, recode_dir, window_size, min_snps, population="all", print1=False, mem=16000, numcores=1, sampind="-99")
-           Purpose: Calculate within population metrics including: allele frequency, expected heterozygosity, Wattersons theta, Pi, ThetaH, ThetaL and neutrality tests: D, normalized H, E
+        '''Purpose: Calculate within population metrics including: allele frequency, expected heterozygosity, Wattersons theta, Pi, ThetaH, ThetaL and neutrality tests: D, normalized H, E
            Notes:  Currently, all populations are downsampled to same number of individuals.  By default, this minimum individuals across populations minus 1 to allow for some missing data
                     It is worth considering whether downsampling should be based on number of individuals or number of alleles.
                     Results are held ~/Working_Dir/Recoded/ in series of files ending in _WPM.txt.  These can be concatenated using concatWPM'''
@@ -279,8 +286,7 @@ class scantools:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate within population metrics")
 
     def concatWPM(self, recode_dir, pops='all'):
-        '''Call: concatWPM(self, recode_dir, pops='all')
-           Purpose:  Concatenate _WPM.txt files corresponding to populations indicated in pops parameter.'''
+        '''Purpose:  Concatenate _WPM.txt files corresponding to populations indicated in pops parameter.'''
 
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
@@ -302,8 +308,7 @@ class scantools:
 
 
     def calcbpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium"):
-        '''Call: calcbpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1)
-           Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
+        '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
            Notes: User provides a list of populations to be included.  For pairwise estimates, simply provide two populations
                     Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps in a window
                     for calculations to be made'''
@@ -356,8 +361,7 @@ class scantools:
 
 
     def findOutliers(self, recode_dir, in_file, column_index_list, percentile, tails='upper'):
-        '''Call: findOutliers(self, recode_dir, in_file, column_index_list, percentile, metrics, tails='upper')
-           Purpose:  Take output from either calcwpm or calcbpm and determine outlier metrics for a given percentile.
+        '''Purpose:  Take output from either calcwpm or calcbpm and determine outlier metrics for a given percentile.
            Notes: Output will be two csv files (one containing all sites with outliers indicated by 0 or 1 and another containing just outliers)
                   as well as a bed file to be used in annotateOutliers'''
 
@@ -395,8 +399,7 @@ class scantools:
         return data
 
     def annotateOutliers(self, recode_dir, in_file, basename, annotation_file, overlap_proportion=0.000001):
-        '''Call: annotateOutliers(self, recode_dir, in_file, basename, annotation_file, overlap_proportion=0.000001)
-           Purpose: annotate bed file from findOutliers using information in annotation_file
+        '''Purpose: annotate bed file from findOutliers using information in annotation_file
            Notes: The output (suffix ol_genes.gff) only contains the window locations along with annotation info and does not contain
                     the original metric information used to determine outliers.  Use mergeAnnotation to merge original outlier file with annotation info'''
 
@@ -432,8 +435,7 @@ class scantools:
 
 
     def mergeAnnotation(self, recode_dir, outlier_file, annotated_outlier_file):
-        '''Call: mergeAnnotation(self, recode_dir, outlier_file, annotated_outlier_file)
-           Purpose: Merge the annotation information with the original outlier file results from findOutliers.'''
+        '''Purpose: Merge the annotation information with the original outlier file results from findOutliers.'''
 
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
@@ -451,8 +453,7 @@ class scantools:
 
 
     def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size, bootstrap_reps, mem=16000, numcores=1, time='2-00:00'):
-        '''Call: generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size, bootstrap_reps, mem=16000, numcores=1, time='2-00:00')
-           Purpose:  Generate --multiSFS for fastsimcoal2 along with a given number of non-parametric block-bootstrapped replicates
+        '''Purpose:  Generate --multiSFS for fastsimcoal2 along with a given number of non-parametric block-bootstrapped replicates
            Notes: Must provide the block size for bootstrapping as well as number of bootstrap replicates
                   As of now, the necessary template files for FSC2 must come from elsewhere.  Beware of running this method with numerous populations'''
 
