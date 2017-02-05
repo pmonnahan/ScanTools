@@ -97,12 +97,13 @@ class scantools:
 
         mem1 = int(mem / 1000)
 
-        if os.path.exists(outdir) is False:
-            os.mkdir(outdir)
-        elif overwrite is False:
+        if os.path.exists(outdir) is True and overwrite is False:
             print("VCF directory already exists.  Set 'overwrite = True' if you want to overwrite existing files")
         else:
-            print("Overwriting files in existing VCF directory")
+            if os.path.exists(outdir) is False:
+                os.mkdir(outdir)
+            elif overwrite is True:
+                print("Overwriting files in existing VCF directory")
 
             if pops == 'all':
                 pops = self.pops
