@@ -218,19 +218,21 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps):
             if snp_count >= minimum_snps:  # Report or exclude window
                 Snp_count += snp_count
                 num_wind += 1
-                fst = fst[0] / fst[1]  # fst and rho and ratios of running sums of numerator and denominator calculations
-                fac = rho[0] / rho[1]
-                rho_i = fac / (1 + fac)
-                dxy = dxy / float(snp_count)
-
-                out1.write(outname + '\t' + scaff + '\t' +  # Write calculations to file
-                           str(start) + '\t' +
-                           str(end) + '\t' +
-                           str(window_size) + '\t' +
-                           str(snp_count) + '\t' +
-                           str(rho_i) + '\t' +
-                           str(fst) + '\t' +
-                           str(dxy) + '\n')
+                try:
+                    fst = fst[0] / fst[1]  # fst and rho and ratios of running sums of numerator and denominator calculations
+                    fac = rho[0] / rho[1]
+                    rho_i = fac / (1 + fac)
+                    dxy = dxy / float(snp_count)
+                    out1.write(outname + '\t' + scaff + '\t' +  # Write calculations to file
+                               str(start) + '\t' +
+                               str(end) + '\t' +
+                               str(window_size) + '\t' +
+                               str(snp_count) + '\t' +
+                               str(rho_i) + '\t' +
+                               str(fst) + '\t' +
+                               str(dxy) + '\n')
+                except ZeroDivisionError:
+                    print('ZeroDivisionError:', snp_count, fst, rho, Fst, Rho)
 
             else:
                 winexclcount += 1
@@ -268,19 +270,21 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps):
 
     if snp_count >= minimum_snps:  # Use or exclude window
         num_wind += 1
-        fst = fst[0] / fst[1]
-        fac = rho[0] / rho[1]
-        rho_i = fac / (1 + fac)
-        dxy = dxy / float(snp_count)
-
-        out1.write(outname + '\t' + scaff + '\t' +
-                   str(start) + '\t' +
-                   str(end) + '\t' +
-                   str(window_size) + '\t' +
-                   str(snp_count) + '\t' +
-                   str(rho) + '\t' +
-                   str(fst) + '\t' +
-                   str(dxy) + '\n')
+        try:
+            fst = fst[0] / fst[1]  # fst and rho and ratios of running sums of numerator and denominator calculations
+            fac = rho[0] / rho[1]
+            rho_i = fac / (1 + fac)
+            dxy = dxy / float(snp_count)
+            out1.write(outname + '\t' + scaff + '\t' +  # Write calculations to file
+                       str(start) + '\t' +
+                       str(end) + '\t' +
+                       str(window_size) + '\t' +
+                       str(snp_count) + '\t' +
+                       str(rho_i) + '\t' +
+                       str(fst) + '\t' +
+                       str(dxy) + '\n')
+        except ZeroDivisionError:
+            print('ZeroDivisionError:', snp_count, fst, rho, Fst, Rho)
 
     else:
         winexclcount += 1
