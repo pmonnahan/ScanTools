@@ -95,7 +95,7 @@ class scantools:
             vcf_dir += "/"
         outdir = self.dir + "VCF.DP" + str(min_dp) + ".M" + str(mffg) + "/"
         self.vcf_dir = vcf_dir
-        self.split_dirs.append(outdir)
+        self.split_dirs.append("VCF.DP" + str(min_dp) + ".M" + str(mffg) + "/")
 
         summary = open(self.dir + "vcf_dir.txt", 'w')
         summary.write('VCF Directory = ' + self.vcf_dir + '\n')
@@ -150,9 +150,7 @@ class scantools:
                                   'java -Xmx' + str(mem1) + 'g -jar /nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar -T VariantFiltration -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.1.vcf --setFilteredGtToNocall -o ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.vcf\n' +
                                   'java -Xmx' + str(mem1) + 'g -jar /nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar -T SelectVariants -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.vcf --maxNOCALLnumber ' + str(mfg) + ' -o ' + outdir + vcf_basenames[v] + '.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf\n' +
                                   'java -Xmx' + str(mem1) + 'g -jar /nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar -T VariantsToTable -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf -F CHROM -F POS -F AC -F AN -F DP -GF GT -o ' + outdir + vcf_basenames[v] + '.' + pop + '_raw.table\n')
-                    if keep_intermediates is False:
-                        shfile1.write('rm ' + outdir + '*.vcf\n')
-                        shfile1.write('rm ' + outdir + '*.vcf.idx\n')
+
                     shfile1.close()
 
                     if print1 is False:  # send slurm job to NBI SLURM cluster
@@ -185,7 +183,10 @@ class scantools:
                               'python3 ' + self.code_dir + '/recode012.py -i ' + outdir + pop + '.table -pop ' + pop + ' -o ' + outdir + '\n'
                               'python3 ' + self.code_dir + '/repol.py -i ' + outdir + pop + '.table.recode.txt -o ' + outdir + pop + ' -r ' + repolarization_key + '\n')
                 if keep_intermediates is False:
-
+                    shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.vcf\n')
+                    shfile3.write('rm ' + outdir + '*.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf\n')
+                    shfile3.write('rm ' + outdir + '*.' + pop + '.vcf\n')
+                    shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.1.vcf\n')
                     shfile3.write('rm ' + outdir + '*' + pop + '_raw.table\n' +
                                   'rm ' + outdir + pop + '.table\n' +
                                   'rm ' + outdir + pop + '.table.recode.txt\n')
@@ -334,22 +335,19 @@ class scantools:
 
 
     # CALCULATE WITHIN POPULATION METRICS
-    def calcwpm(self, recode_dir, window_size, min_snps, population="all", print1=False, mem=16000, numcores=1, sampind="-99", partition="medium"):
+    def calcwpm(self, recode_dir, window_size, min_snps, pops="all", print1=False, mem=16000, numcores=1, sampind="-99", partition="medium"):
         '''Purpose: Calculate within population metrics including: allele frequency, expected heterozygosity, Wattersons theta, Pi, ThetaH, ThetaL and neutrality tests: D, normalized H, E
            Notes:  Currently, all populations are downsampled to same number of individuals.  By default, this minimum individuals across populations minus 1 to allow for some missing data
                     It is worth considering whether downsampling should be based on number of individuals or number of alleles.
                     Results are held ~/Working_Dir/Recoded/ in series of files ending in _WPM.txt.  These can be concatenated using concatWPM'''
 
-        # Add pops functionality here as well
-
         if sampind == "-99":
             sind = self.min_ind - 1
         else:
             sind = sampind
-        if population == "all":
+
+        if pops == "all":
             pops = self.pops
-        else:
-            pops = [population]
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
 
@@ -445,15 +443,15 @@ class scantools:
             shfile3.close()
 
             if print1 is False:
-                cmd3 = ('sbatch -d singleton ' + output_name + '.sh')
+                cmd3 = ('sbatch -d singleton ' + output_name + '.bpm.sh')
                 p3 = subprocess.Popen(cmd3, shell=True)
                 sts3 = os.waitpid(p3.pid, 0)[1]
             else:
-                file3 = open(output_name + '.sh', 'r')
+                file3 = open(output_name + '.bpm.sh', 'r')
                 data3 = file3.read()
                 print(data3)
 
-            os.remove(output_name + '.sh')
+            os.remove(output_name + '.bpm.sh')
 
         else:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate between population metrics")

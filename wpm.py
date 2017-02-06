@@ -93,30 +93,34 @@ def calcwpm(input_file, output, sampind=5, window_size=50000, minimum_snps=2):
                     # When calculating variance of D, H, and E should we use W value for window or for entire genome.  Probably for window??
 
                     varPi_W = e1 * S + e2 * S * (S - 1)
-                    varPi_L = (((n - 2) / (6 * n - 6)) * W) + (((18 * n**2 * (3 * n + 2) * bw) - (88 * n**3 + 9 * n**2 - 13 * n + 6)) / (9 * n * (n - 1)**2) * W2)
+                    varPi_L1 = (((n - 2) / (6 * n - 6)) * W)
+                    varPi_L2 = (((18 * n**2 * (3 * n + 2) * bw) - (88 * n**3 + 9 * n**2 - 13 * n + 6)) / (9 * n * (n - 1)**2) * W2)
                     varL_W = (((n / (2 * n - 2)) - 1 / aw) * W) + ((a2 / aw**2 + (2 * (n / (n - 1))**2) * a2 - 2 * (n * a2 - n + 1) / ((n - 1) * aw) - (3 * n + 1) / (n - 1)) * W2)
+                    varPi_L = varPi_L1 + varPi_L2
+                    try:
+                        D = (Pi - W) / (varPi_W**0.5)
+                        H = (Pi - L) / (varPi_L**0.5)  # Normalized H according to Zeng 2006
+                        E = (L - W) / (varL_W**0.5)
+                        out1.write(pop + '\t' +
+                                   str(ploidy) + '\t' +
+                                   str(sampind) + '\t' +
+                                   scaff + '\t' +
+                                   str(start) + '\t' +
+                                   str(end) + '\t' +
+                                   str(window_size) + '\t' +
+                                   str(snp_count) + '\t' +
+                                   str(numpy.mean(p)) + '\t' +
+                                   str(numpy.mean(Ehet)) + '\t' +
+                                   str(W) + '\t' +
+                                   str(Pi) + '\t' +
+                                   str(h) + '\t' +
+                                   str(L) + '\t' +
+                                   str(D) + '\t' +
+                                   str(H) + '\t' +
+                                   str(E) + '\n')
+                    except ZeroDivisionError:
+                        print('ZeroDivisionError:', varPi_W, aw, bw, a2, b1, b2, c1, c2, e1, e2)
 
-                    D = (Pi - W) / (varPi_W**0.5)
-                    H = (Pi - L) / (varPi_L**0.5)  # Normalized H according to Zeng 2006
-                    E = (L - W) / (varL_W**0.5)
-
-                    out1.write(pop + '\t' + 
-                               str(ploidy) + '\t' +
-                               str(sampind) + '\t' +
-                               scaff + '\t' +
-                               str(start) + '\t' +
-                               str(end) + '\t' +
-                               str(window_size) + '\t' +
-                               str(snp_count) + '\t' +
-                               str(numpy.mean(p)) + '\t' +
-                               str(numpy.mean(Ehet)) + '\t' +
-                               str(W) + '\t' +
-                               str(Pi) + '\t' +
-                               str(h) + '\t' +
-                               str(L) + '\t' +
-                               str(D) + '\t' +
-                               str(H) + '\t' +
-                               str(E) + '\n')
 
                 else:
                     winexclcount += 1
@@ -170,30 +174,34 @@ def calcwpm(input_file, output, sampind=5, window_size=50000, minimum_snps=2):
             # When calculating variance of D, H, and E should we use W value for window or for entire genome.  Probably for window??
 
             varPi_W = e1 * S + e2 * S * (S - 1)
-            varPi_L = (((n - 2) / (6 * n - 6)) * W) + (((18 * n**2 * (3 * n + 2) * bw) - (88 * n**3 + 9 * n**2 - 13 * n + 6)) / (9 * n * (n - 1)**2) * W2)
+            varPi_L1 = (((n - 2) / (6 * n - 6)) * W)
+            varPi_L2 = (((18 * n**2 * (3 * n + 2) * bw) - (88 * n**3 + 9 * n**2 - 13 * n + 6)) / (9 * n * (n - 1)**2) * W2)
             varL_W = (((n / (2 * n - 2)) - 1 / aw) * W) + ((a2 / aw**2 + (2 * (n / (n - 1))**2) * a2 - 2 * (n * a2 - n + 1) / ((n - 1) * aw) - (3 * n + 1) / (n - 1)) * W2)
+            varPi_L = varPi_L1 + varPi_L2
+            try:
+                D = (Pi - W) / (varPi_W**0.5)
+                H = (Pi - L) / (varPi_L**0.5)  # Normalized H according to Zeng 2006
+                E = (L - W) / (varL_W**0.5)
+                out1.write(pop + '\t' +
+                           str(ploidy) + '\t' +
+                           str(sampind) + '\t' +
+                           scaff + '\t' +
+                           str(start) + '\t' +
+                           str(end) + '\t' +
+                           str(window_size) + '\t' +
+                           str(snp_count) + '\t' +
+                           str(numpy.mean(p)) + '\t' +
+                           str(numpy.mean(Ehet)) + '\t' +
+                           str(W) + '\t' +
+                           str(Pi) + '\t' +
+                           str(h) + '\t' +
+                           str(L) + '\t' +
+                           str(D) + '\t' +
+                           str(H) + '\t' +
+                           str(E) + '\n')
+            except ZeroDivisionError:
+                print('ZeroDivisionError:', varPi_W, aw, bw, a2, b1, b2, c1, c2, e1, e2)
 
-            D = (Pi - W) / (varPi_W**0.5)
-            H = (Pi - L) / (varPi_L**0.5)  # Normalized H according to Zeng 2006
-            E = (L - W) / (varL_W**0.5)
-
-            out1.write(pop + '\t' +
-                       str(ploidy) + '\t' +
-                       str(sampind) + '\t' +
-                       scaff + '\t' +
-                       str(start) + '\t' +
-                       str(end) + '\t' +
-                       str(window_size) + '\t' +
-                       str(snp_count) + '\t' +
-                       str(numpy.mean(p)) + '\t' +
-                       str(numpy.mean(Ehet)) + '\t' +
-                       str(W) + '\t' +
-                       str(Pi) + '\t' +
-                       str(h) + '\t' +
-                       str(L) + '\t' +
-                       str(D) + '\t' +
-                       str(H) + '\t' +
-                       str(E) + '\n')
     Pi = 0.0
     h = 0.0
     L = 0.0
@@ -216,26 +224,31 @@ def calcwpm(input_file, output, sampind=5, window_size=50000, minimum_snps=2):
     varPi_L1 = (((n - 2) / (6 * n - 6)) * W)
     varPi_L2 = (((18 * n**2 * (3 * n + 2) * bw) - (88 * n**3 + 9 * n**2 - 13 * n + 6)) / (9 * n * (n - 1)**2) * W2)
     varL_W = (((n / (2 * n - 2)) - 1 / aw) * W) + ((a2 / aw**2 + (2 * (n / (n - 1))**2) * a2 - 2 * (n * a2 - n + 1) / ((n - 1) * aw) - (3 * n + 1) / (n - 1)) * W2)
-
     varPi_L = varPi_L1 + varPi_L2
-    D = (Pi - W) / (varPi_W**0.5)
-    H = (Pi - L) / (varPi_L**0.5)  # Normalized H according to Zeng 2006
-    E = (L - W) / (varL_W**0.5)
+    try:
+        D = (Pi - W) / (varPi_W**0.5)
+        H = (Pi - L) / (varPi_L**0.5)  # Normalized H according to Zeng 2006
+        E = (L - W) / (varL_W**0.5)
+        out1.write(pop + '\t' +
+                   str(ploidy) + '\t' +
+                   str(sampind) + '\t' +
+                   scaff + '\t' +
+                   str(start) + '\t' +
+                   str(end) + '\t' +
+                   str(window_size) + '\t' +
+                   str(snp_count) + '\t' +
+                   str(numpy.mean(p)) + '\t' +
+                   str(numpy.mean(Ehet)) + '\t' +
+                   str(W) + '\t' +
+                   str(Pi) + '\t' +
+                   str(h) + '\t' +
+                   str(L) + '\t' +
+                   str(D) + '\t' +
+                   str(H) + '\t' +
+                   str(E) + '\n')
+    except ZeroDivisionError:
+        print('ZeroDivisionError:', varPi_W, aw, bw, a2, b1, b2, c1, c2, e1, e2)
 
-    out1.write(pop + '\t' + str(ploidy) + '\t' + str(sampind) + '\tGenome\t' +
-               str("-99") + '\t' +
-               str("-99") + '\t' +
-               str("-99") + '\t' +
-               str(Snp_count) + '\t' +
-               str("-99") + '\t' +
-               str("-99") + '\t' +
-               str(W) + '\t' +
-               str(Pi) + '\t' +
-               str(h) + '\t' +
-               str(L) + '\t' +
-               str(D) + '\t' +
-               str(H) + '\t' +
-               str(E) + '\n')
 
     out1.close()
 
