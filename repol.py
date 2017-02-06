@@ -43,7 +43,7 @@ with open(args.i) as inf:
                 else:
                     gt += "-9\t"
             gt.strip("\t")
-            newline = pop + "\t" + str(ploidy) + "\tscaffold_" + str(scaff) + "\t" + pos + "\t" + nac + "\t" + an + "\t" + dp + "\t" + gt + "\n"
+            newline = pop + "\t" + str(ploidy) + "\tscaffold_" + str(scaff) + "\t" + pos + "\t" + str(nac) + "\t" + an + "\t" + dp + "\t" + gt + "\n"
             new.write(newline)
         else:
             new.write(line)
