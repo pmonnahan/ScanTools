@@ -56,17 +56,18 @@ def calcwpm(input_file, output, sampind=5, window_size=50000, minimum_snps=2):
                 e2 = c2 / (aw**2 + a2)
 
             if int(pos) > start and int(pos) <= end and int(an) >= AN and scaff == oldscaff:
-                snp_count += 1
-                Snp_count += 1
                 gt = [x for x in gt if x != "-9"]
                 if len(gt) >= sampind:
                     sgt = numpy.random.choice(gt, size=sampind, replace=False)
                     sac = sum([int(x) for x in sgt])
-                    p1 = float(sac) / float(AN)
-                    p.append(p1)
-                    Ehet.append(p1 * (1 - p1))
-                    afs[sac] += 1
-                    AFS[sac] += 1
+                    if sac != 0:
+                        p1 = float(sac) / float(AN)
+                        p.append(p1)
+                        Ehet.append(p1 * (1 - p1))
+                        afs[sac] += 1
+                        AFS[sac] += 1
+                        snp_count += 1
+                        Snp_count += 1
 
             elif int(pos) > end or scaff != oldscaff:
                 Pi = 0.0
@@ -120,7 +121,7 @@ def calcwpm(input_file, output, sampind=5, window_size=50000, minimum_snps=2):
                                    str(H) + '\t' +
                                    str(E) + '\n')
                     except ZeroDivisionError:
-                        print('ZeroDivisionError:', varPi_W, aw, bw, a2, b1, b2, c1, c2, e1, e2)
+                        print('ZeroDivisionError:', varPi_W, aw, bw, a2, b1, b2, c1, c2, e1, e2, S)
 
 
                 else:
@@ -142,17 +143,18 @@ def calcwpm(input_file, output, sampind=5, window_size=50000, minimum_snps=2):
                     end = window_size
 
                 if int(pos) > start and int(pos) <= end and int(an) >= AN and scaff == oldscaff:
-                    snp_count += 1
-                    Snp_count += 1
                     gt = [x for x in gt if x != "-9"]
                     if len(gt) >= sampind:
                         sgt = numpy.random.choice(gt, size=sampind, replace=False)
                         sac = sum([int(x) for x in sgt])
-                        p1 = float(sac) / float(AN)
-                        p.append(p1)
-                        Ehet.append(p1 * (1 - p1))
-                        afs[sac] += 1
-                        AFS[sac] += 1
+                        if sac != 0:
+                            p1 = float(sac) / float(AN)
+                            p.append(p1)
+                            Ehet.append(p1 * (1 - p1))
+                            afs[sac] += 1
+                            AFS[sac] += 1
+                            snp_count += 1
+                            Snp_count += 1
 
         if snp_count >= minimum_snps:
             Pi = 0.0
