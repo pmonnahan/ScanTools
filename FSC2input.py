@@ -59,17 +59,13 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
 
         if get_pops is True and len(Locus) == numpops:
             string = str(numpops) + "\t\t\t"
-            string1 = ""
             for pop_site in Locus:
-
                 num_ind = len(pop_site[7:])
                 ploidy = int(float(pop_site[1]))
                 num_inds.append(num_ind)
                 ploidies.append(ploidy)
                 num_alleles.append(num_ind * ploidy)
                 string += str(num_ind * ploidy) + "\t"
-                string1 += str(num_ind * ploidy) + ","
-            string1.strip(",")
             string.strip("\t")
             get_pops = False
             DSFS = {}
@@ -86,7 +82,7 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
                 DSFS[str(rep)] = [0 for z in range(0, num_states + 1)]
                 exec("out%d.write('%s')" % (rep + 1, string), globals())
                 exec('out%d.write("""\n""")' % (rep + 1), globals())
-            out.write(str(string))
+            out.write(str(string) + "\n")
 
         if pos == old_pos:  # Accruing information from multiple populations but same locus
             try:
@@ -95,13 +91,16 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
                 ac_i.append(int(ac))
                 Locus.append(line)
         elif len(ac_i) == numpops:  # Skip locus calc if data not present from all populations
+            for loc in Locus:
+                for jj in loc:
+                    if jj == "-9":
+                        print("FUCk!!!")
             snp_count += 1
             scaff_num = int(Locus[0][2].split("_")[1])
             cur_pos = float(Locus[0][3])
             wind_num = sum(per_scaff[:scaff_num - 1]) + int(math.ceil(cur_pos / float(window_size))) - 1
             # print(wind_num, sum(per_scaff[:scaff_num - 1]), int(math.ceil(cur_pos / float(window_size))))
             list_pos = 0
-            list_pos1 = 0
             for jj, aa in enumerate(ac_i):
                 list_pos += aa * reduce(mul, [len(x) for x in states_i[jj + 1:]], 1)  # Formula to calculate position in list to given ac_i state =[x,y,z] is (x * [ANy + 1] * [ANz + 1]) + (y * [ANz + 1) + z
             dsfs[list_pos] += 1
@@ -120,10 +119,14 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
 
         else:  # Previous site contained data from only one population, so skip calculations
             ac_i = []
-            ac_i.append(int(ac))
             Locus = []
-            Locus.append(line)
             old_pos = pos
+            try:
+                line.remove("-9")
+            except ValueError:
+                ac_i.append(int(ac))
+                Locus.append(line)
+
 
     for state in range(num_states):
         out.write(str(dsfs[state]) + "\t")
@@ -135,7 +138,7 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
         exec("out%d.close()" % (rep + 1))
 
 
-    return num_wind, winexclcount
+    return num_wind, winexclcount, snp_count
 
 
 if __name__ == '__main__':  # Used to run code from command line
@@ -150,4 +153,4 @@ if __name__ == '__main__':  # Used to run code from command line
 
     args = parser.parse_args()
 
-    j1, j2 = generateFSC2input(args.i, args.o, args.prefix, args.np, args.ws, args.bs)
+    j1, j2, j3 = generateFSC2input(args.i, args.o, args.prefix, args.np, args.ws, args.bs)

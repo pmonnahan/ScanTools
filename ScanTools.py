@@ -370,7 +370,6 @@ class scantools:
                               '#SBATCH -t 1-00:00\n' +
                               '#SBATCH --mem=' + str(mem) + '\n' +
                               'source python-3.5.1\n' +
-                              'source env/bin/activate\n' +
                               'python3 ' + self.code_dir + '/wpm.py -i ' + recode_dir + pop + suffix + ' -o ' + recode_dir + ' -sampind ' + str(sind) + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + '\n')
                 shfile3.close()
 
@@ -433,9 +432,9 @@ class scantools:
 
             # Concatenate input files and sort them
             print("Concatenating input files")
-            concat_file = open(recode_dir + output_name + suffix, 'w')
+            concat_file = open(recode_dir + output_name + '.concat.txt', 'w')
             pop_num = 0
-            for pop in pops:  # Add data from all populations to single, huge list
+            for pop in pops:  # Add data from all populations to single, huge listg
                 try:
                     with open(recode_dir + pop + suffix, 'r') as in1:
                         for line in in1:
@@ -459,8 +458,7 @@ class scantools:
                               '#SBATCH -t 1-00:00\n' +
                               '#SBATCH --mem=' + str(mem) + '\n' +
                               'source python-3.5.1\n' +
-                              'source env/bin/activate\n' +
-                              'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + suffix + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + '\n')
+                              'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + '\n')
                 shfile3.close()
 
                 if print1 is False:
