@@ -335,11 +335,16 @@ class scantools:
 
 
     # CALCULATE WITHIN POPULATION METRICS
-    def calcwpm(self, recode_dir, window_size, min_snps, pops="all", print1=False, mem=16000, numcores=1, sampind="-99", partition="medium"):
+    def calcwpm(self, recode_dir, window_size, min_snps, pops="all", print1=False, mem=16000, numcores=1, sampind="-99", partition="medium", use_repol=True):
         '''Purpose: Calculate within population metrics including: allele frequency, expected heterozygosity, Wattersons theta, Pi, ThetaH, ThetaL and neutrality tests: D, normalized H, E
            Notes:  Currently, all populations are downsampled to same number of individuals.  By default, this minimum individuals across populations minus 1 to allow for some missing data
                     It is worth considering whether downsampling should be based on number of individuals or number of alleles.
                     Results are held ~/Working_Dir/Recoded/ in series of files ending in _WPM.txt.  These can be concatenated using concatWPM'''
+
+        if use_repol is True:
+            suffix = '.table.repol.txt'
+        else:
+            suffix = '.table.recode.txt'
 
         if sampind == "-99":
             sind = self.min_ind - 1
@@ -351,7 +356,7 @@ class scantools:
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
 
-        if os.path.exists(recode_dir) is True:
+        if os.path.exists(recode_dir) is True and sind > 3:
 
             for pop in pops:
                 shfile3 = open(pop + '.sh', 'w')
@@ -366,7 +371,7 @@ class scantools:
                               '#SBATCH --mem=' + str(mem) + '\n' +
                               'source python-3.5.1\n' +
                               'source env/bin/activate\n' +
-                              'python3 ' + self.code_dir + '/wpm.py -i ' + recode_dir + pop + '.table.repol.txt -o ' + recode_dir + ' -sampind ' + str(sind) + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + '\n')
+                              'python3 ' + self.code_dir + '/wpm.py -i ' + recode_dir + pop + suffix + ' -o ' + recode_dir + ' -sampind ' + str(sind) + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + '\n')
                 shfile3.close()
 
                 if print1 is False:
@@ -379,6 +384,12 @@ class scantools:
                     print(data3)
 
                 os.remove(pop + '.sh')
+                pops.remove(pop)
+            for pop in pops:
+                print("Did not find input files for: ", pop)
+
+        elif sind <= 3:
+            print("Number of individuals to be used/downsampled to is <= 3.  Unable to calculate within-population-metrics on so few individuals.")
         else:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate within population metrics")
 
@@ -404,55 +415,66 @@ class scantools:
                     print("Did not find _WPM.txt file for population: ", pop)
 
 
-    def calcbpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium"):
+    def calcbpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True):
         '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
            Notes: User provides a list of populations to be included.  For pairwise estimates, simply provide two populations
                     Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps in a window
                     for calculations to be made'''
 
+        if use_repol is True:
+            suffix = '.table.repol.txt'
+        else:
+            suffix = '.table.recode.txt'
+
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
 
-        if os.path.exists(recode_dir) is True:
+        if os.path.exists(recode_dir) is True and len(pops) > 1:
 
             # Concatenate input files and sort them
             print("Concatenating input files")
-            concat_file = open(recode_dir + output_name + '.table.recode.txt', 'w')
+            concat_file = open(recode_dir + output_name + suffix, 'w')
+            pop_num = 0
             for pop in pops:  # Add data from all populations to single, huge list
                 try:
-                    with open(recode_dir + pop + '.table.recode.txt', 'r') as in1:
+                    with open(recode_dir + pop + suffix, 'r') as in1:
                         for line in in1:
                             concat_file.write(line)
+                    pop_num += 1
                 except IOError:
                     print("Did not find input file for pop ", pop)
             print("Finished preparing input data")
-
-            shfile3 = open(output_name + '.bpm.sh', 'w')
-
-            shfile3.write('#!/bin/bash\n' +
-                          '#SBATCH -J ' + output_name + '.bpm.sh' + '\n' +
-                          '#SBATCH -e ' + self.oande + output_name + '.bpm.err' + '\n' +
-                          '#SBATCH -o ' + self.oande + output_name + '.bpm.out' + '\n' +
-                          '#SBATCH -p nbi-' + str(partition) + '\n' +
-                          '#SBATCH -n ' + str(numcores) + '\n' +
-                          '#SBATCH -t 1-00:00\n' +
-                          '#SBATCH --mem=' + str(mem) + '\n' +
-                          'source python-3.5.1\n' +
-                          'source env/bin/activate\n' +
-                          'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.table.recode.txt -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + '\n')
-            shfile3.close()
-
-            if print1 is False:
-                cmd3 = ('sbatch -d singleton ' + output_name + '.bpm.sh')
-                p3 = subprocess.Popen(cmd3, shell=True)
-                sts3 = os.waitpid(p3.pid, 0)[1]
+            if len(pops) != pop_num:
+                print("Did not find all input files!!  Aborting.")
+                os.remove(recode_dir + output_name + suffix)
             else:
-                file3 = open(output_name + '.bpm.sh', 'r')
-                data3 = file3.read()
-                print(data3)
+                shfile3 = open(output_name + '.bpm.sh', 'w')
 
-            os.remove(output_name + '.bpm.sh')
+                shfile3.write('#!/bin/bash\n' +
+                              '#SBATCH -J ' + output_name + '.bpm.sh' + '\n' +
+                              '#SBATCH -e ' + self.oande + output_name + '.bpm.err' + '\n' +
+                              '#SBATCH -o ' + self.oande + output_name + '.bpm.out' + '\n' +
+                              '#SBATCH -p nbi-' + str(partition) + '\n' +
+                              '#SBATCH -n ' + str(numcores) + '\n' +
+                              '#SBATCH -t 1-00:00\n' +
+                              '#SBATCH --mem=' + str(mem) + '\n' +
+                              'source python-3.5.1\n' +
+                              'source env/bin/activate\n' +
+                              'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + suffix + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + '\n')
+                shfile3.close()
 
+                if print1 is False:
+                    cmd3 = ('sbatch -d singleton ' + output_name + '.bpm.sh')
+                    p3 = subprocess.Popen(cmd3, shell=True)
+                    sts3 = os.waitpid(p3.pid, 0)[1]
+                else:
+                    file3 = open(output_name + '.bpm.sh', 'r')
+                    data3 = file3.read()
+                    print(data3)
+
+                os.remove(output_name + '.bpm.sh')
+        elif len(pops) < 2:
+            print("'pops' argument must be a list of strings specifiying two or more population names as they appear in input file prefixes.  len(pops) was < 2")
         else:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate between population metrics")
 
