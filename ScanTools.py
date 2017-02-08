@@ -95,11 +95,8 @@ class scantools:
             vcf_dir += "/"
         outdir = self.dir + "VCF.DP" + str(min_dp) + ".M" + str(mffg) + "/"
         self.vcf_dir = vcf_dir
-        self.split_dirs.append("VCF.DP" + str(min_dp) + ".M" + str(mffg) + "/")
-
-        summary = open(self.dir + "vcf_dir.txt", 'w')
-        summary.write('VCF Directory = ' + self.vcf_dir + '\n')
-        summary.close()
+        vcf_dir_name = vcf_dir.split("/")[-1]
+        self.split_dirs.append("VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/")
 
         mem1 = int(mem / 1000)
 
@@ -184,9 +181,13 @@ class scantools:
                               'python3 ' + self.code_dir + '/repol.py -i ' + outdir + pop + '.table.recode.txt -o ' + outdir + pop + ' -r ' + repolarization_key + '\n')
                 if keep_intermediates is False:
                     shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.vcf\n')
+                    shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.vcf.idx\n')
                     shfile3.write('rm ' + outdir + '*.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf\n')
+                    shfile3.write('rm ' + outdir + '*.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf.idx\n')
                     shfile3.write('rm ' + outdir + '*.' + pop + '.vcf\n')
+                    shfile3.write('rm ' + outdir + '*.' + pop + '.vcf.idx\n')
                     shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.1.vcf\n')
+                    shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.1.vcf.idx\n')
                     shfile3.write('rm ' + outdir + '*' + pop + '_raw.table\n' +
                                   'rm ' + outdir + pop + '.table\n' +
                                   'rm ' + outdir + pop + '.table.recode.txt\n')
@@ -414,7 +415,7 @@ class scantools:
                     print("Did not find _WPM.txt file for population: ", pop)
 
 
-    def calcbpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True):
+    def calcbpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False):
         '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
            Notes: User provides a list of populations to be included.  For pairwise estimates, simply provide two populations
                     Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps in a window
@@ -458,7 +459,74 @@ class scantools:
                               '#SBATCH -t 1-00:00\n' +
                               '#SBATCH --mem=' + str(mem) + '\n' +
                               'source python-3.5.1\n' +
-                              'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + '\n')
+                              'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + ' -np ' + str(pop_num) + '\n')
+                if keep_intermediates is False:
+                    shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
+                shfile3.close()
+
+                if print1 is False:
+                    cmd3 = ('sbatch -d singleton ' + output_name + '.bpm.sh')
+                    p3 = subprocess.Popen(cmd3, shell=True)
+                    sts3 = os.waitpid(p3.pid, 0)[1]
+                else:
+                    file3 = open(output_name + '.bpm.sh', 'r')
+                    data3 = file3.read()
+                    print(data3)
+
+                os.remove(output_name + '.bpm.sh')
+        elif len(pops) < 2:
+            print("'pops' argument must be a list of strings specifiying two or more population names as they appear in input file prefixes.  len(pops) was < 2")
+        else:
+            print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate between population metrics")
+
+    def calcPairwisebpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False):
+        '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
+           Notes: User provides a list of populations to be included.  For pairwise estimates, simply provide two populations
+                    Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps in a window
+                    for calculations to be made'''
+
+        #  MUST CYCLE OVER PAIRWISE POSSIBILITIES
+        if use_repol is True:
+            suffix = '.table.repol.txt'
+        else:
+            suffix = '.table.recode.txt'
+
+        if recode_dir.endswith("/") is False:
+            recode_dir += "/"
+
+        if os.path.exists(recode_dir) is True and len(pops) > 1:
+
+            # Concatenate input files and sort them
+            print("Concatenating input files")
+            concat_file = open(recode_dir + output_name + '.concat.txt', 'w')
+            pop_num = 0
+            for pop in pops:  # Add data from all populations to single, huge listg
+                try:
+                    with open(recode_dir + pop + suffix, 'r') as in1:
+                        for line in in1:
+                            concat_file.write(line)
+                    pop_num += 1
+                except IOError:
+                    print("Did not find input file for pop ", pop)
+            print("Finished preparing input data")
+            if len(pops) != pop_num:
+                print("Did not find all input files!!  Aborting.")
+                os.remove(recode_dir + output_name + suffix)
+            else:
+                shfile3 = open(output_name + '.bpm.sh', 'w')
+
+                shfile3.write('#!/bin/bash\n' +
+                              '#SBATCH -J ' + output_name + '.bpm.sh' + '\n' +
+                              '#SBATCH -e ' + self.oande + output_name + '.bpm.err' + '\n' +
+                              '#SBATCH -o ' + self.oande + output_name + '.bpm.out' + '\n' +
+                              '#SBATCH -p nbi-' + str(partition) + '\n' +
+                              '#SBATCH -n ' + str(numcores) + '\n' +
+                              '#SBATCH -t 1-00:00\n' +
+                              '#SBATCH --mem=' + str(mem) + '\n' +
+                              'source python-3.5.1\n' +
+                              'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + ' -np 2\n')
+                if keep_intermediates is False:
+                    shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
                 shfile3.close()
 
                 if print1 is False:
