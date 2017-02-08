@@ -483,7 +483,7 @@ class scantools:
         else:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate between population metrics")
 
-    def calcPairwisebpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False):
+    def calcPairwisebpm(self, recode_dir, pops, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False):
         '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
            Notes: User provides a list of populations to be included.  For pairwise estimates, simply provide two populations
                     Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps in a window
@@ -499,12 +499,11 @@ class scantools:
             recode_dir += "/"
 
         if os.path.exists(recode_dir) is True and len(pops) > 1:
-
             # Concatenate input files and sort them
-            concat_file = open(recode_dir + output_name + '.concat.txt', 'w')
             for i, pop1 in enumerate(pops):  # Add data from all populations to single, huge listg
                 for pop2 in pops[i + 1:]:
                     output_name = pop1 + pop2
+                    concat_file = open(recode_dir + output_name + '.concat.txt', 'w')
                     skip = False
                     try:
                         with open(recode_dir + pop1 + suffix, 'r') as in1:
