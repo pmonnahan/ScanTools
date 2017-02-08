@@ -84,7 +84,7 @@ class scantools:
         self.samp_nums[popname] = len(new_samps)
 
 
-    def splitVCFs(self, vcf_dir, ref_path, min_dp, mffg, repolarization_key="-99", pops='all', mem=16000, numcores=1, print1=False, overwrite=False, partition="long", keep_intermediates=False):
+    def splitVCFs(self, vcf_dir, ref_path, min_dp, mffg, repolarization_key="-99", pops='all', mem=16000, time='0-04:00', numcores=1, print1=False, overwrite=False, partition="long", keep_intermediates=False):
         '''Purpose:  Find all vcfs in vcf_dir and split them by population according to samples associated with said population.
                     Then, take only biallelic snps and convert vcf to table containing scaff, pos, ac, an, dp, and genotype fields.
                     Finally, concatenate all per-scaffold tables to one giant table. Resulting files will be put into ~/Working_Dir/VCFs/
@@ -139,7 +139,7 @@ class scantools:
                                   '#SBATCH -o ' + self.oande + pop + vcf + '.gatk.out' + '\n' +
                                   '#SBATCH -p nbi-' + str(partition) + '\n' +
                                   '#SBATCH -n ' + str(numcores) + '\n' +
-                                  '#SBATCH -t 0-4:00\n' +
+                                  '#SBATCH -t ' + str(time) + '\n' +
                                   '#SBATCH --mem=' + str(mem) + '\n' +
                                   'source GATK-nightly.2016.09.26\n' +
                                   'java -Xmx' + str(mem1) + 'g -jar /nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar -T SelectVariants -R ' + ref_path + ' -V ' + vcf_dir + vcf + sample_string1 + ' -o ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf\n' +
