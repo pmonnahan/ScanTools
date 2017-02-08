@@ -8,16 +8,12 @@ import argparse
 # Add within population varP...could just use average SSI
 
 
-def calcBPM(input_file, output, outname, window_size, minimum_snps):
+def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
 
     def NestedAnova(locus_list):
         locus = []
         for l in locus_list:  # Remove missing data from the site
-            try:
-                l.remove("-9")
-                locus.append(l)
-            except ValueError:
-                locus.append(l)
+            locus.append([x for x in l if x != "-9"])
         r = float(len(locus))  # Number of populations:  Should always be 2 for pairwise analysis
         p_i = []  # Allele frequency of each population
         n_i = []  # Number of individuals in each population
@@ -72,6 +68,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps):
             RS_SNij2 += nnn**2  # Squared total number of observations per population
             p_ij.append(p)
             ac_ij.append(ac_i)
+
         p_bar = float(tac) / float(tan)
 
         # Calculate degrees of freedom and sample size coefficients
@@ -120,15 +117,10 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps):
         return rnum, rden, fnum, fden
 
 
-    def calcDxy(locus_info):
+    def calcDxy(locus_list):
         locus = []
-        for l in locus_info:  # Remove missing data from site
-            try:
-                l.remove('-9')
-                locus.append(l)
-            except ValueError:
-                locus.append(l)
-
+        for l in locus_list:  # Remove missing data from the site
+            locus.append([x for x in l if x != "-9"])
         for i, pop_site in enumerate(locus):
             ploidy = float(pop_site[1])
             nnn = float(len(pop_site[7:]))
@@ -146,7 +138,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps):
     # Prepare output file
     outfile = output + outname + '_BPM.txt'
     out1 = open(outfile, 'w')
-    out1.write("pop1\tpop2\tscaff\tstart\tend\twin_size\tnum_snps\tRho\tFst\tdxy\n")
+    out1.write("outname\tscaff\tstart\tend\twin_size\tnum_snps\tRho\tFst\tdxy\n")
 
     # Sort intput data
     data = open(input_file, 'r')
@@ -168,7 +160,6 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps):
         if i % 100000 == 0:
             print(i)
         if i == 0:
-            pop1 = pop  # Get name of first population
             old_pos = pos
             Locus = []  # Hold information of single locus across populations
             oldscaff = scaff
@@ -182,13 +173,11 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps):
         if pos > start and pos <= end and scaff == oldscaff:
             if pos == old_pos:  # Accruing information from multiple populations but same locus
                 Locus.append(line)
-                if Snp_count == 0.0 and i != 0:  # Get name of second population
-                    pop2 = pop
-                    assert pop1 != pop2
-            elif len(Locus) == 2:  # Within current window but have moved on from previous locus
+            elif len(Locus) == num_pops:  # Within current window but have moved on from previous locus
                 rnum, rden, fnum, fden = NestedAnova(Locus)
-                dxy += calcDxy(Locus)
-                Dxy += dxy
+                if num_pops == 2:
+                    dxy += calcDxy(Locus)
+                    Dxy += dxy
                 snp_count += 1
                 fst = [sum(x) for x in zip(fst, [fnum, fden])]  # Adds numerator and denominators from current site to running sums for window and genome respectively
                 rho = [sum(x) for x in zip(rho, [rnum, rden])]
@@ -205,24 +194,31 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps):
 
 
         elif int(pos) > end or scaff != oldscaff:   # Current snp is onto next window, but must do calculation for previous locus before moving on
-            if len(Locus) == 2:  # Skip locus calc if data from only one population
+            if len(Locus) == num_pops:  # Skip locus calc if data not available for all populations
                 snp_count += 1
                 rnum, rden, fnum, fden = NestedAnova(Locus)
-                dxy += calcDxy(Locus)
-                Dxy += dxy
                 fst = [sum(x) for x in zip(fst, [fnum, fden])]
                 rho = [sum(x) for x in zip(rho, [rnum, rden])]
                 Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
                 Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
+                if num_pops == 2:
+                    dxy += calcDxy(Locus)
+                    Dxy += dxy
 
             if snp_count >= minimum_snps:  # Report or exclude window
                 Snp_count += snp_count
                 num_wind += 1
                 try:
+                    if fst[1]==0.0:
+                        print(Locus)
                     fst = fst[0] / fst[1]  # fst and rho and ratios of running sums of numerator and denominator calculations
                     fac = rho[0] / rho[1]
+
                     rho_i = fac / (1 + fac)
-                    dxy = dxy / float(snp_count)
+                    if num_pops == 2:
+                        dxy = dxy / float(snp_count)
+                    else:
+                        dxy = "-9"
                     out1.write(outname + '\t' + scaff + '\t' +  # Write calculations to file
                                str(start) + '\t' +
                                str(end) + '\t' +
@@ -258,15 +254,16 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps):
                 Locus.append(line)
                 old_pos = pos
 
-    if len(Locus) == 2:  # Final window calculations
+    if len(Locus) == num_pops:  # Final window calculations
         snp_count += 1
         rnum, rden, fnum, fden = NestedAnova(Locus)
-        dxy += calcDxy(Locus)
-        Dxy += dxy
         fst = [sum(x) for x in zip(fst, [fnum, fden])]
         rho = [sum(x) for x in zip(rho, [rnum, rden])]
         Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
         Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
+        if num_pops == 2:
+            dxy += calcDxy(Locus)
+            Dxy += dxy
 
     if snp_count >= minimum_snps:  # Use or exclude window
         num_wind += 1
@@ -274,7 +271,10 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps):
             fst = fst[0] / fst[1]  # fst and rho and ratios of running sums of numerator and denominator calculations
             fac = rho[0] / rho[1]
             rho_i = fac / (1 + fac)
-            dxy = dxy / float(snp_count)
+            if num_pops == 2:
+                dxy = dxy / float(snp_count)
+            else:
+                dxy = "-9"
             out1.write(outname + '\t' + scaff + '\t' +  # Write calculations to file
                        str(start) + '\t' +
                        str(end) + '\t' +
@@ -292,10 +292,13 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps):
     FAC = Rho[0] / Rho[1]
     rho_G = FAC / (1 + FAC)
     Fst_G = Fst[0] / Fst[1]
-    Dxy = Dxy / Snp_count
+    if num_pops == 2:
+        Dxy = Dxy / Snp_count
+    else:
+        Dxy = "-9"
     out1.write(outname + '\t' + "Genome" + '\t' +
-               "-99" + '\t' +
-               "-99" + '\t' +
+               "-9" + '\t' +
+               "-9" + '\t' +
                str(window_size) + '\t' +
                str(Snp_count) + '\t' +
                str(rho_G) + '\t' +
@@ -315,7 +318,8 @@ if __name__ == '__main__':  # Used to run code from command line
     parser.add_argument('-prefix', type=str, metavar='output_file_prefix', required=True, help='Name indicating populations in input file')
     parser.add_argument('-ws', type=float, metavar='window_size', required=False, default='10000.0', help='Size of windows in bp')
     parser.add_argument('-ms', type=int, metavar='minimum_snps', required=False, default='2', help='minimum number of snps in a window')
+    parser.add_argument('-np', type=int, metavar='number_populations', required=False, default='2', help='Number of populations')
 
     args = parser.parse_args()
 
-    j1, j2, j3 = calcBPM(args.i, args.o, args.prefix, args.ws, args.ms)
+    j1, j2, j3 = calcBPM(args.i, args.o, args.prefix, args.ws, args.ms, args.np)
