@@ -84,7 +84,7 @@ class scantools:
         self.samp_nums[popname] = len(new_samps)
 
 
-    def splitVCFs(self, vcf_dir, ref_path, repolarization_key, min_dp, mffg, pops='all', mem=16000, numcores=1, print1=False, overwrite=False, partition="long", keep_intermediates=False):
+    def splitVCFs(self, vcf_dir, ref_path, min_dp, mffg, repolarization_key="-99", pops='all', mem=16000, numcores=1, print1=False, overwrite=False, partition="long", keep_intermediates=False):
         '''Purpose:  Find all vcfs in vcf_dir and split them by population according to samples associated with said population.
                     Then, take only biallelic snps and convert vcf to table containing scaff, pos, ac, an, dp, and genotype fields.
                     Finally, concatenate all per-scaffold tables to one giant table. Resulting files will be put into ~/Working_Dir/VCFs/
@@ -93,10 +93,11 @@ class scantools:
 
         if vcf_dir.endswith("/") is False:
             vcf_dir += "/"
-        vcf_dir_name = vcf_dir.split("/")[-1]
+        vcf_dir_name = vcf_dir.split("/")[-2]
         outdir = self.dir + "VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/"
         self.vcf_dir = vcf_dir
-        self.split_dirs.append("VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/")
+        if outdir not in self.split_dirs:
+            self.split_dirs.append(outdir)
 
         mem1 = int(mem / 1000)
 
@@ -177,8 +178,12 @@ class scantools:
                               '#SBATCH --mem=' + str(mem) + '\n' +
                               'source python-3.5.1\n' +
                               'cat ' + outdir + '*' + pop + '_raw.table | tail -n+2 > ' + outdir + pop + '.table\n' +
-                              'python3 ' + self.code_dir + '/recode012.py -i ' + outdir + pop + '.table -pop ' + pop + ' -o ' + outdir + '\n'
-                              'python3 ' + self.code_dir + '/repol.py -i ' + outdir + pop + '.table.recode.txt -o ' + outdir + pop + ' -r ' + repolarization_key + '\n')
+                              'python3 ' + self.code_dir + '/recode012.py -i ' + outdir + pop + '.table -pop ' + pop + ' -o ' + outdir + '\n')
+                if repolarization_key != "-99":
+                    print("No repolarization key provided.  Repolarized input files will not be produced.  Must set 'use_repol' to True in subsequent steps")
+                    shfile3.write('python3 ' + self.code_dir + '/repol.py -i ' + outdir + pop + '.table.recode.txt -o ' + outdir + pop + ' -r ' + repolarization_key + '\n')
+                    if keep_intermediates is False:
+                        shfile3.write('rm ' + outdir + pop + '.table.recode.txt\n')
                 if keep_intermediates is False:
                     shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.vcf\n')
                     shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.vcf.idx\n')
@@ -189,8 +194,7 @@ class scantools:
                     shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.1.vcf\n')
                     shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.1.vcf.idx\n')
                     shfile3.write('rm ' + outdir + '*' + pop + '_raw.table\n' +
-                                  'rm ' + outdir + pop + '.table\n' +
-                                  'rm ' + outdir + pop + '.table.recode.txt\n')
+                                  'rm ' + outdir + pop + '.table\n')                  
                 shfile3.close()
 
                 if print1 is False:
@@ -497,48 +501,55 @@ class scantools:
         if os.path.exists(recode_dir) is True and len(pops) > 1:
 
             # Concatenate input files and sort them
-            print("Concatenating input files")
             concat_file = open(recode_dir + output_name + '.concat.txt', 'w')
-            pop_num = 0
-            for pop in pops:  # Add data from all populations to single, huge listg
-                try:
-                    with open(recode_dir + pop + suffix, 'r') as in1:
-                        for line in in1:
-                            concat_file.write(line)
-                    pop_num += 1
-                except IOError:
-                    print("Did not find input file for pop ", pop)
-            print("Finished preparing input data")
-            if len(pops) != pop_num:
-                print("Did not find all input files!!  Aborting.")
-                os.remove(recode_dir + output_name + suffix)
-            else:
-                shfile3 = open(output_name + '.bpm.sh', 'w')
+            for i, pop1 in enumerate(pops):  # Add data from all populations to single, huge listg
+                for pop2 in pops[i + 1:]:
+                    output_name = pop1 + pop2
+                    skip = False
+                    try:
+                        with open(recode_dir + pop1 + suffix, 'r') as in1:
+                            for line in in1:
+                                concat_file.write(line)
+                    except IOError:
+                        print("Did not find input file for pop ", pop1)
+                        skip = True
+                    try:
+                        with open(recode_dir + pop2 + suffix, 'r') as in1:
+                            for line in in1:
+                                concat_file.write(line)
+                    except IOError:
+                        print("Did not find input file for pop ", pop2)
+                        skip = True
+                    if skip is True:
+                        print("Did not find all input files!!  Aborting pairwise bpm for contrast: ", output_name)
+                        os.remove(recode_dir + output_name + suffix)
+                    else:
+                        shfile3 = open(output_name + '.bpm.sh', 'w')
 
-                shfile3.write('#!/bin/bash\n' +
-                              '#SBATCH -J ' + output_name + '.bpm.sh' + '\n' +
-                              '#SBATCH -e ' + self.oande + output_name + '.bpm.err' + '\n' +
-                              '#SBATCH -o ' + self.oande + output_name + '.bpm.out' + '\n' +
-                              '#SBATCH -p nbi-' + str(partition) + '\n' +
-                              '#SBATCH -n ' + str(numcores) + '\n' +
-                              '#SBATCH -t 1-00:00\n' +
-                              '#SBATCH --mem=' + str(mem) + '\n' +
-                              'source python-3.5.1\n' +
-                              'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + ' -np 2\n')
-                if keep_intermediates is False:
-                    shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
-                shfile3.close()
+                        shfile3.write('#!/bin/bash\n' +
+                                      '#SBATCH -J ' + output_name + '.bpm.sh' + '\n' +
+                                      '#SBATCH -e ' + self.oande + output_name + '.bpm.err' + '\n' +
+                                      '#SBATCH -o ' + self.oande + output_name + '.bpm.out' + '\n' +
+                                      '#SBATCH -p nbi-' + str(partition) + '\n' +
+                                      '#SBATCH -n ' + str(numcores) + '\n' +
+                                      '#SBATCH -t 1-00:00\n' +
+                                      '#SBATCH --mem=' + str(mem) + '\n' +
+                                      'source python-3.5.1\n' +
+                                      'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + ' -np 2\n')
+                        if keep_intermediates is False:
+                            shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
+                        shfile3.close()
 
-                if print1 is False:
-                    cmd3 = ('sbatch -d singleton ' + output_name + '.bpm.sh')
-                    p3 = subprocess.Popen(cmd3, shell=True)
-                    sts3 = os.waitpid(p3.pid, 0)[1]
-                else:
-                    file3 = open(output_name + '.bpm.sh', 'r')
-                    data3 = file3.read()
-                    print(data3)
+                        if print1 is False:
+                            cmd3 = ('sbatch -d singleton ' + output_name + '.bpm.sh')
+                            p3 = subprocess.Popen(cmd3, shell=True)
+                            sts3 = os.waitpid(p3.pid, 0)[1]
+                        else:
+                            file3 = open(output_name + '.bpm.sh', 'r')
+                            data3 = file3.read()
+                            print(data3)
 
-                os.remove(output_name + '.bpm.sh')
+                        os.remove(output_name + '.bpm.sh')
         elif len(pops) < 2:
             print("'pops' argument must be a list of strings specifiying two or more population names as they appear in input file prefixes.  len(pops) was < 2")
         else:
