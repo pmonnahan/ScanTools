@@ -57,7 +57,7 @@ class scantools:
         self.split_dirs = []
         for path in os.listdir(self.dir):
             if path.split("_")[0] == "VCF":
-                self.split_dirs.append(path)
+                self.split_dirs.append(self.dir + path)
 
 
     def removePop(self, popname):
@@ -194,7 +194,7 @@ class scantools:
                     shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.1.vcf\n')
                     shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.1.vcf.idx\n')
                     shfile3.write('rm ' + outdir + '*' + pop + '_raw.table\n' +
-                                  'rm ' + outdir + pop + '.table\n')                  
+                                  'rm ' + outdir + pop + '.table\n')
                 shfile3.close()
 
                 if print1 is False:
@@ -450,7 +450,7 @@ class scantools:
             print("Finished preparing input data")
             if len(pops) != pop_num:
                 print("Did not find all input files!!  Aborting.")
-                os.remove(recode_dir + output_name + suffix)
+                os.remove(recode_dir + output_name + '.concat.txt')
             else:
                 shfile3 = open(output_name + '.bpm.sh', 'w')
 
@@ -521,7 +521,7 @@ class scantools:
                         skip = True
                     if skip is True:
                         print("Did not find all input files!!  Aborting pairwise bpm for contrast: ", output_name)
-                        os.remove(recode_dir + output_name + suffix)
+                        os.remove(recode_dir + output_name + '.concat.txt')
                     else:
                         shfile3 = open(output_name + '.bpm.sh', 'w')
 
