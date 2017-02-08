@@ -21,7 +21,7 @@ with open(args.i, "rU") as table:
         line = line.split("\t")
         if line[0].split("_")[0] == 'scaffold':
             if get_ploidy is True:
-                ploidy = float(max([len(x) for x in line[5:].split("/")]))
+                ploidy = float(max([len(x.split("/")) for x in line[5:]]))
                 get_ploidy = False
             ref = '0'
             numind = len(line[5:])
