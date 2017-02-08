@@ -12,7 +12,7 @@ filename = args.i.split('/')[-1]
 
 if args.o.endswith("/") is False:
     args.o += "/"
-
+get_ploidy = True
 with open(args.i, "rU") as table:
     prefix = args.i[:-6]
     GTfile = open(args.o + filename + ".recode.txt", "w")
@@ -20,6 +20,9 @@ with open(args.i, "rU") as table:
         line = line.strip("\n")
         line = line.split("\t")
         if line[0].split("_")[0] == 'scaffold':
+            if get_ploidy is True:
+                ploidy = float(max([len(x) for x in line[5:]]))
+                get_ploidy = False
             ref = '0'
             numind = len(line[5:])
             scaff = line[0]
@@ -27,7 +30,6 @@ with open(args.i, "rU") as table:
             ac = line[2]
             an = line[3]
             dp = int(line[4])
-            ploidy = float(len(line[5].split("/")))
             GT = args.pop + '\t' + str(ploidy) + '\t' + scaff + '\t' + pos + '\t' + ac + '\t' + an + '\t' + str(dp) + '\t'
             alt = False
             numobs = 0
