@@ -56,7 +56,7 @@ class scantools:
 
         self.split_dirs = []
         for path in os.listdir(self.dir):
-            if path.split(".")[0] == "VCF":
+            if path.split("_")[0] == "VCF":
                 self.split_dirs.append(path)
 
 
@@ -93,9 +93,9 @@ class scantools:
 
         if vcf_dir.endswith("/") is False:
             vcf_dir += "/"
-        outdir = self.dir + "VCF.DP" + str(min_dp) + ".M" + str(mffg) + "/"
-        self.vcf_dir = vcf_dir
         vcf_dir_name = vcf_dir.split("/")[-1]
+        outdir = self.dir + "VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/"
+        self.vcf_dir = vcf_dir
         self.split_dirs.append("VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/")
 
         mem1 = int(mem / 1000)
