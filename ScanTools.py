@@ -179,8 +179,9 @@ class scantools:
                               'source python-3.5.1\n' +
                               'cat ' + outdir + '*' + pop + '_raw.table | tail -n+2 > ' + outdir + pop + '.table\n' +
                               'python3 ' + self.code_dir + '/recode012.py -i ' + outdir + pop + '.table -pop ' + pop + ' -o ' + outdir + '\n')
-                if repolarization_key != "-99":
+                if repolarization_key == "-99":
                     print("No repolarization key provided.  Repolarized input files will not be produced.  Must set 'use_repol' to True in subsequent steps")
+                else:
                     shfile3.write('python3 ' + self.code_dir + '/repol.py -i ' + outdir + pop + '.table.recode.txt -o ' + outdir + pop + ' -r ' + repolarization_key + '\n')
                     if keep_intermediates is False:
                         shfile3.write('rm ' + outdir + pop + '.table.recode.txt\n')
@@ -489,7 +490,6 @@ class scantools:
                     Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps in a window
                     for calculations to be made'''
 
-        #  MUST CYCLE OVER PAIRWISE POSSIBILITIES
         if use_repol is True:
             suffix = '.table.repol.txt'
         else:
@@ -502,6 +502,7 @@ class scantools:
             # Concatenate input files and sort them
             for i, pop1 in enumerate(pops):  # Add data from all populations to single, huge listg
                 for pop2 in pops[i + 1:]:
+                    print(pop1,pop2)
                     output_name = pop1 + pop2
                     concat_file = open(recode_dir + output_name + '.concat.txt', 'w')
                     skip = False
@@ -673,29 +674,30 @@ class scantools:
                         for line in infile:
                             concat_file.write(line)
             if len(pops) != 0:
-                print("Did not find repolarized files for the following populations ", pops)
-            print("Finished preparing input data")
+                print("Did not find repolarized files for the following populations ", pops, ".  Aborting!!")
+            else:
+                print("Finished preparing input data")
 
-            shfile4 = open(output_name + '.fsc2input.sh', 'w')
+                shfile4 = open(output_name + '.fsc2input.sh', 'w')
 
-            shfile4.write('#!/bin/bash\n' +
-                          '#SBATCH -J ' + output_name + '.fsc2input.sh' + '\n' +
-                          '#SBATCH -e ' + self.oande + output_name + '.fsc2input.err' + '\n' +
-                          '#SBATCH -o ' + self.oande + output_name + '.fsc2input.out' + '\n' +
-                          '#SBATCH -p nbi-medium\n' +
-                          '#SBATCH -n ' + str(numcores) + '\n' +
-                          '#SBATCH -t ' + str(time) + '\n' +
-                          '#SBATCH --mem=' + str(mem) + '\n' +
-                          'source python-3.5.1\n' +
-                          'source env/bin/activate\n' +
-                          'python3 ' + self.code_dir + '/FSC2input.py -i ' + recode_dir + output_name + '.repol.concat.txt -o ' + outdir + ' -prefix ' + output_name + ' -ws ' + str(bootstrap_block_size) + ' -bs ' + str(bootstrap_reps) + ' -np ' + str(num_pops) + '\n')
-            shfile4.close()
+                shfile4.write('#!/bin/bash\n' +
+                              '#SBATCH -J ' + output_name + '.fsc2input.sh' + '\n' +
+                              '#SBATCH -e ' + self.oande + output_name + '.fsc2input.err' + '\n' +
+                              '#SBATCH -o ' + self.oande + output_name + '.fsc2input.out' + '\n' +
+                              '#SBATCH -p nbi-medium\n' +
+                              '#SBATCH -n ' + str(numcores) + '\n' +
+                              '#SBATCH -t ' + str(time) + '\n' +
+                              '#SBATCH --mem=' + str(mem) + '\n' +
+                              'source python-3.5.1\n' +
+                              'source env/bin/activate\n' +
+                              'python3 ' + self.code_dir + '/FSC2input.py -i ' + recode_dir + output_name + '.repol.concat.txt -o ' + outdir + ' -prefix ' + output_name + ' -ws ' + str(bootstrap_block_size) + ' -bs ' + str(bootstrap_reps) + ' -np ' + str(num_pops) + '\n')
+                shfile4.close()
 
-            cmd1 = ('sbatch ' + output_name + '.fsc2input.sh')
-            p1 = subprocess.Popen(cmd1, shell=True)
-            sts1 = os.waitpid(p1.pid, 0)[1]
+                cmd1 = ('sbatch ' + output_name + '.fsc2input.sh')
+                p1 = subprocess.Popen(cmd1, shell=True)
+                sts1 = os.waitpid(p1.pid, 0)[1]
 
-            os.remove(output_name + '.fsc2input.sh')
+                os.remove(output_name + '.fsc2input.sh')
 
         else:
             print("!!!Did not find recode_dir!!!!")
