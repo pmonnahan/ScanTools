@@ -7,7 +7,7 @@ import numpy
 # export PYTHONPATH="$PYTHONPATH:/Users/monnahap/Documents/Research/code/GenomeScan/"
 
 # Substitute missingness for number of individuals to downsample to.  That way you can enter one number for all populations to be downsampled to.
-def calcwpm(input_file, output, sampind=5, window_size=50000, minimum_snps=2):
+def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_snps=2):
 
     snp_count = 0
     Snp_count = 0
@@ -30,7 +30,7 @@ def calcwpm(input_file, output, sampind=5, window_size=50000, minimum_snps=2):
             if i % 100000 == 0:
                 print(i)
             if i == 0:
-                outfile = output + pop + "_WPM.txt"
+                outfile = output + prefix + "_WPM.txt"
                 out1 = open(outfile, 'w')
                 out1.write("pop\tploidy\tsampind\tscaff\tstart\tend\twin_size\tnum_snps\tavg_freq\tavg_Ehet\tThetaW\tPi\tThetaH\tThetaL\tD\tH\tE\n")
                 oldscaff = scaff
@@ -264,10 +264,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', type=str, metavar='input_file', required=True, help='input file created with recode012.py')
     parser.add_argument('-o', type=str, metavar='output_directory', required=True, help='Output Directory')
+    parser.add_argument('-p', type=str, metavar='prefix', required=True, help='prefix for file name of output')
     parser.add_argument('-sampind', type=int, metavar='DownSampled_individuals', required=False, default='5', help='Number of individuals to downsample the data to')
     parser.add_argument('-ws', type=float, metavar='window_size', required=False, default='10000.0', help='Size of windows in bp')
     parser.add_argument('-ms', type=int, metavar='minimum_snps', required=False, default='2', help='minimum number of snps in a window')
 
     args = parser.parse_args()
 
-    j1, j2, j3, j4, j5, j6, j7, j8, j9 = calcwpm(args.i, args.o, args.sampind, args.ws, args.ms)
+    j1, j2, j3, j4, j5, j6, j7, j8, j9 = calcwpm(args.i, args.o, args.p, args.sampind, args.ws, args.ms)

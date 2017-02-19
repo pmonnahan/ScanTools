@@ -7,6 +7,7 @@ import pandas
 import math
 import statistics
 import numpy as np
+import copy
 
 # Directions:
 # import WPM_Wrapper2 into python console
@@ -58,20 +59,24 @@ class scantools:
         for path in os.listdir(self.dir):
             if path.split("_")[0] == "VCF":
                 self.split_dirs.append(self.dir + path)
+        print("Be sure that you did 'unset SBATCH_PARTITION' prior to using ScanTools!!!")
 
 
-    def removePop(self, popname):
+    def removePop(self, pops_to_be_removed):
         '''Purpose: remove population from all object and recalculate min_ind'''
-        popname = str(popname)
-        if popname in self.pops:
-            self.pops.remove(popname)
-            self.samps.pop(popname, None)
-            self.samp_nums.pop(popname, None)
-            # Recalculate min_ind
-            min_ind = min([self.samp_nums[pop] for pop in self.pops])
-            self.min_ind = min_ind
-        else:
-            print("Population does not exist")
+        if isinstance(pops_to_be_removed, list) is False:
+            pops = [pops_to_be_removed]
+        for popname in pops:
+            popname = str(popname)
+            if popname in self.pops:
+                self.pops.remove(popname)
+                self.samps.pop(popname, None)
+                self.samp_nums.pop(popname, None)
+                # Recalculate min_ind
+                min_ind = min([self.samp_nums[pop] for pop in self.pops])
+                self.min_ind = min_ind
+            else:
+                print("Population does not exist")
 
 
     def combinePops(self, pops, popname):
@@ -347,6 +352,8 @@ class scantools:
                     It is worth considering whether downsampling should be based on number of individuals or number of alleles.
                     Results are held ~/Working_Dir/Recoded/ in series of files ending in _WPM.txt.  These can be concatenated using concatWPM'''
 
+        # FINDING OF FILES IS NOT WORKING
+        # Also, it is removing populations from self.pops...need to use deep copy.
         if use_repol is True:
             suffix = '.table.repol.txt'
         else:
@@ -365,33 +372,36 @@ class scantools:
         if os.path.exists(recode_dir) is True and sind > 3:
 
             for pop in pops:
-                shfile3 = open(pop + '.sh', 'w')
 
-                shfile3.write('#!/bin/bash\n' +
-                              '#SBATCH -J ' + pop + '.sh' + '\n' +
-                              '#SBATCH -e ' + self.oande + pop + '.wpm.err' + '\n' +
-                              '#SBATCH -o ' + self.oande + pop + '.wpm.out' + '\n' +
-                              '#SBATCH -p nbi-' + str(partition) + '\n' +
-                              '#SBATCH -n ' + str(numcores) + '\n' +
-                              '#SBATCH -t 1-00:00\n' +
-                              '#SBATCH --mem=' + str(mem) + '\n' +
-                              'source python-3.5.1\n' +
-                              'python3 ' + self.code_dir + '/wpm.py -i ' + recode_dir + pop + suffix + ' -o ' + recode_dir + ' -sampind ' + str(sind) + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + '\n')
-                shfile3.close()
+                prefix = pop + ".WS" + str(window_size / 1000) + "k_MS" + str(min_snps) + "_" + str(sind) + "ind"
 
-                if print1 is False:
-                    cmd3 = ('sbatch -d singleton ' + pop + '.sh')
-                    p3 = subprocess.Popen(cmd3, shell=True)
-                    sts3 = os.waitpid(p3.pid, 0)[1]
+                if os.path.exists(recode_dir + prefix) is True:
+                    shfile3 = open(pop + '.sh', 'w')
+
+                    shfile3.write('#!/bin/bash\n' +
+                                  '#SBATCH -J ' + pop + '.sh' + '\n' +
+                                  '#SBATCH -e ' + self.oande + pop + '.wpm.err' + '\n' +
+                                  '#SBATCH -o ' + self.oande + pop + '.wpm.out' + '\n' +
+                                  '#SBATCH -p nbi-' + str(partition) + '\n' +
+                                  '#SBATCH -n ' + str(numcores) + '\n' +
+                                  '#SBATCH -t 1-00:00\n' +
+                                  '#SBATCH --mem=' + str(mem) + '\n' +
+                                  'source python-3.5.1\n' +
+                                  'python3 ' + self.code_dir + '/wpm.py -i ' + recode_dir + pop + suffix + ' -o ' + recode_dir + ' -p ' + prefix + ' -sampind ' + str(sind) + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + '\n')
+                    shfile3.close()
+
+                    if print1 is False:
+                        cmd3 = ('sbatch -d singleton ' + pop + '.sh')
+                        p3 = subprocess.Popen(cmd3, shell=True)
+                        sts3 = os.waitpid(p3.pid, 0)[1]
+                    else:
+                        file3 = open(pop + '.sh', 'r')
+                        data3 = file3.read()
+                        print(data3)
+
+                    os.remove(pop + '.sh')
                 else:
-                    file3 = open(pop + '.sh', 'r')
-                    data3 = file3.read()
-                    print(data3)
-
-                os.remove(pop + '.sh')
-                pops.remove(pop)
-            for pop in pops:
-                print("Did not find input files for: ", pop)
+                    print("Did not find input files for: ", pop)
 
         elif sind <= 3:
             print("Number of individuals to be used/downsampled to is <= 3.  Unable to calculate within-population-metrics on so few individuals.")
