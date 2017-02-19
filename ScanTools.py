@@ -375,7 +375,7 @@ class scantools:
 
                 prefix = pop + ".WS" + str(window_size / 1000) + "k_MS" + str(min_snps) + "_" + str(sind) + "ind"
 
-                if os.path.exists(recode_dir + prefix) is True:
+                if os.path.exists(recode_dir + pop + suffix) is True:
                     shfile3 = open(pop + '.sh', 'w')
 
                     shfile3.write('#!/bin/bash\n' +

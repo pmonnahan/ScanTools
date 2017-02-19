@@ -1,11 +1,13 @@
 """Calculate between-population divergence metrics.  Input is a tab delimited file with no header, containing Scaff, pos, ac, an, dp, and genotypes coded as 0-4.
-Input file custom: Filename should end with _XXX_raw.table.recode.txt, where XXX is three-letter population abbreviation"""
+Input file custom: Filename should end with _XXX_raw.table.recode.txt, where XXX is three-letter population abbreviation
+Calculations are roughly equivalent to F. Kolar's calculations for toy dataset.  
+His rho's:  0.176 and 0.226.  Mine: 0.169 and 0.197
+His Fst's:  0.05 and 0.099.  Mine: 0.093 and 0.131"""
 
 import argparse
 
 # export PYTHONPATH="$PYTHONPATH:/Users/monnahap/Documents/Research/code/GenomeScan/"
 
-# Add within population varP...could just use average SSI
 
 
 def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
@@ -34,6 +36,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
         FS_SNij2 = 0.0
         RS_SNij2 = 0.0
         FS_SNij2_over_SNij = 0.0
+        print(locus)
         for pop_site in locus:
             FSNij2temp = 0.0
             p = []  # List containing individual allele frequencies for a population
