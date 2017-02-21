@@ -73,10 +73,23 @@ class scantools:
                 self.samps.pop(popname, None)
                 self.samp_nums.pop(popname, None)
                 # Recalculate min_ind
-                min_ind = min([self.samp_nums[pop] for pop in self.pops])
-                self.min_ind = min_ind
+
             else:
                 print("Population does not exist")
+        min_ind = min([self.samp_nums[pop] for pop in self.pops])
+        self.min_ind = min_ind
+
+    def removeInds(self, ind_list):
+        if isinstance(ind_list, list) is False:
+            inds = [ind_list]
+        for pop in self.samps:
+            for indname in inds:
+                indname = str(indname)
+                if indname in self.samps[pop]:
+                    self.samps[pop].remove(indname)
+                    self.samp_nums[pop] -= 1
+        min_ind = min([self.samp_nums[pop] for pop in self.pops])
+        self.min_ind = min_ind
 
 
     def combinePops(self, pops, popname):
