@@ -8,6 +8,7 @@ import math
 import statistics
 import numpy as np
 import copy
+import datetime
 
 # Directions:
 # import WPM_Wrapper2 into python console
@@ -54,7 +55,9 @@ class scantools:
         self.dir = WorkingDir
         self.oande = WorkingDir + "OandE/"
         self.code_dir = os.getcwd()
-
+        self.log_file = open(WorkingDir + "LogFile.txt", 'a+')
+        time = 'New Instance at: {:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now()) + "\n"
+        self.log_file.write(time)
         self.split_dirs = []
         for path in os.listdir(self.dir):
             if path.split("_")[0] == "VCF":
@@ -72,8 +75,7 @@ class scantools:
                 self.pops.remove(popname)
                 self.samps.pop(popname, None)
                 self.samp_nums.pop(popname, None)
-                # Recalculate min_ind
-
+                self.log_file.write("Removed Pop: " + popname + "\n")
             else:
                 print("Population does not exist")
         min_ind = min([self.samp_nums[pop] for pop in self.pops])
@@ -88,8 +90,10 @@ class scantools:
                 if indname in self.samps[pop]:
                     self.samps[pop].remove(indname)
                     self.samp_nums[pop] -= 1
+                    self.log_file.write("Removed Ind: " + indname + "\n")
         min_ind = min([self.samp_nums[pop] for pop in self.pops])
         self.min_ind = min_ind
+
 
 
     def combinePops(self, pops, popname):
@@ -100,6 +104,7 @@ class scantools:
         self.pops.append(popname)
         self.samps[popname] = new_samps
         self.samp_nums[popname] = len(new_samps)
+        self.log_file.write("Combined Pops: " + str(pops) + " as " + popname + "\n")
 
 
     def splitVCFs(self, vcf_dir, ref_path, min_dp, mffg, repolarization_key="-99", pops='all', mem=16000, time='0-04:00', numcores=1, print1=False, overwrite=False, partition="long", keep_intermediates=False):
@@ -108,6 +113,7 @@ class scantools:
                     Finally, concatenate all per-scaffold tables to one giant table. Resulting files will be put into ~/Working_Dir/VCFs/
             Notes: mffg is maximum fraction of filtered genotypes.  Number of actual genotypes allowed will be rounded up.
                     If you want to print the batch scripts, you must set print1 and overwrite to True'''
+
 
         if vcf_dir.endswith("/") is False:
             vcf_dir += "/"
@@ -174,6 +180,16 @@ class scantools:
                         p1 = subprocess.Popen(cmd1, shell=True)
                         sts1 = os.waitpid(p1.pid, 0)[1]
                         joblist.append(p1.pid)
+                        self.log_file.write("###  Split VCFs  ###\n" +
+                                            "VCF Directory: " + vcf_dir + "\n" +
+                                            "Reference Path: " + ref_path + "\n" +
+                                            "Repolarization Key: " + repolarization_key + "\n" +
+                                            "Output Directory: " + outdir + "\n" +
+                                            "Min Depth Per Individual: " + str(min_dp) + "\n" +
+                                            "Max Fraction of Filtered Genotypes: " + str(mffg) + "\n" +
+                                            "Populations: " + str(pops) + "\n")
+
+
 
                     else:
                         file1 = open(pop + '.sh', 'r')
@@ -365,8 +381,6 @@ class scantools:
                     It is worth considering whether downsampling should be based on number of individuals or number of alleles.
                     Results are held ~/Working_Dir/Recoded/ in series of files ending in _WPM.txt.  These can be concatenated using concatWPM'''
 
-        # FINDING OF FILES IS NOT WORKING
-        # Also, it is removing populations from self.pops...need to use deep copy.
         if use_repol is True:
             suffix = '.table.repol.txt'
         else:
@@ -407,6 +421,13 @@ class scantools:
                         cmd3 = ('sbatch -d singleton ' + pop + '.sh')
                         p3 = subprocess.Popen(cmd3, shell=True)
                         sts3 = os.waitpid(p3.pid, 0)[1]
+                        self.log_file.write("###  Calculate Within-Population-Metrics  ###\n" +
+                                            "Input Directory: " + recode_dir + "\n" +
+                                            "Window Size: " + str(window_size) + "\n" +
+                                            "Minimum SNPs in a window: " + str(min_snps) + "\n" +
+                                            "Number of individuals to be downsampled to: " + str(sampind) + "\n" +
+                                            "Use repolarized data: " + str(use_repol) + "\n" +
+                                            "Populations: " + str(pops) + "\n")
                     else:
                         file3 = open(pop + '.sh', 'r')
                         data3 = file3.read()
@@ -456,7 +477,7 @@ class scantools:
 
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
-
+        output_name += "_WS" + str(window_size) + "_MS" + str(minimum_snps)
         if os.path.exists(recode_dir) is True and len(pops) > 1:
 
             # Concatenate input files and sort them
@@ -496,6 +517,14 @@ class scantools:
                     cmd3 = ('sbatch -d singleton ' + output_name + '.bpm.sh')
                     p3 = subprocess.Popen(cmd3, shell=True)
                     sts3 = os.waitpid(p3.pid, 0)[1]
+
+                    self.log_file.write("###  Calculate Between-Population-Metrics  ###\n" +
+                                        "Input Directory: " + recode_dir + "\n" +
+                                        "Window Size: " + str(window_size) + "\n" +
+                                        "Minimum SNPs in a window: " + str(minimum_snps) + "\n" +
+                                        "Use repolarized data: " + str(use_repol) + "\n" +
+                                        "Populations: " + str(pops) + "\n")
+
                 else:
                     file3 = open(output_name + '.bpm.sh', 'r')
                     data3 = file3.read()
@@ -525,8 +554,7 @@ class scantools:
             # Concatenate input files and sort them
             for i, pop1 in enumerate(pops):  # Add data from all populations to single, huge listg
                 for pop2 in pops[i + 1:]:
-                    print(pop1,pop2)
-                    output_name = pop1 + pop2
+                    output_name = pop1 + pop2 + "_WS" + str(window_size) + "_MS" + str(minimum_snps)
                     concat_file = open(recode_dir + output_name + '.concat.txt', 'w')
                     skip = False
                     try:
@@ -567,6 +595,13 @@ class scantools:
                             cmd3 = ('sbatch -d singleton ' + output_name + '.bpm.sh')
                             p3 = subprocess.Popen(cmd3, shell=True)
                             sts3 = os.waitpid(p3.pid, 0)[1]
+
+                            self.log_file.write("###  Calculate PAIRWISE Between-Population-Metrics  ###\n" +
+                                                "Input Directory: " + recode_dir + "\n" +
+                                                "Window Size: " + str(window_size) + "\n" +
+                                                "Minimum SNPs in a window: " + str(minimum_snps) + "\n" +
+                                                "Use repolarized data: " + str(use_repol) + "\n" +
+                                                "Populations: " + str(pops) + "\n")
                         else:
                             file3 = open(output_name + '.bpm.sh', 'r')
                             data3 = file3.read()
@@ -617,7 +652,7 @@ class scantools:
             df_outlier.to_csv(recode_dir + in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.bed', index=False, sep='\t', columns=["scaffold", "start", "end"], header=False)
         return data
 
-    def annotateOutliers(self, recode_dir, in_file, basename, annotation_file, overlap_proportion=0.000001):
+    def annotateOutliers(self, recode_dir, in_file, basename, annotation_file, overlap_proportion=0.000001, print1=False):
         '''Purpose: annotate bed file from findOutliers using information in annotation_file
            Notes: The output (suffix ol_genes.gff) only contains the window locations along with annotation info and does not contain
                     the original metric information used to determine outliers.  Use mergeAnnotation to merge original outlier file with annotation info'''
@@ -643,9 +678,15 @@ class scantools:
                           '> ' + recode_dir + basename + '_' + str(overlap_proportion * 100) + 'ol_genes.gff')
             shfile1.close()
 
-            cmd1 = ('sbatch ' + recode_dir + 'bedtools_gff.sh')
-            p1 = subprocess.Popen(cmd1, shell=True)
-            sts1 = os.waitpid(p1.pid, 0)[1]
+            if print1 is False:
+                cmd1 = ('sbatch ' + recode_dir + 'bedtools_gff.sh')
+                p1 = subprocess.Popen(cmd1, shell=True)
+                sts1 = os.waitpid(p1.pid, 0)[1]
+
+            else:
+                file3 = open(recode_dir + 'bedtools_gff.sh', 'r')
+                data3 = file3.read()
+                print(data3)
 
             os.remove(recode_dir + 'bedtools_gff.sh')
 
@@ -671,7 +712,7 @@ class scantools:
             print("Did not find recode_dir")
 
 
-    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size, bootstrap_reps, mem=16000, numcores=1, time='2-00:00'):
+    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size, bootstrap_reps, mem=16000, numcores=1, time='2-00:00', print1=False):
         '''Purpose:  Generate --multiSFS for fastsimcoal2 along with a given number of non-parametric block-bootstrapped replicates
            Notes: Must provide the block size for bootstrapping as well as number of bootstrap replicates
                   As of now, the necessary template files for FSC2 must come from elsewhere.  Beware of running this method with numerous populations'''
@@ -716,9 +757,22 @@ class scantools:
                               'python3 ' + self.code_dir + '/FSC2input.py -i ' + recode_dir + output_name + '.repol.concat.txt -o ' + outdir + ' -prefix ' + output_name + ' -ws ' + str(bootstrap_block_size) + ' -bs ' + str(bootstrap_reps) + ' -np ' + str(num_pops) + '\n')
                 shfile4.close()
 
-                cmd1 = ('sbatch ' + output_name + '.fsc2input.sh')
-                p1 = subprocess.Popen(cmd1, shell=True)
-                sts1 = os.waitpid(p1.pid, 0)[1]
+                if print1 is False:
+                    cmd1 = ('sbatch ' + output_name + '.fsc2input.sh')
+                    p1 = subprocess.Popen(cmd1, shell=True)
+                    sts1 = os.waitpid(p1.pid, 0)[1]
+
+                    self.log_file.write("###  Generate FSC2 Input  ###\n" +
+                                        "Input Directory: " + recode_dir + "\n" +
+                                        "Bootstrap Block Size: " + str(bootstrap_block_size) + "\n" +
+                                        "Bootstrap Replicate Data Sets: " + str(bootstrap_reps) + "\n" +
+                                        "Output Name: " + output_name + "\n" +
+                                        "Populations: " + str(pops) + "\n")
+
+                else:
+                    file3 = open(output_name + '.fsc2input.sh', 'r')
+                    data3 = file3.read()
+                    print(data3)
 
                 os.remove(output_name + '.fsc2input.sh')
 
