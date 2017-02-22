@@ -83,9 +83,9 @@ class scantools:
 
     def removeInds(self, ind_list):
         if isinstance(ind_list, list) is False:
-            inds = [ind_list]
+            ind_list = [ind_list]
         for pop in self.samps:
-            for indname in inds:
+            for indname in ind_list:
                 indname = str(indname)
                 if indname in self.samps[pop]:
                     self.samps[pop].remove(indname)
