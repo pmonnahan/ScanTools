@@ -558,25 +558,21 @@ class scantools:
             for i, pop1 in enumerate(pops):  # Add data from all populations to single, huge listg
                 for pop2 in pops[i + 1:]:
                     output_name = pop1 + pop2 + "_WS" + str(window_size) + "_MS" + str(minimum_snps)
-                    concat_file = open(recode_dir + output_name + '.concat.txt', 'w')
                     skip = False
                     try:
-                        with open(recode_dir + pop1 + suffix, 'r') as in1:
-                            for line in in1:
-                                concat_file.write(line)
+                        a = open(recode_dir + pop1 + suffix, 'r')
+                        a.close()
                     except IOError:
                         print("Did not find input file for pop ", pop1)
                         skip = True
                     try:
-                        with open(recode_dir + pop2 + suffix, 'r') as in1:
-                            for line in in1:
-                                concat_file.write(line)
+                        a = open(recode_dir + pop2 + suffix, 'r')
+                        a.close()
                     except IOError:
                         print("Did not find input file for pop ", pop2)
                         skip = True
                     if skip is True:
                         print("Did not find all input files!!  Aborting pairwise bpm for contrast: ", output_name)
-                        os.remove(recode_dir + output_name + '.concat.txt')
                     else:
                         shfile3 = open(output_name + '.bpm.sh', 'w')
 
@@ -589,6 +585,7 @@ class scantools:
                                       '#SBATCH -t 1-00:00\n' +
                                       '#SBATCH --mem=' + str(mem) + '\n' +
                                       'source python-3.5.1\n' +
+                                      'cat ' + recode_dir + pop1 + suffix + " " + recode_dir + pop2 + suffix + " > " + recode_dir + output_name + '.concat.txt'
                                       'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + ' -np 2\n')
                         if keep_intermediates is False:
                             shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
