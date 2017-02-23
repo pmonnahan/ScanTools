@@ -180,16 +180,6 @@ class scantools:
                         p1 = subprocess.Popen(cmd1, shell=True)
                         sts1 = os.waitpid(p1.pid, 0)[1]
                         joblist.append(p1.pid)
-                        self.log_file.write("###  Split VCFs  ###\n" +
-                                            "VCF Directory: " + vcf_dir + "\n" +
-                                            "Reference Path: " + ref_path + "\n" +
-                                            "Repolarization Key: " + repolarization_key + "\n" +
-                                            "Output Directory: " + outdir + "\n" +
-                                            "Min Depth Per Individual: " + str(min_dp) + "\n" +
-                                            "Max Fraction of Filtered Genotypes: " + str(mffg) + "\n" +
-                                            "Populations: " + str(pops) + "\n")
-
-
 
                     else:
                         file1 = open(pop + '.sh', 'r')
@@ -197,6 +187,16 @@ class scantools:
                         print(data1)
 
                     os.remove(pop + '.sh')
+
+            if print1 is False:
+                self.log_file.write("###  Split VCFs  ###\n" +
+                                    "VCF Directory: " + vcf_dir + "\n" +
+                                    "Reference Path: " + ref_path + "\n" +
+                                    "Repolarization Key: " + repolarization_key + "\n" +
+                                    "Output Directory: " + outdir + "\n" +
+                                    "Min Depth Per Individual: " + str(min_dp) + "\n" +
+                                    "Max Fraction of Filtered Genotypes: " + str(mffg) + "\n" +
+                                    "Populations: " + str(pops) + "\n")
 
                 # combine all variants table for each scaffold within a population
 
@@ -421,13 +421,7 @@ class scantools:
                         cmd3 = ('sbatch -d singleton ' + pop + '.sh')
                         p3 = subprocess.Popen(cmd3, shell=True)
                         sts3 = os.waitpid(p3.pid, 0)[1]
-                        self.log_file.write("###  Calculate Within-Population-Metrics  ###\n" +
-                                            "Input Directory: " + recode_dir + "\n" +
-                                            "Window Size: " + str(window_size) + "\n" +
-                                            "Minimum SNPs in a window: " + str(min_snps) + "\n" +
-                                            "Number of individuals to be downsampled to: " + str(sampind) + "\n" +
-                                            "Use repolarized data: " + str(use_repol) + "\n" +
-                                            "Populations: " + str(pops) + "\n")
+
                     else:
                         file3 = open(pop + '.sh', 'r')
                         data3 = file3.read()
@@ -436,6 +430,15 @@ class scantools:
                     os.remove(pop + '.sh')
                 else:
                     print("Did not find input files for: ", pop)
+
+            if print1 is False:
+                self.log_file.write("###  Calculate Within-Population-Metrics  ###\n" +
+                                    "Input Directory: " + recode_dir + "\n" +
+                                    "Window Size: " + str(window_size) + "\n" +
+                                    "Minimum SNPs in a window: " + str(min_snps) + "\n" +
+                                    "Number of individuals to be downsampled to: " + str(sampind) + "\n" +
+                                    "Use repolarized data: " + str(use_repol) + "\n" +
+                                    "Populations: " + str(pops) + "\n")
 
         elif sind <= 3:
             print("Number of individuals to be used/downsampled to is <= 3.  Unable to calculate within-population-metrics on so few individuals.")
@@ -596,18 +599,20 @@ class scantools:
                             p3 = subprocess.Popen(cmd3, shell=True)
                             sts3 = os.waitpid(p3.pid, 0)[1]
 
-                            self.log_file.write("###  Calculate PAIRWISE Between-Population-Metrics  ###\n" +
-                                                "Input Directory: " + recode_dir + "\n" +
-                                                "Window Size: " + str(window_size) + "\n" +
-                                                "Minimum SNPs in a window: " + str(minimum_snps) + "\n" +
-                                                "Use repolarized data: " + str(use_repol) + "\n" +
-                                                "Populations: " + str(pops) + "\n")
                         else:
                             file3 = open(output_name + '.bpm.sh', 'r')
                             data3 = file3.read()
                             print(data3)
 
                         os.remove(output_name + '.bpm.sh')
+
+            if print1 is False:
+                self.log_file.write("###  Calculate PAIRWISE Between-Population-Metrics  ###\n" +
+                                    "Input Directory: " + recode_dir + "\n" +
+                                    "Window Size: " + str(window_size) + "\n" +
+                                    "Minimum SNPs in a window: " + str(minimum_snps) + "\n" +
+                                    "Use repolarized data: " + str(use_repol) + "\n" +
+                                    "Populations: " + str(pops) + "\n")
         elif len(pops) < 2:
             print("'pops' argument must be a list of strings specifiying two or more population names as they appear in input file prefixes.  len(pops) was < 2")
         else:
