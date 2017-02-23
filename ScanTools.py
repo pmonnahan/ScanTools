@@ -445,19 +445,19 @@ class scantools:
         else:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate within population metrics")
 
-    def concatWPM(self, recode_dir, pops='all'):
+    def concatWPM(self, recode_dir, suffix, outname, pops='all'):
         '''Purpose:  Concatenate _WPM.txt files corresponding to populations indicated in pops parameter.'''
 
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
 
         if os.path.exists(recode_dir) is True:
-            new = open(recode_dir + "All_WPM.txt", 'w')
+            new = open(recode_dir + outname + "_WPM.txt", 'w')
             if pops == 'all':
                 pops = self.pops
             for i, pop in enumerate(pops):
                 try:
-                    with open(recode_dir + pop + "_WPM.txt", 'r') as inf:
+                    with open(recode_dir + pop + suffix, 'r') as inf:
                         for j, line in enumerate(inf):
                             if j == 0 and i == 0:
                                 new.write(line)
