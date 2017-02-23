@@ -585,7 +585,7 @@ class scantools:
                                       '#SBATCH -t 1-00:00\n' +
                                       '#SBATCH --mem=' + str(mem) + '\n' +
                                       'source python-3.5.1\n' +
-                                      'cat ' + recode_dir + pop1 + suffix + " " + recode_dir + pop2 + suffix + " > " + recode_dir + output_name + '.concat.txt'
+                                      'cat ' + recode_dir + pop1 + suffix + " " + recode_dir + pop2 + suffix + " > " + recode_dir + output_name + '.concat.txt\n' +
                                       'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + ' -np 2\n')
                         if keep_intermediates is False:
                             shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
