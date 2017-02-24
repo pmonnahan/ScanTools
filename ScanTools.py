@@ -375,7 +375,7 @@ class scantools:
 
 
     # CALCULATE WITHIN POPULATION METRICS
-    def calcwpm(self, recode_dir, window_size, min_snps, pops="all", print1=False, mem=16000, numcores=1, sampind="-99", partition="medium", use_repol=True):
+    def calcwpm(self, recode_dir, window_size, min_snps, pops="all", print1=False, mem=16000, numcores=1, sampind="-99", partition="medium", use_repol=True, time="0-02:00"):
         '''Purpose: Calculate within population metrics including: allele frequency, expected heterozygosity, Wattersons theta, Pi, ThetaH, ThetaL and neutrality tests: D, normalized H, E
            Notes:  Currently, all populations are downsampled to same number of individuals.  By default, this minimum individuals across populations minus 1 to allow for some missing data
                     It is worth considering whether downsampling should be based on number of individuals or number of alleles.
@@ -411,7 +411,7 @@ class scantools:
                                   '#SBATCH -o ' + self.oande + pop + '.wpm.out' + '\n' +
                                   '#SBATCH -p nbi-' + str(partition) + '\n' +
                                   '#SBATCH -n ' + str(numcores) + '\n' +
-                                  '#SBATCH -t 1-00:00\n' +
+                                  '#SBATCH -t ' + str(time) + '\n' +
                                   '#SBATCH --mem=' + str(mem) + '\n' +
                                   'source python-3.5.1\n' +
                                   'python3 ' + self.code_dir + '/wpm.py -i ' + recode_dir + pop + suffix + ' -o ' + recode_dir + ' -p ' + prefix + ' -sampind ' + str(sind) + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + '\n')
@@ -467,7 +467,7 @@ class scantools:
                     print("Did not find _WPM.txt file for population: ", pop)
 
 
-    def calcbpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False):
+    def calcbpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False, time="0-01:00"):
         '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
            Notes: User provides a list of populations to be included.  For pairwise estimates, simply provide two populations
                     Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps in a window
@@ -504,7 +504,7 @@ class scantools:
                               '#SBATCH -o ' + self.oande + output_name + '.bpm.out' + '\n' +
                               '#SBATCH -p nbi-' + str(partition) + '\n' +
                               '#SBATCH -n ' + str(numcores) + '\n' +
-                              '#SBATCH -t 1-00:00\n' +
+                              '#SBATCH -t ' + str(time) + '\n' +
                               '#SBATCH --mem=' + str(mem) + '\n' +
                               'source python-3.5.1\n' +
                               'sort -k3,3 -k4,4n -m ' + file_string + '> ' + recode_dir + output_name + '.concat.txt\n' +
@@ -536,7 +536,7 @@ class scantools:
         else:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate between population metrics")
 
-    def calcPairwisebpm(self, recode_dir, pops, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False):
+    def calcPairwisebpm(self, recode_dir, pops, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False, time="0-01:00"):
         '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
            Notes: User provides a list of populations to be included.  For pairwise estimates, simply provide two populations
                     Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps in a window
@@ -579,7 +579,7 @@ class scantools:
                                       '#SBATCH -o ' + self.oande + output_name + '.bpm.out' + '\n' +
                                       '#SBATCH -p nbi-' + str(partition) + '\n' +
                                       '#SBATCH -n ' + str(numcores) + '\n' +
-                                      '#SBATCH -t 1-00:00\n' +
+                                      '#SBATCH -t ' + str(time) + '\n' +
                                       '#SBATCH --mem=' + str(mem) + '\n' +
                                       'source python-3.5.1\n' +
                                       'sort -k3,3 -k4,4n -m ' + recode_dir + pop1 + suffix + " " + recode_dir + pop2 + suffix + " > " + recode_dir + output_name + '.concat.txt\n' +
