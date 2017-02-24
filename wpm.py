@@ -60,7 +60,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                 if len(gt) >= sampind:
                     sgt = numpy.random.choice(gt, size=sampind, replace=False)
                     sac = sum([int(x) for x in sgt])
-                    if sac != 0:
+                    if sac != 0 and sac != AN:
                         p1 = float(sac) / float(AN)
                         p.append(p1)
                         Ehet.append(p1 * (1 - p1))
@@ -147,7 +147,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                     if len(gt) >= sampind:
                         sgt = numpy.random.choice(gt, size=sampind, replace=False)
                         sac = sum([int(x) for x in sgt])
-                        if sac != 0:
+                        if sac != 0 and sac != AN:
                             p1 = float(sac) / float(AN)
                             p.append(p1)
                             Ehet.append(p1 * (1 - p1))
