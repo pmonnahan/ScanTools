@@ -461,7 +461,7 @@ class scantools:
                         for j, line in enumerate(inf):
                             if j == 0 and i == 0:
                                 new.write(line)
-                            else:
+                            elif j != 0:
                                 new.write(line)
                 except FileNotFoundError:
                     print("Did not find _WPM.txt file for population: ", pop)
@@ -482,20 +482,16 @@ class scantools:
             recode_dir += "/"
         output_name += "_WS" + str(window_size) + "_MS" + str(minimum_snps)
         if os.path.exists(recode_dir) is True and len(pops) > 1:
-
-            # Concatenate input files and sort them
-            print("Concatenating input files")
-            concat_file = open(recode_dir + output_name + '.concat.txt', 'w')
             pop_num = 0
-            for pop in pops:  # Add data from all populations to single, huge listg
+            file_string = ""
+            for pop in pops: 
                 try:
-                    with open(recode_dir + pop + suffix, 'r') as in1:
-                        for line in in1:
-                            concat_file.write(line)
+                    a = open(recode_dir + pop + suffix, 'r')
+                    a.close()
+                    file_string += recode_dir + pop + suffix + " "
                     pop_num += 1
                 except IOError:
                     print("Did not find input file for pop ", pop)
-            print("Finished preparing input data")
             if len(pops) != pop_num:
                 print("Did not find all input files!!  Aborting.")
                 os.remove(recode_dir + output_name + '.concat.txt')
@@ -511,6 +507,7 @@ class scantools:
                               '#SBATCH -t 1-00:00\n' +
                               '#SBATCH --mem=' + str(mem) + '\n' +
                               'source python-3.5.1\n' +
+                              'sort -k3,3 -k4,4n -m ' + file_string + '> ' + recode_dir + output_name + '.concat.txt\n' +
                               'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + ' -np ' + str(pop_num) + '\n')
                 if keep_intermediates is False:
                     shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
@@ -585,7 +582,7 @@ class scantools:
                                       '#SBATCH -t 1-00:00\n' +
                                       '#SBATCH --mem=' + str(mem) + '\n' +
                                       'source python-3.5.1\n' +
-                                      'cat ' + recode_dir + pop1 + suffix + " " + recode_dir + pop2 + suffix + " > " + recode_dir + output_name + '.concat.txt\n' +
+                                      'sort -k3,3 -k4,4n -m ' + recode_dir + pop1 + suffix + " " + recode_dir + pop2 + suffix + " > " + recode_dir + output_name + '.concat.txt\n' +
                                       'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + ' -np 2\n')
                         if keep_intermediates is False:
                             shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
@@ -652,7 +649,6 @@ class scantools:
             df_outlier = data[(data.num_outliers != 0)]
             df_outlier.to_csv(recode_dir + in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.csv', index=False)
             df_outlier.to_csv(recode_dir + in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.bed', index=False, sep='\t', columns=["scaffold", "start", "end"], header=False)
-        return data
 
     def annotateOutliers(self, recode_dir, in_file, basename, annotation_file, overlap_proportion=0.000001, print1=False):
         '''Purpose: annotate bed file from findOutliers using information in annotation_file

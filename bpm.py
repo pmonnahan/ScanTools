@@ -143,11 +143,6 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
     out1 = open(outfile, 'w')
     out1.write("outname\tscaff\tstart\tend\twin_size\tnum_snps\tRho\tFst\tdxy\n")
 
-    # Sort intput data
-    data = open(input_file, 'r')
-    data = [j.strip("\n").strip("\t").split("\t") for j in data]
-    data = sorted(data, key=lambda k: (int(k[2].split("_")[1]), int(k[3])))  # Sorts by scaffold then position
-
     # Begin loop over data file
     snp_count = 0
     Snp_count = 0
@@ -155,107 +150,108 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
     end = window_size
     winexclcount = 0
     num_wind = 0
-    for i, line in enumerate(data):
+    with open(input_file, 'r') as data:
+        for i, line in enumerate(data):
+            line = line.strip("\n").strip("\t").split("\t")
+            pop, ploidy, scaff, pos, ac, an, dp = line[:7]
+            pos = float(pos)
 
-        pop, ploidy, scaff, pos, ac, an, dp = line[:7]
-        pos = float(pos)
-
-        if i % 100000 == 0:
-            print(i)
-        if i == 0:
-            old_pos = pos
-            Locus = []  # Hold information of single locus across populations
-            oldscaff = scaff
-            Fst = [0.0, 0.0]  # Fst[0] is numerator for genome, [1] is denominator for genome
-            Rho = [0.0, 0.0]  # Rho[0] is numerator for genome, [1] is denominator for genome
-            fst = [0.0, 0.0]  # Fst[0] is numerator for window, [1] is denominator for window
-            rho = [0.0, 0.0]  # Rho[0] is numerator for window, [1] is denominator for window
-            dxy = 0.0  # Dxy for window
-            Dxy = 0.0
-
-        if pos > start and pos <= end and scaff == oldscaff:
-            if pos == old_pos:  # Accruing information from multiple populations but same locus
-                Locus.append(line)
-            elif len(Locus) == num_pops:  # Within current window but have moved on from previous locus
-                rnum, rden, fnum, fden = NestedAnova(Locus)
-                if num_pops == 2:
-                    dxy += calcDxy(Locus)
-                    Dxy += dxy
-                snp_count += 1
-                fst = [sum(x) for x in zip(fst, [fnum, fden])]  # Adds numerator and denominators from current site to running sums for window and genome respectively
-                rho = [sum(x) for x in zip(rho, [rnum, rden])]
-                Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
-                Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
-                Locus = []  # Clear site information
-                Locus.append(line)  # Append current site to site info
+            if i % 100000 == 0:
+                print(i)
+            if i == 0:
                 old_pos = pos
-
-            else:  # Previous site contained data from only one population, so skip calculations
-                Locus = []
-                Locus.append(line)
-                old_pos = pos
-
-
-        elif int(pos) > end or scaff != oldscaff:   # Current snp is onto next window, but must do calculation for previous locus before moving on
-            if len(Locus) == num_pops:  # Skip locus calc if data not available for all populations
-                snp_count += 1
-                rnum, rden, fnum, fden = NestedAnova(Locus)
-                fst = [sum(x) for x in zip(fst, [fnum, fden])]
-                rho = [sum(x) for x in zip(rho, [rnum, rden])]
-                Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
-                Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
-                if num_pops == 2:
-                    dxy += calcDxy(Locus)
-                    Dxy += dxy
-
-            if snp_count >= minimum_snps:  # Report or exclude window
-                Snp_count += snp_count
-                num_wind += 1
-                try:
-                    if fst[1]==0.0:
-                        print(Locus)
-                    fst = fst[0] / fst[1]  # fst and rho and ratios of running sums of numerator and denominator calculations
-                    fac = rho[0] / rho[1]
-
-                    rho_i = fac / (1 + fac)
-                    if num_pops == 2:
-                        dxy = dxy / float(snp_count)
-                    else:
-                        dxy = "-9"
-                    out1.write(outname + '\t' + scaff + '\t' +  # Write calculations to file
-                               str(start) + '\t' +
-                               str(end) + '\t' +
-                               str(window_size) + '\t' +
-                               str(snp_count) + '\t' +
-                               str(rho_i) + '\t' +
-                               str(fst) + '\t' +
-                               str(dxy) + '\n')
-                except ZeroDivisionError:
-                    print('ZeroDivisionError:', snp_count, fst, rho, Fst, Rho)
-
-            else:
-                winexclcount += 1
-            # Reset running sums for current window
-            snp_count = 0
-            fst = [0.0, 0.0]
-            rho = [0.0, 0.0]
-            dxy = 0.0
-
-            # Moving on to deal with current SNP.  Must reset window boundaries based on current position
-            if float(pos) > end:
-                while float(pos) > end:
-                    end += window_size  # Increment the end boundary by units of window-size until end is greater than current position
-                start = end - window_size
-            elif scaff != oldscaff:
+                Locus = []  # Hold information of single locus across populations
                 oldscaff = scaff
+                Fst = [0.0, 0.0]  # Fst[0] is numerator for genome, [1] is denominator for genome
+                Rho = [0.0, 0.0]  # Rho[0] is numerator for genome, [1] is denominator for genome
+                fst = [0.0, 0.0]  # Fst[0] is numerator for window, [1] is denominator for window
+                rho = [0.0, 0.0]  # Rho[0] is numerator for window, [1] is denominator for window
+                dxy = 0.0  # Dxy for window
+                Dxy = 0.0
 
-                start = 0.0
-                end = window_size
+            if pos > start and pos <= end and scaff == oldscaff:
+                if pos == old_pos:  # Accruing information from multiple populations but same locus
+                    Locus.append(line)
+                elif len(Locus) == num_pops:  # Within current window but have moved on from previous locus
+                    rnum, rden, fnum, fden = NestedAnova(Locus)
+                    if num_pops == 2:
+                        dxy += calcDxy(Locus)
+                        Dxy += dxy
+                    snp_count += 1
+                    fst = [sum(x) for x in zip(fst, [fnum, fden])]  # Adds numerator and denominators from current site to running sums for window and genome respectively
+                    rho = [sum(x) for x in zip(rho, [rnum, rden])]
+                    Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
+                    Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
+                    Locus = []  # Clear site information
+                    Locus.append(line)  # Append current site to site info
+                    old_pos = pos
 
-            if int(pos) > start and int(pos) <= end and scaff == oldscaff:  # Ensures that current snp falls within window bounds we just determined
-                Locus = []
-                Locus.append(line)
-                old_pos = pos
+                else:  # Previous site contained data from only one population, so skip calculations
+                    Locus = []
+                    Locus.append(line)
+                    old_pos = pos
+
+
+            elif int(pos) > end or scaff != oldscaff:   # Current snp is onto next window, but must do calculation for previous locus before moving on
+                if len(Locus) == num_pops:  # Skip locus calc if data not available for all populations
+                    snp_count += 1
+                    rnum, rden, fnum, fden = NestedAnova(Locus)
+                    fst = [sum(x) for x in zip(fst, [fnum, fden])]
+                    rho = [sum(x) for x in zip(rho, [rnum, rden])]
+                    Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
+                    Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
+                    if num_pops == 2:
+                        dxy += calcDxy(Locus)
+                        Dxy += dxy
+
+                if snp_count >= minimum_snps:  # Report or exclude window
+                    Snp_count += snp_count
+                    num_wind += 1
+                    try:
+                        if fst[1] == 0.0:
+                            print(Locus)
+                        fst = fst[0] / fst[1]  # fst and rho and ratios of running sums of numerator and denominator calculations
+                        fac = rho[0] / rho[1]
+
+                        rho_i = fac / (1 + fac)
+                        if num_pops == 2:
+                            dxy = dxy / float(snp_count)
+                        else:
+                            dxy = "-9"
+                        out1.write(outname + '\t' + scaff + '\t' +  # Write calculations to file
+                                   str(start) + '\t' +
+                                   str(end) + '\t' +
+                                   str(window_size) + '\t' +
+                                   str(snp_count) + '\t' +
+                                   str(rho_i) + '\t' +
+                                   str(fst) + '\t' +
+                                   str(dxy) + '\n')
+                    except ZeroDivisionError:
+                        print('ZeroDivisionError:', snp_count, fst, rho, Fst, Rho)
+
+                else:
+                    winexclcount += 1
+                # Reset running sums for current window
+                snp_count = 0
+                fst = [0.0, 0.0]
+                rho = [0.0, 0.0]
+                dxy = 0.0
+
+                # Moving on to deal with current SNP.  Must reset window boundaries based on current position
+                if float(pos) > end:
+                    while float(pos) > end:
+                        end += window_size  # Increment the end boundary by units of window-size until end is greater than current position
+                    start = end - window_size
+                elif scaff != oldscaff:
+                    oldscaff = scaff
+
+                    start = 0.0
+                    end = window_size
+
+                if int(pos) > start and int(pos) <= end and scaff == oldscaff:  # Ensures that current snp falls within window bounds we just determined
+                    Locus = []
+                    Locus.append(line)
+                    old_pos = pos
 
     if len(Locus) == num_pops:  # Final window calculations
         snp_count += 1
