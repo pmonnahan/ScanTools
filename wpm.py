@@ -32,12 +32,13 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
             if i == 0:
                 outfile = output + prefix + "_WPM.txt"
                 out1 = open(outfile, 'w')
-                out1.write("pop\tploidy\tsampind\tscaff\tstart\tend\twin_size\tnum_snps\tavg_freq\tavg_Ehet\tThetaW\tPi\tThetaH\tThetaL\tD\tH\tE\n")
+                out1.write("pop\tploidy\tsampind\tscaff\tstart\tend\twin_size\tnum_snps\tnum_singletons\tavg_freq\tavg_Ehet\tThetaW\tPi\tThetaH\tThetaL\tD\tH\tE\n")
                 oldscaff = scaff
                 AN = int(sampind * int(float(ploidy)))
                 n = float(AN)
                 p = []
                 Ehet = []
+                num_sing = 0
                 afs = [0 for cat in range(0, AN + 1)]
                 AFS = [0 for cat in range(0, AN + 1)]
                 aw = 0.0
@@ -61,6 +62,8 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                     sgt = numpy.random.choice(gt, size=sampind, replace=False)
                     sac = sum([int(x) for x in sgt])
                     if sac != 0 and sac != AN:
+                        if sac == 1:
+                            num_sing += 1
                         p1 = float(sac) / float(AN)
                         p.append(p1)
                         Ehet.append(p1 * (1 - p1))
@@ -111,6 +114,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                                    str(end) + '\t' +
                                    str(window_size) + '\t' +
                                    str(snp_count) + '\t' +
+                                   str(num_sing) + '\t' +
                                    str(numpy.mean(p)) + '\t' +
                                    str(numpy.mean(Ehet)) + '\t' +
                                    str(W) + '\t' +
@@ -130,6 +134,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                 snp_count = 0
                 p = []
                 Ehet = []
+                num_sing = 0
                 afs = [0 for cat in range(0, AN + 1)]
 
                 if float(pos) > end:
@@ -148,6 +153,8 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                         sgt = numpy.random.choice(gt, size=sampind, replace=False)
                         sac = sum([int(x) for x in sgt])
                         if sac != 0 and sac != AN:
+                            if sac == 1:
+                                num_sing += 1
                             p1 = float(sac) / float(AN)
                             p.append(p1)
                             Ehet.append(p1 * (1 - p1))
@@ -194,6 +201,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                            str(end) + '\t' +
                            str(window_size) + '\t' +
                            str(snp_count) + '\t' +
+                           str(num_sing) + '\t' +
                            str(numpy.mean(p)) + '\t' +
                            str(numpy.mean(Ehet)) + '\t' +
                            str(W) + '\t' +
@@ -236,13 +244,14 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
         out1.write(pop + '\t' +
                    str(ploidy) + '\t' +
                    str(sampind) + '\t' +
-                   scaff + '\t' +
-                   str(start) + '\t' +
-                   str(end) + '\t' +
-                   str(window_size) + '\t' +
-                   str(snp_count) + '\t' +
-                   str(numpy.mean(p)) + '\t' +
-                   str(numpy.mean(Ehet)) + '\t' +
+                   "Genome" + '\t' +
+                   "-99" + '\t' +
+                   "-99" + '\t' +
+                   "-99" + '\t' +
+                   str(Snp_count) + '\t' +
+                   str(num_sing) + '\t' +
+                   "-99" + '\t' +
+                   "-99" + '\t' +
                    str(W) + '\t' +
                    str(Pi) + '\t' +
                    str(h) + '\t' +
