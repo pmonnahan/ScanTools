@@ -39,6 +39,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                 p = []
                 Ehet = []
                 num_sing = 0
+                Num_sing = 0
                 afs = [0 for cat in range(0, AN + 1)]
                 AFS = [0 for cat in range(0, AN + 1)]
                 aw = 0.0
@@ -64,6 +65,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                     if sac != 0 and sac != AN:
                         if sac == 1:
                             num_sing += 1
+                            Num_sing += 1
                         p1 = float(sac) / float(AN)
                         p.append(p1)
                         Ehet.append(p1 * (1 - p1))
@@ -155,6 +157,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                         if sac != 0 and sac != AN:
                             if sac == 1:
                                 num_sing += 1
+                                Num_sing += 1
                             p1 = float(sac) / float(AN)
                             p.append(p1)
                             Ehet.append(p1 * (1 - p1))
@@ -249,7 +252,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                    "-99" + '\t' +
                    "-99" + '\t' +
                    str(Snp_count) + '\t' +
-                   str(num_sing) + '\t' +
+                   str(Num_sing) + '\t' +
                    "-99" + '\t' +
                    "-99" + '\t' +
                    str(W) + '\t' +
