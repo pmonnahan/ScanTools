@@ -679,7 +679,7 @@ class scantools:
                           '#SBATCH -t 0-01:00\n' +
                           '#SBATCH --mem=4000\n' +
                           'source bedtools-2.17.0\n' +
-                          'bedtools intersect -a ' + recode_dir + in_file + ' -b ' + annotation_file + ' -f ' + str(overlap_proportion) + ' -wb -wa | ' +
+                          'bedtools intersect -a ' + recode_dir + in_file + ' -b ' + annotation_file + ' -f ' + str(overlap_proportion) + ' -wo | ' +
                           """awk '{$1=$2=$3=""; print $4,$5,$6,$7,$8,$9,$10,$11,$12}'""" +
                           '| grep transcript | grep -v transcription | sort -u | ' +
                           """tr ' ' '\t' """
