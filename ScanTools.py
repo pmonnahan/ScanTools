@@ -676,14 +676,14 @@ class scantools:
                           '#SBATCH -o GS.bedtools.out\n' +
                           '#SBATCH -p nbi-short\n' +
                           '#SBATCH -n 1\n' +
-                          '#SBATCH -t 0-02:00\n' +
-                          '#SBATCH --mem=16000\n' +
+                          '#SBATCH -t 0-01:00\n' +
+                          '#SBATCH --mem=4000\n' +
                           'source bedtools-2.17.0\n' +
-                          'bedtools intersect -a ' + recode_dir + in_file + ' -b ' + annotation_file + ' -f ' + str(overlap_proportion) + ' -wb | ' +
+                          'bedtools intersect -wa ' + recode_dir + in_file + ' -wb ' + annotation_file + ' -f ' + str(overlap_proportion) + ' -wb | ' +
                           """awk '{$1=$2=$3=""; print $4,$5,$6,$7,$8,$9,$10,$11,$12}'""" +
                           '| grep transcript | grep -v transcription | sort -u | ' +
                           """tr ' ' '\t' """
-                          '> ' + recode_dir + basename + '_' + str(overlap_proportion * 100) + 'ol_genes.gff')
+                          '> ' + recode_dir + basename + '_genes.gff')
             shfile1.close()
 
             if print1 is False:
