@@ -702,12 +702,12 @@ class scantools:
             print("recode_dir not found")
 
 
-    def mergeAnnotation(self, recode_dir, outlier_file, annotated_outlier_file):
+    def mergeAnnotation(self, recode_dir, outlier_file):
         '''Purpose: Merge the annotation information with the original outlier file results from findOutliers.'''
 
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
-
+        annotated_outlier_file = outlier_file.strip('.csv') + '_genes.gff'
         if os.path.exists(recode_dir) is True:
             try:
                 outliers = pandas.read_table(recode_dir + outlier_file, header=0)
