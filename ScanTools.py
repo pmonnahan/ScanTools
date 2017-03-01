@@ -711,10 +711,11 @@ class scantools:
         if os.path.exists(recode_dir) is True:
             try:
                 outliers = pandas.read_table(recode_dir + outlier_file, header=0)
-                annotation = pandas.read_table(recode_dir + annotated_outlier_file, names=["scaffold", "start", "end", "gene_start", "gene_end", "overlap", "strand", "geneName"])
+                annotation = pandas.read_table(recode_dir + annotated_outlier_file, names=["scaff", "start", "end", "gene_start", "gene_end", "overlap", "strand", "geneName"])
             except IOError:
                 print("Did not find either original outlier file or the annotated outlier file")
-            merged = pandas.merge(outliers, annotation, ["scaffold", "start", "end"],)
+            print(annotation)
+            merged = pandas.merge(outliers, annotation, ["scaff", "start", "end"],)
             merged.to_csv(recode_dir + outlier_file.replace(".txt", "") + '_OutAnnot.csv', index=False)
         else:
             print("Did not find recode_dir")
