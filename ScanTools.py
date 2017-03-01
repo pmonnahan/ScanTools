@@ -455,12 +455,14 @@ class scantools:
             new = open(recode_dir + outname + "_WPM.txt", 'w')
             if pops == 'all':
                 pops = self.pops
+            head = False
             for i, pop in enumerate(pops):
                 try:
                     with open(recode_dir + pop + suffix, 'r') as inf:
                         for j, line in enumerate(inf):
-                            if j == 0 and i == 0:
+                            if j == 0 and head = False:
                                 new.write(line)
+                                head = True
                             elif j != 0:
                                 new.write(line)
                 except FileNotFoundError:
@@ -626,30 +628,31 @@ class scantools:
             return False
 
         if os.path.exists(recode_dir) is True:
+            try:
+                data = pandas.read_table(recode_dir + in_file, header=0)
+                metrics = []
+                for i in column_index_list:
+                    metrics.append(list(data.columns.values)[i])
 
-            data = pandas.read_table(recode_dir + in_file, header=0)
-            metrics = []
-            for i in column_index_list:
-                metrics.append(list(data.columns.values)[i])
-
-            for metric in metrics:
-                data[metric + '.out'] = 0
-                if tails == 'both':
-                    data[metric + '.out'].loc[(data[metric] > data[metric].quantile(q=percentile))] = 1
-                    data[metric + '.out'].loc[(data[metric] < data[metric].quantile(q=1.0 - percentile))] = 1
-                elif tails == 'lower':
-                    data[metric + '.out'].loc[(data[metric] < data[metric].quantile(q=1.0 - percentile))] = 1
-                elif tails == 'upper':
-                    data[metric + '.out'].loc[(data[metric] > data[metric].quantile(q=percentile))] = 1
-                else:
-                    print("Did not specify tails option correctly.  Options are: both, upper, and lower")
-            data['num_outliers'] = data.iloc[:, -len(metrics):].sum(1)
-            data.to_csv(recode_dir + in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutLabelled.csv', index=False)
-            # select all windows that are outliers for at least one metric
-            df_outlier = data[(data.num_outliers != 0)]
-            df_outlier.to_csv(recode_dir + in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.csv', index=False)
-            df_outlier.to_csv(recode_dir + in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.bed', index=False, sep='\t', columns=["scaffold", "start", "end"], header=False)
-
+                for metric in metrics:
+                    data[metric + '.out'] = 0
+                    if tails == 'both':
+                        data[metric + '.out'].loc[(data[metric] > data[metric].quantile(q=percentile))] = 1
+                        data[metric + '.out'].loc[(data[metric] < data[metric].quantile(q=1.0 - percentile))] = 1
+                    elif tails == 'lower':
+                        data[metric + '.out'].loc[(data[metric] < data[metric].quantile(q=1.0 - percentile))] = 1
+                    elif tails == 'upper':
+                        data[metric + '.out'].loc[(data[metric] > data[metric].quantile(q=percentile))] = 1
+                    else:
+                        print("Did not specify tails option correctly.  Options are: both, upper, and lower")
+                data['num_outliers'] = data.iloc[:, -len(metrics):].sum(1)
+                data.to_csv(recode_dir + in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutLabelled.csv', index=False)
+                # select all windows that are outliers for at least one metric
+                df_outlier = data[(data.num_outliers != 0)]
+                df_outlier.to_csv(recode_dir + in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.csv', index=False)
+                df_outlier.to_csv(recode_dir + in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.bed', index=False, sep='\t', columns=["scaffold", "start", "end"], header=False)
+            except UnicodeDecodeError:
+                print('Error with file: ' + recode_dir + in_file + "\n")
     def annotateOutliers(self, recode_dir, in_file, basename, annotation_file, overlap_proportion=0.000001, print1=False):
         '''Purpose: annotate bed file from findOutliers using information in annotation_file
            Notes: The output (suffix ol_genes.gff) only contains the window locations along with annotation info and does not contain
