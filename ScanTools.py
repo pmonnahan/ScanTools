@@ -710,11 +710,12 @@ class scantools:
         annotated_outlier_file = outlier_file.strip('.csv') + '_genes.gff'
         if os.path.exists(recode_dir) is True:
             try:
-                outliers = pandas.read_table(recode_dir + outlier_file, header=0)
+                outliers = pandas.read_csv(recode_dir + outlier_file, header=0)
                 annotation = pandas.read_table(recode_dir + annotated_outlier_file, names=["scaff", "start", "end", "gene_start", "gene_end", "overlap", "strand", "geneName"])
             except IOError:
                 print("Did not find either original outlier file or the annotated outlier file")
             print(annotation)
+            print(outliers)
             merged = pandas.merge(outliers, annotation, ["scaff", "start", "end"],)
             merged.to_csv(recode_dir + outlier_file.replace(".txt", "") + '_OutAnnot.csv', index=False)
         else:
