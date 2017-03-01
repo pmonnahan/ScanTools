@@ -36,7 +36,6 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
         FS_SNij2 = 0.0
         RS_SNij2 = 0.0
         FS_SNij2_over_SNij = 0.0
-        print(locus)
         for pop_site in locus:
             FSNij2temp = 0.0
             p = []  # List containing individual allele frequencies for a population
@@ -208,8 +207,6 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                     Snp_count += snp_count
                     num_wind += 1
                     try:
-                        if fst[1] == 0.0:
-                            print(Locus)
                         fst = fst[0] / fst[1]  # fst and rho and ratios of running sums of numerator and denominator calculations
                         fac = rho[0] / rho[1]
 

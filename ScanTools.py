@@ -669,11 +669,11 @@ class scantools:
             recode_dir += "/"
         basename = in_file.strip(".bed")
         if os.path.exists(recode_dir) is True:
-            shfile1 = open(recode_dir + 'bedtools_gff.sh', 'w')
+            shfile1 = open(recode_dir + in_file + 'bedtools_gff.sh', 'w')
             shfile1.write('#!/bin/bash\n' +
-                          '#SBATCH -J GS.bedtools.sh' + '\n' +
-                          '#SBATCH -e GS.bedtools.err\n' +
-                          '#SBATCH -o GS.bedtools.out\n' +
+                          '#SBATCH -J ' + in_file + '.bedtools.sh' + '\n' +
+                          '#SBATCH -e ' + self.oande + in_file + '.bedtools.err\n' +
+                          '#SBATCH -o ' + self.oande + in_file + '.bedtools.out\n' +
                           '#SBATCH -p nbi-short\n' +
                           '#SBATCH -n 1\n' +
                           '#SBATCH -t 0-01:00\n' +
