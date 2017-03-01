@@ -679,9 +679,9 @@ class scantools:
                           '#SBATCH -t 0-01:00\n' +
                           '#SBATCH --mem=4000\n' +
                           'source bedtools-2.17.0\n' +
-                          'bedtools intersect -a ' + recode_dir + in_file + ' -b ' + annotation_file + ' -f ' + str(overlap_proportion) + ' -wo | ' +
+                          'bedtools intersect -a ' + recode_dir + in_file + ' -b ' + annotation_file + ' -f ' + str(overlap_proportion) + ' -wo | grep transcript | grep -v transcription | sort -u |' +
                           """awk '{print $1,$2,$3,$7,$8,$9,$10,$12}'""" +
-                          '| grep transcript | grep -v transcription | sort -u | ' +
+                          '| ' +
                           """tr ' ' '\t' """
                           '> ' + recode_dir + basename + '_genes.gff')
             shfile1.close()
