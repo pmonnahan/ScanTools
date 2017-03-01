@@ -680,7 +680,7 @@ class scantools:
                           '#SBATCH --mem=4000\n' +
                           'source bedtools-2.17.0\n' +
                           'bedtools intersect -a ' + recode_dir + in_file + ' -b ' + annotation_file + ' -f ' + str(overlap_proportion) + ' -wo | ' +
-                          """awk '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}'""" +
+                          """awk '{print $1,$2,$3,$7,$8,$9,$10,$12}'""" +
                           '| grep transcript | grep -v transcription | sort -u | ' +
                           """tr ' ' '\t' """
                           '> ' + recode_dir + basename + '_genes.gff')
@@ -711,7 +711,7 @@ class scantools:
         if os.path.exists(recode_dir) is True:
             try:
                 outliers = pandas.read_table(recode_dir + outlier_file, header=0)
-                annotation = pandas.read_table(recode_dir + annotated_outlier_file, names=["scaffold", "start", "end", "info1", "info2", "info3", "info4", "info5", "info6", "info7", "info8", "info9"])
+                annotation = pandas.read_table(recode_dir + annotated_outlier_file, names=["scaffold", "start", "end", "gene_start", "gene_end", "overlap", "strand", "geneName"])
             except IOError:
                 print("Did not find either original outlier file or the annotated outlier file")
             merged = pandas.merge(outliers, annotation, ["scaffold", "start", "end"],)
