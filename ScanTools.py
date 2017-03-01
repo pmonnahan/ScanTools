@@ -687,12 +687,12 @@ class scantools:
             shfile1.close()
 
             if print1 is False:
-                cmd1 = ('sbatch ' + recode_dir + 'bedtools_gff.sh')
+                cmd1 = ('sbatch ' + recode_dir + in_file + 'bedtools_gff.sh')
                 p1 = subprocess.Popen(cmd1, shell=True)
                 sts1 = os.waitpid(p1.pid, 0)[1]
 
             else:
-                file3 = open(recode_dir + 'bedtools_gff.sh', 'r')
+                file3 = open(recode_dir + in_file + 'bedtools_gff.sh', 'r')
                 data3 = file3.read()
                 print(data3)
 
