@@ -460,7 +460,7 @@ class scantools:
                 try:
                     with open(recode_dir + pop + suffix, 'r') as inf:
                         for j, line in enumerate(inf):
-                            if j == 0 and head = False:
+                            if j == 0 and head is False:
                                 new.write(line)
                                 head = True
                             elif j != 0:
