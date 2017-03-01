@@ -696,7 +696,7 @@ class scantools:
                 data3 = file3.read()
                 print(data3)
 
-            os.remove(recode_dir + 'bedtools_gff.sh')
+            os.remove(recode_dir + in_file + 'bedtools_gff.sh')
 
         else:
             print("recode_dir not found")
