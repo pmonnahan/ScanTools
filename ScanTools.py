@@ -715,7 +715,7 @@ class scantools:
             except IOError:
                 print("Did not find either original outlier file or the annotated outlier file")
             annotation['geneName'] = annotation['geneName'].apply(tuple)
-            merged = pandas.merge(outliers, annotation, ["scaff", "start", "end"],)
+            merged = outliers.merge(annotation, on=["scaff", "start", "end"],)
             merged.to_csv(recode_dir + outlier_file.replace(".txt", "") + '_OutAnnot.csv', index=False)
         else:
             print("Did not find recode_dir")
