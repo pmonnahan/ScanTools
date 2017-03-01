@@ -658,14 +658,16 @@ class scantools:
                 df_outlier.to_csv(recode_dir + in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.bed', index=False, sep='\t', columns=["scaff", "start", "end"], header=False)
             except (UnicodeDecodeError, IndexError, KeyError):
                 print('Error with file: ' + recode_dir + in_file + "\n")
-    def annotateOutliers(self, recode_dir, in_file, basename, annotation_file, overlap_proportion=0.000001, print1=False):
+
+
+    def annotateOutliers(self, recode_dir, in_file, annotation_file, overlap_proportion=0.000001, print1=False):
         '''Purpose: annotate bed file from findOutliers using information in annotation_file
            Notes: The output (suffix ol_genes.gff) only contains the window locations along with annotation info and does not contain
                     the original metric information used to determine outliers.  Use mergeAnnotation to merge original outlier file with annotation info'''
 
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
-
+        basename = in_file.strip(".bed")
         if os.path.exists(recode_dir) is True:
             shfile1 = open(recode_dir + 'bedtools_gff.sh', 'w')
             shfile1.write('#!/bin/bash\n' +
