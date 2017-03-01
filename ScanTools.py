@@ -651,7 +651,7 @@ class scantools:
                 df_outlier = data[(data.num_outliers != 0)]
                 df_outlier.to_csv(recode_dir + in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.csv', index=False)
                 df_outlier.to_csv(recode_dir + in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.bed', index=False, sep='\t', columns=["scaffold", "start", "end"], header=False)
-            except UnicodeDecodeError:
+            except UnicodeDecodeError, IndexError:
                 print('Error with file: ' + recode_dir + in_file + "\n")
     def annotateOutliers(self, recode_dir, in_file, basename, annotation_file, overlap_proportion=0.000001, print1=False):
         '''Purpose: annotate bed file from findOutliers using information in annotation_file
