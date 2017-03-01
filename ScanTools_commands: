@@ -1,0 +1,49 @@
+ScanTools_commands:
+
+# Invoke instance of scantools
+test = ScanTools.scantools('/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Filip/')
+
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/","/nbi/Research-Groups/JIC/Levi-Yant/Lyrata_ref/alygenomes.fasta",repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.0,partition='medium',mem=8000,overwrite=True)
+
+# Combine Tets according to fastSTRUCTURE
+test.combinePops(['DRA','LAC','TZI'],'TSC') # 24 high cov inds
+test.combinePops(['SPI','TKO','TRT','TRE'], 'TNC') # 33 high cov inds
+test.combinePops(['BRD','WEK','HOC','GUL','KOS','SCH','KAS','BGS'],'TAL') # 50 high cov inds
+test.combinePops(['RFT','SWA','CHO'],'TSW') # 24 high cov inds
+test.combinePops(['TBG','KOW','STE'],'TRL') # 21 high cov inds
+
+# Combine Dips according to fastSTRUCTURE
+test.combinePops(['HNI','SNO','TRD','VEL'],'DWC') # 19 high cov inds
+test.combinePops(['BEL','BIH','FOJ'],'DDI') # 24 high cov inds
+test.combinePops(['MIE','PRE'],'DRL') # 16 high cov inds
+test.combinePops(['HNE','KZL','SZI'],'DPA') # 13 high cov inds
+test.combinePops(['RZA','GOR'],'DSC') # 17 high cov inds
+test.combinePops(['VID'],'DDR') # 7 high cov inds
+
+
+# Remove low numbered populations
+test.removePop(['DFS']) # 1 ind, 0 low cov 
+test.removePop(['HAR']) # 2 ind, 1 low cov
+test.removePop(['CRO']) # 4 ind, 2 low cov
+test.removePop(['HNI']) # 4 ind, 3 low cov
+test.removePop(['BRD']) # 5 ind, 0 low cov
+test.removePop(['SNO']) # 5 ind, 0 low cov
+test.removePop(['TBG']) # 5 ind, 0 low cov
+test.removePop(['ZAP']) # 5 ind, 1 low cov
+test.removePop(['ZAP']) # 5 ind, 1 low cov
+test.removePop(['KZL']) # 5 ind, 2 low cov
+test.removePop(['SZI']) # 5 ind, 2 low cov
+test.removePop(['TRD']) # 6 ind, 1 low cov
+test.removePop(['SCH']) # 7 ind, 2 low cov
+test.removePop(['WEK']) # 8 ind, 6 low cov
+
+# Remove low coverage individuals
+test.removeInds(['TRD_001_ba','TRT_001_dj','VID_001_a','WEK_001_b','SWA_006_1','HAR_006_1','RFT_016_1','HOC_007_1','SZI_003_1','KOS_010_1','SNO_023_1','TRT_001_bd','CRO_002_b','HNI_003_1','HNI_004_1','SCH_001_a','TZI_008_1','WEK_001_i','CHO_001_b','SCH_001_b','SNO_009_1','SWA_008_1','WEK_001_e','SWA_005_1','KZL_020_1','CRO_001_bb','HNI_001_1','KZL_017_1','KOS_005_1','WEK_001_a','ZAP_001_a03','WEK_001_d','WEK_001_h','RFT_017_1','TRT_001_bk','SZI_012_1','TRT_001_co'])  # avg depth < 8 for 4dg sites
+
+
+test.calcbpm(test.split_dirs[1],window_size=50000,minimum_snps=100,pops=['TNC','TRL','TAL','TSW','TSC','DDI','DPA','DSC','DRL','DWC'],output_name='All_DipTet_Lineages',mem=150000,numcores=4,partition='long')
+
+>>> test.concatWPM(test.split_dirs[1],suffix=".WS50.0k_MS100_19ind_WPM.txt",outname="Tet_Lineages",pops=['TNC','TRL','TAL','TSC','TSW'])
+>>> test.concatWPM(test.split_dirs[3],suffix=".WS50.0k_MS100_19ind_WPM.txt",outname="Tet_Lineages",pops=['TNC','TRL','TAL','TSC','TSW'])
+>>> test.concatWPM(test.split_dirs[1],suffix=".WS50.0k_MS100_11ind_WPM.txt",outname="Dip_Lineages",pops=['DDI','DPA','DSC','DRL','DWC'])
+>>> test.concatWPM(test.split_dirs[3],suffix=".WS50.0k_MS100_11ind_WPM.txt",outname="Dip_Lineages",pops=['DDI','DPA','DSC','DRL','DWC'])

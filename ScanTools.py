@@ -629,10 +629,14 @@ class scantools:
 
         if os.path.exists(recode_dir) is True:
             try:
+                print("Finding outliers for " + recode_dir + in_file + "\n")
                 data = pandas.read_table(recode_dir + in_file, header=0)
                 metrics = []
                 for i in column_index_list:
-                    metrics.append(list(data.columns.values)[i])
+                    try:
+                        metrics.append(list(data.columns.values)[i])
+                    except IndexError:
+                        print("IndexError in " + recode_dir + in_file + "\n")
 
                 for metric in metrics:
                     data[metric + '.out'] = 0
