@@ -403,7 +403,7 @@ class scantools:
                 prefix = pop + ".WS" + str(window_size / 1000) + "k_MS" + str(min_snps) + "_" + str(sind) + "ind"
 
                 if os.path.exists(recode_dir + pop + suffix) is True:
-                    shfile3 = open(pop + '.sh', 'w')
+                    shfile3 = open(recode_dir + pop + '.sh', 'w')
 
                     shfile3.write('#!/bin/bash\n' +
                                   '#SBATCH -J ' + pop + '.sh' + '\n' +
@@ -418,16 +418,16 @@ class scantools:
                     shfile3.close()
 
                     if print1 is False:
-                        cmd3 = ('sbatch -d singleton ' + pop + '.sh')
+                        cmd3 = ('sbatch -d singleton ' + recode_dir + pop + '.sh')
                         p3 = subprocess.Popen(cmd3, shell=True)
                         sts3 = os.waitpid(p3.pid, 0)[1]
 
                     else:
-                        file3 = open(pop + '.sh', 'r')
+                        file3 = open(recode_dir + pop + '.sh', 'r')
                         data3 = file3.read()
                         print(data3)
 
-                    os.remove(pop + '.sh')
+                    os.remove(recode_dir + pop + '.sh')
                 else:
                     print("Did not find input files for: ", pop)
 
@@ -498,7 +498,7 @@ class scantools:
                 print("Did not find all input files!!  Aborting.")
                 os.remove(recode_dir + output_name + '.concat.txt')
             else:
-                shfile3 = open(output_name + '.bpm.sh', 'w')
+                shfile3 = open(recode_dir + output_name + '.bpm.sh', 'w')
 
                 shfile3.write('#!/bin/bash\n' +
                               '#SBATCH -J ' + output_name + '.bpm.sh' + '\n' +
@@ -516,7 +516,7 @@ class scantools:
                 shfile3.close()
 
                 if print1 is False:
-                    cmd3 = ('sbatch -d singleton ' + output_name + '.bpm.sh')
+                    cmd3 = ('sbatch -d singleton ' + recode_dir + output_name + '.bpm.sh')
                     p3 = subprocess.Popen(cmd3, shell=True)
                     sts3 = os.waitpid(p3.pid, 0)[1]
 
@@ -528,11 +528,11 @@ class scantools:
                                         "Populations: " + str(pops) + "\n")
 
                 else:
-                    file3 = open(output_name + '.bpm.sh', 'r')
+                    file3 = open(recode_dir + output_name + '.bpm.sh', 'r')
                     data3 = file3.read()
                     print(data3)
 
-                os.remove(output_name + '.bpm.sh')
+                os.remove(recode_dir + output_name + '.bpm.sh')
         elif len(pops) < 2:
             print("'pops' argument must be a list of strings specifiying two or more population names as they appear in input file prefixes.  len(pops) was < 2")
         else:
@@ -573,7 +573,7 @@ class scantools:
                     if skip is True:
                         print("Did not find all input files!!  Aborting pairwise bpm for contrast: ", output_name)
                     else:
-                        shfile3 = open(output_name + '.bpm.sh', 'w')
+                        shfile3 = open(recode_dir + output_name + '.bpm.sh', 'w')
 
                         shfile3.write('#!/bin/bash\n' +
                                       '#SBATCH -J ' + output_name + '.bpm.sh' + '\n' +
@@ -591,16 +591,16 @@ class scantools:
                         shfile3.close()
 
                         if print1 is False:
-                            cmd3 = ('sbatch -d singleton ' + output_name + '.bpm.sh')
+                            cmd3 = ('sbatch -d singleton ' + recode_dir + output_name + '.bpm.sh')
                             p3 = subprocess.Popen(cmd3, shell=True)
                             sts3 = os.waitpid(p3.pid, 0)[1]
 
                         else:
-                            file3 = open(output_name + '.bpm.sh', 'r')
+                            file3 = open(recode_dir + output_name + '.bpm.sh', 'r')
                             data3 = file3.read()
                             print(data3)
 
-                        os.remove(output_name + '.bpm.sh')
+                        os.remove(recode_dir + output_name + '.bpm.sh')
 
             if print1 is False:
                 self.log_file.write("###  Calculate PAIRWISE Between-Population-Metrics  ###\n" +
@@ -715,7 +715,7 @@ class scantools:
             except IOError:
                 print("Did not find either original outlier file or the annotated outlier file")
             merged = outliers.merge(annotation, on=["scaff", "start", "end"],)
-            merged.to_csv(recode_dir + outlier_file.replace(".txt", "") + '_OutAnnot.csv', index=False)
+            merged.to_csv(recode_dir + outlier_file.replace("_OutOnly.csv", "") + '_OutAnnot.csv', index=False)
         else:
             print("Did not find recode_dir")
 
