@@ -728,6 +728,7 @@ class scantools:
             time.sleep(1)
 
         if os.path.isfile(recode_dir + annotated_outlier_file):
+            time.sleep(30)
             self.mergeAnnotation(recode_dir, outlier_file)
         else:
             raise ValueError("File error for mergeAnnotation: %s" % recode_dir + annotated_outlier_file)
