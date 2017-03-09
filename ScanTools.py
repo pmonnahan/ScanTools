@@ -21,7 +21,7 @@ import time
 
 class scantools:
 
-    def __init__(self, WorkingDir):
+    def __init__(self, WorkingDir, encoding="-9"):
         if WorkingDir.endswith("/") is False:
             WorkingDir += "/"
         if os.path.exists(WorkingDir) is False:
@@ -29,7 +29,10 @@ class scantools:
             os.mkdir(WorkingDir + "OandE/")
         if os.path.exists(WorkingDir + "OandE/") is False:
             os.mkdir(WorkingDir + "OandE/")
-        POP_file = pandas.read_csv(WorkingDir + "PopKey.csv", header=0)
+        if encoding != "-9":
+            POP_file = pandas.read_csv(WorkingDir + "PopKey.csv", header=0, encoding=encoding)
+        else:
+            POP_file = pandas.read_csv(WorkingDir + "PopKey.csv", header=0)
         POP_names = list(POP_file.columns.values)[1:]
         sample_names = list(POP_file['Samples'])
         samps = {}
