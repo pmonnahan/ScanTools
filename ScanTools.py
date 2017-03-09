@@ -2,13 +2,11 @@
 
 import os
 import subprocess
-import argparse
 import pandas
 import math
-import statistics
-import numpy as np
-import copy
 import datetime
+import time
+
 
 # Directions:
 # import WPM_Wrapper2 into python console
@@ -720,11 +718,19 @@ class scantools:
             print("Did not find recode_dir")
 
     def Outliers(self, recode_dir, in_file, column_index_list, percentile, tails='upper', annotation_file='/nbi/Research-Groups/JIC/Levi-Yant/GenomeScan/LyV2.gff', overlap_proportion=0.000001):
+        print("Be sure that no old versions of gff files are in this directory")
         self.findOutliers(recode_dir, in_file, column_index_list, percentile, tails)
         bed_file = in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.bed'
         self.annotateOutliers(recode_dir, bed_file, annotation_file, overlap_proportion)
         outlier_file = in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.csv'
-        self.mergeAnnotation(recode_dir, outlier_file)
+        annotated_outlier_file = outlier_file.strip('.csv') + '_genes.gff'
+        while not os.path.exists(recode_dir + annotated_outlier_file):
+            time.sleep(1)
+
+        if os.path.isfile(recode_dir + annotated_outlier_file):
+            self.mergeAnnotation(recode_dir, outlier_file)
+        else:
+            raise ValueError("File error for mergeAnnotation: %s" % recode_dir + annotated_outlier_file)
 
 
     def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size, bootstrap_reps, mem=16000, numcores=1, time='2-00:00', print1=False):
