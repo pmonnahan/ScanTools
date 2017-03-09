@@ -407,8 +407,8 @@ class scantools:
 
                     shfile3.write('#!/bin/bash\n' +
                                   '#SBATCH -J ' + pop + '.sh' + '\n' +
-                                  '#SBATCH -e ' + self.oande + pop + '.wpm.err' + '\n' +
-                                  '#SBATCH -o ' + self.oande + pop + '.wpm.out' + '\n' +
+                                  '#SBATCH -e ' + self.oande + prefix + '.wpm.err' + '\n' +
+                                  '#SBATCH -o ' + self.oande + prefix + '.wpm.out' + '\n' +
                                   '#SBATCH -p nbi-' + str(partition) + '\n' +
                                   '#SBATCH -n ' + str(numcores) + '\n' +
                                   '#SBATCH -t ' + str(time) + '\n' +
@@ -469,7 +469,7 @@ class scantools:
                     print("Did not find _WPM.txt file for population: ", pop)
 
 
-    def calcbpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False, time="0-01:00"):
+    def calcbpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False, time="0-12:00"):
         '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
            Notes: User provides a list of populations to be included.  For pairwise estimates, simply provide two populations
                     Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps in a window
@@ -660,7 +660,7 @@ class scantools:
                 print('Error with file: ' + recode_dir + in_file + "\n")
 
 
-    def annotateOutliers(self, recode_dir, in_file, annotation_file, overlap_proportion=0.000001, print1=False):
+    def annotateOutliers(self, recode_dir, in_file, annotation_file='/nbi/Research-Groups/JIC/Levi-Yant/GenomeScan/LyV2.gff', overlap_proportion=0.000001, print1=False):
         '''Purpose: annotate bed file from findOutliers using information in annotation_file
            Notes: The output (suffix ol_genes.gff) only contains the window locations along with annotation info and does not contain
                     the original metric information used to determine outliers.  Use mergeAnnotation to merge original outlier file with annotation info'''
@@ -715,9 +715,16 @@ class scantools:
             except IOError:
                 print("Did not find either original outlier file or the annotated outlier file")
             merged = outliers.merge(annotation, on=["scaff", "start", "end"],)
-            merged.to_csv(recode_dir + outlier_file.replace("_OutOnly.csv", "") + '_OutAnnot.csv', index=False)
+            merged.to_csv(recode_dir + outlier_file.replace("_OutOnly.csv", "_OutAnnot.csv"), index=False)
         else:
             print("Did not find recode_dir")
+
+    def Outliers(self, recode_dir, in_file, column_index_list, percentile, tails='upper', annotation_file='/nbi/Research-Groups/JIC/Levi-Yant/GenomeScan/LyV2.gff', overlap_proportion=0.000001):
+        self.findOutliers(recode_dir, in_file, column_index_list, percentile, tails)
+        bed_file = in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.bed'
+        self.annotateOutliers(recode_dir, bed_file, annotation_file, overlap_proportion)
+        outlier_file = in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.csv'
+        self.mergeAnnotation(recode_dir, outlier_file)
 
 
     def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size, bootstrap_reps, mem=16000, numcores=1, time='2-00:00', print1=False):
