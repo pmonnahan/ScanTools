@@ -189,15 +189,6 @@ class scantools:
 
                     os.remove(pop + '.sh')
 
-            if print1 is False:
-                self.log_file.write("###  Split VCFs  ###\n" +
-                                    "VCF Directory: " + vcf_dir + "\n" +
-                                    "Reference Path: " + ref_path + "\n" +
-                                    "Repolarization Key: " + repolarization_key + "\n" +
-                                    "Output Directory: " + outdir + "\n" +
-                                    "Min Depth Per Individual: " + str(min_dp) + "\n" +
-                                    "Max Fraction of Filtered Genotypes: " + str(mffg) + "\n" +
-                                    "Populations: " + str(pops) + "\n")
 
                 # combine all variants table for each scaffold within a population
 
@@ -243,6 +234,17 @@ class scantools:
                     print(data3)
 
                 os.remove(pop + '.sh')
+
+            if print1 is False:
+                self.log_file.write("###  Split VCFs  ###\n" +
+                                    "VCF Directory: " + vcf_dir + "\n" +
+                                    "Reference Path: " + ref_path + "\n" +
+                                    "Repolarization Key: " + repolarization_key + "\n" +
+                                    "Output Directory: " + outdir + "\n" +
+                                    "Min Depth Per Individual: " + str(min_dp) + "\n" +
+                                    "Max Fraction of Filtered Genotypes: " + str(mffg) + "\n" +
+                                    "Populations: " + str(pops) + "\n")
+
 
     def recode(self, split_dir, pops="all", print1=False, mem=4000, numcores=1, partition="medium"):
         '''Call: recode(self, min_avg_dp, missingness, print1=False, mem=16000, numcores=1)
