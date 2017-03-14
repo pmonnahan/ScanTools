@@ -31,19 +31,17 @@ for i, line in enumerate(key):
 with open(args.i) as inf:
     for j, line in enumerate(inf):
         cols = line.strip("\n").strip("\t").split("\t")
-        pop, ploidy, scaff, pos, ac, an, dp = cols[:7]
+        pop, ploidy, scaff, pos, an, dp = cols[:6]
         scaff = int(scaff.split("_")[1])
-        nac = 0
         gt = ""
         if pos in key_list[scaff - 1]:
-            for geno in cols[7:]:
+            for geno in cols[6:]:
                 if geno != "-9":
                     gt += str(int(float(ploidy)) - int(geno)) + "\t"
-                    nac += int(float(ploidy)) - int(geno)
                 else:
                     gt += "-9\t"
             gt.strip("\t")
-            newline = pop + "\t" + str(ploidy) + "\tscaffold_" + str(scaff) + "\t" + pos + "\t" + str(nac) + "\t" + an + "\t" + dp + "\t" + gt + "\n"
+            newline = pop + "\t" + str(ploidy) + "\tscaffold_" + str(scaff) + "\t" + pos + "\t" + an + "\t" + dp + "\t" + gt + "\n"
             new.write(newline)
         else:
             new.write(line)

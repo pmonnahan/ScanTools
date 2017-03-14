@@ -1,4 +1,4 @@
-"""Calculate between-population divergence metrics.  Input is a tab delimited file with no header, containing Scaff, pos, ac, an, dp, and genotypes coded as 0-4.
+"""Calculate between-population divergence metrics.  Input is a tab delimited file with no header, containing Scaff, pos, an, dp, and genotypes coded as 0-4.
 Input file custom: Filename should end with _XXX_raw.table.recode.txt, where XXX is three-letter population abbreviation"""
 
 import argparse
@@ -47,8 +47,9 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
     num_alleles = []
     for i, line in enumerate(data):
 
-        pop, ploidy, scaff, pos, ac, an, dp = line[:7]
+        pop, ploidy, scaff, pos, an, dp = line[:6]
         pos = float(pos)
+        ac = sum([int(x) for x in line[6:]])
 
         if i % 100000 == 0:
             print(i)
@@ -72,8 +73,11 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
             states_i = []
             for i, pop in enumerate(num_alleles):
                 states_i.append([jj for jj in range(0, pop + 1)])
+            print(states_i)
             states = list(itertools.product(*states_i))
+            print(states)
             num_states = len(states)
+            print(num_states)
             dsfs = [0 for z in range(0, num_states + 1)]
             for rep in range(0, num_bootstraps):
                 exec("out%d = open('%s%s.rep%d_DSFS.obs', 'w')" % (rep + 1, output, outname, rep + 1), globals())

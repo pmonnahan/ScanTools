@@ -41,14 +41,14 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
             p = []  # List containing individual allele frequencies for a population
             ac_i = []  # List containing individual ac counts for a population
             ploidy = float(pop_site[1])
-            nnn = float(len(pop_site[7:]))  # sample size for thispopulation
+            nnn = float(len(pop_site[6:]))  # sample size for thispopulation
             an = ploidy * nnn  # Calculation an for the population
-            ac = sum([float(geno) for geno in pop_site[7:]])  # Calculate ac for a population
+            ac = sum([float(geno) for geno in pop_site[6:]])  # Calculate ac for a population
             n_i.append(nnn)
             p_i.append(ac / an)
             ploidy_list.append(ploidy)
             pop_an = 0
-            for ind in pop_site[7:]:
+            for ind in pop_site[6:]:
                 p_ind = float(ind) / ploidy  # Calculate individual's allele frequency
                 p.append(p_ind)
                 ac_i.append(float(ind))
@@ -125,9 +125,9 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
             locus.append([x for x in l if x != "-9"])
         for i, pop_site in enumerate(locus):
             ploidy = float(pop_site[1])
-            nnn = float(len(pop_site[7:]))
+            nnn = float(len(pop_site[6:]))
             an = ploidy * nnn
-            ac = sum([float(geno) for geno in pop_site[7:]])
+            ac = sum([float(geno) for geno in pop_site[6:]])
             if i == 0:
                 p1 = (ac / an)
             if i == 1:
@@ -152,7 +152,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
     with open(input_file, 'r') as data:
         for i, line in enumerate(data):
             line = line.strip("\n").strip("\t").split("\t")
-            pop, ploidy, scaff, pos, ac, an, dp = line[:7]
+            pop, ploidy, scaff, pos, an, dp = line[:6]
             pos = float(pos)
 
             if i % 100000 == 0:

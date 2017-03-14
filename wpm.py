@@ -1,4 +1,4 @@
-"""Calculate within-population metrics for diversity and selection.  Input is a tab delimited file with no header, containing Scaff, pos, ac, an, dp, and genotypes coded as 0-4.
+"""Calculate within-population metrics for diversity and selection.  Input is a tab delimited file with no header, containing Scaff, pos, an, dp, and genotypes coded as 0-4.
 Input file custom: Filename should end with _XXX_raw.table.recode.txt, where XXX is three-letter population abbreviation"""
 
 import argparse
@@ -23,9 +23,9 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
             line = line.strip("\t")
             line = line.split("\t")
 
-            pop, ploidy, scaff, pos, ac, an, dp = line[:7]
+            pop, ploidy, scaff, pos, an, dp = line[:6]
 
-            gt = line[7:]
+            gt = line[6:]
 
             if i % 100000 == 0:
                 print(i)

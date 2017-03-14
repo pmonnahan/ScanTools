@@ -21,19 +21,18 @@ with open(args.i, "rU") as table:
         line = line.split("\t")
         if line[0].split("_")[0] == 'scaffold':
             if get_ploidy is True:
-                ploidy = float(max([len(x.split("/")) for x in line[5:]]))
+                ploidy = float(max([len(x.split("/")) for x in line[4:]]))
                 get_ploidy = False
             ref = '0'
-            numind = len(line[5:])
+            numind = len(line[4:])
             scaff = line[0]
             pos = line[1]
-            ac = line[2]
-            an = line[3]
-            dp = int(line[4])
-            GT = args.pop + '\t' + str(ploidy) + '\t' + scaff + '\t' + pos + '\t' + ac + '\t' + an + '\t' + str(dp) + '\t'
+            an = line[2]
+            dp = int(line[3])
+            GT = args.pop + '\t' + str(ploidy) + '\t' + scaff + '\t' + pos + '\t' + an + '\t' + str(dp) + '\t'
             alt = False
             numobs = 0
-            for j, gt in enumerate(line[5:]):
+            for j, gt in enumerate(line[4:]):
                 gt = gt.split("/")
                 if gt[0] == '.':
                     GT += '-9\t'
