@@ -11,6 +11,8 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
 
     snp_count = 0
     Snp_count = 0
+    tot_count = 0
+    Tot_count = 0
     start = 0.0
     end = window_size
     winexclcount = 0
@@ -32,7 +34,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
             if i == 0:
                 outfile = output + prefix + "_WPM.txt"
                 out1 = open(outfile, 'w')
-                out1.write("pop\tploidy\tsampind\tscaff\tstart\tend\twin_size\tnum_snps\tnum_singletons\tavg_freq\tavg_Ehet\tThetaW\tPi\tThetaH\tThetaL\tD\tH\tE\n")
+                out1.write("pop\tploidy\tsampind\tscaff\tstart\tend\twin_size\tnum_snps\tnum_singletons\tavg_freq\tavg_Ehet\tDiversity\tThetaW\tPi\tThetaH\tThetaL\tD\tH\tE\n")
                 oldscaff = scaff
                 AN = int(sampind * int(float(ploidy)))
                 n = float(AN)
@@ -62,6 +64,8 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                 if len(gt) >= sampind:
                     sgt = numpy.random.choice(gt, size=sampind, replace=False)
                     sac = sum([int(x) for x in sgt])
+                    tot_count += 1
+                    Tot_count += 1
                     if sac != 0 and sac != AN:
                         if sac == 1:
                             num_sing += 1
@@ -95,6 +99,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                     Pi = 2 * Pi / (n * (n - 1))
                     h = 2 * h / (n * (n - 1))
                     L = L / (n - 1)
+                    div = Pi / float(tot_count)
 
 
                     # When calculating variance of D, H, and E should we use W value for window or for entire genome.  Probably for window??
@@ -119,6 +124,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                                    str(num_sing) + '\t' +
                                    str(numpy.mean(p)) + '\t' +
                                    str(numpy.mean(Ehet)) + '\t' +
+                                   str(div) + '\t' +
                                    str(W) + '\t' +
                                    str(Pi) + '\t' +
                                    str(h) + '\t' +
@@ -134,6 +140,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                     winexclcount += 1
 
                 snp_count = 0
+                tot_count = 0
                 p = []
                 Ehet = []
                 num_sing = 0
@@ -154,6 +161,8 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                     if len(gt) >= sampind:
                         sgt = numpy.random.choice(gt, size=sampind, replace=False)
                         sac = sum([int(x) for x in sgt])
+                        tot_count += 1
+                        Tot_count += 1
                         if sac != 0 and sac != AN:
                             if sac == 1:
                                 num_sing += 1
@@ -185,6 +194,8 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
             h = 2 * h / (n * (n - 1))
             L = L / (n - 1)
 
+            div = Pi / float(tot_count)
+
             # When calculating variance of D, H, and E should we use W value for window or for entire genome.  Probably for window??
 
             varPi_W = e1 * S + e2 * S * (S - 1)
@@ -207,6 +218,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                            str(num_sing) + '\t' +
                            str(numpy.mean(p)) + '\t' +
                            str(numpy.mean(Ehet)) + '\t' +
+                           str(div) + '\t' +
                            str(W) + '\t' +
                            str(Pi) + '\t' +
                            str(h) + '\t' +
@@ -233,6 +245,8 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
     h = 2 * h / (n * (n - 1))
     L = L / (n - 1)
 
+    div = Pi / float(Tot_count)
+
     # When calculating variance of D, H, and E should we use W value for window or for entire genome.  Probably for window??
 
     varPi_W = e1 * S + e2 * S * (S - 1)
@@ -255,6 +269,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                    str(Num_sing) + '\t' +
                    "-99" + '\t' +
                    "-99" + '\t' +
+                   str(div) + '\t' +
                    str(W) + '\t' +
                    str(Pi) + '\t' +
                    str(h) + '\t' +
