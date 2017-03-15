@@ -157,9 +157,9 @@ class scantools:
                         vcf_basenames.append(file[:-4])
                 for v, vcf in enumerate(vcf_list):
                     # Select single population and biallelic SNPs for each scaffold and convert to variants table
-                    shfile1 = open(pop + '.sh', 'w')
+                    shfile1 = open(pop + vcf_dir + '.sh', 'w')
                     shfile1.write('#!/bin/bash\n' +
-                                  '#SBATCH -J ' + pop + '.sh' + '\n' +
+                                  '#SBATCH -J ' + pop + vcf_dir + '.sh' + '\n' +
                                   '#SBATCH -e ' + self.oande + pop + vcf + '.gatk.err' + '\n' +
                                   '#SBATCH -o ' + self.oande + pop + vcf + '.gatk.out' + '\n' +
                                   '#SBATCH -p nbi-' + str(partition) + '\n' +
@@ -177,27 +177,27 @@ class scantools:
                     shfile1.close()
 
                     if print1 is False:  # send slurm job to NBI SLURM cluster
-                        cmd1 = ('sbatch ' + pop + '.sh')
+                        cmd1 = ('sbatch ' + pop + vcf_dir + '.sh')
                         p1 = subprocess.Popen(cmd1, shell=True)
                         sts1 = os.waitpid(p1.pid, 0)[1]
                         joblist.append(p1.pid)
 
                     else:
-                        file1 = open(pop + '.sh', 'r')
+                        file1 = open(pop + vcf_dir + '.sh', 'r')
                         data1 = file1.read()
                         print(data1)
 
-                    os.remove(pop + '.sh')
+                    os.remove(pop + vcf_dir + '.sh')
 
 
                 # combine all variants table for each scaffold within a population
 
-                shfile3 = open(pop + '.sh', 'w')
+                shfile3 = open(pop + vcf_dir + '.sh', 'w')
 
                 shfile3.write('#!/bin/bash\n' +
-                              '#SBATCH -J ' + pop + '.sh' + '\n' +
-                              '#SBATCH -e ' + self.oande + pop + '.cat.err' + '\n' +
-                              '#SBATCH -o ' + self.oande + pop + '.cat.out' + '\n' +
+                              '#SBATCH -J ' + pop + vcf_dir + '.sh' + '\n' +
+                              '#SBATCH -e ' + self.oande + pop + vcf_dir + '.cat.err' + '\n' +
+                              '#SBATCH -o ' + self.oande + pop + vcf_dir + '.cat.out' + '\n' +
                               '#SBATCH -p nbi-medium\n' +
                               '#SBATCH -n ' + str(numcores) + '\n' +
                               '#SBATCH -t 0-12:00\n' +
@@ -225,15 +225,15 @@ class scantools:
                 shfile3.close()
 
                 if print1 is False:
-                    cmd3 = ('sbatch -d singleton ' + pop + '.sh')
+                    cmd3 = ('sbatch -d singleton ' + pop + vcf_dir + '.sh')
                     p3 = subprocess.Popen(cmd3, shell=True)
                     sts3 = os.waitpid(p3.pid, 0)[1]
                 else:
-                    file3 = open(pop + '.sh', 'r')
+                    file3 = open(pop + vcf_dir + '.sh', 'r')
                     data3 = file3.read()
                     print(data3)
 
-                os.remove(pop + '.sh')
+                os.remove(pop + vcf_dir + '.sh')
 
             if print1 is False:
                 self.log_file.write("###  Split VCFs  ###\n" +
