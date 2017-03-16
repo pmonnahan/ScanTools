@@ -60,8 +60,9 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
 
         if get_pops is True and len(Locus) == numpops:
             string = str(numpops) + "\t\t\t"
+            print(Locus)
             for pop_site in Locus:
-                num_ind = len(pop_site[7:])
+                num_ind = len(pop_site[6:])
                 ploidy = int(float(pop_site[1]))
                 num_inds.append(num_ind)
                 ploidies.append(ploidy)
@@ -73,11 +74,8 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
             states_i = []
             for i, pop in enumerate(num_alleles):
                 states_i.append([jj for jj in range(0, pop + 1)])
-            print(states_i)
             states = list(itertools.product(*states_i))
-            print(states)
             num_states = len(states)
-            print(num_states)
             dsfs = [0 for z in range(0, num_states + 1)]
             for rep in range(0, num_bootstraps):
                 exec("out%d = open('%s%s.rep%d_DSFS.obs', 'w')" % (rep + 1, output, outname, rep + 1), globals())
