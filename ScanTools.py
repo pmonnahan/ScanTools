@@ -409,7 +409,7 @@ class scantools:
                     shfile3 = open(recode_dir + pop + '.sh', 'w')
 
                     shfile3.write('#!/bin/bash\n' +
-                                  '#SBATCH -J ' + pop + '.sh' + '\n' +
+                                  '#SBATCH -J ' + recode_dir + pop + '.sh' + '\n' +
                                   '#SBATCH -e ' + self.oande + recode_dir + prefix + '.wpm.err' + '\n' +
                                   '#SBATCH -o ' + self.oande + recode_dir + prefix + '.wpm.out' + '\n' +
                                   '#SBATCH -p nbi-' + str(partition) + '\n' +
