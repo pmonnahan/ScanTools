@@ -399,6 +399,8 @@ class scantools:
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
 
+        dir_name = recode_dir.split("/")[-2]
+
         if os.path.exists(recode_dir) is True and sind > 3:
 
             for pop in pops:
@@ -406,12 +408,12 @@ class scantools:
                 prefix = pop + ".WS" + str(window_size / 1000) + "k_MS" + str(min_snps) + "_" + str(sind) + "ind"
 
                 if os.path.exists(recode_dir + pop + suffix) is True:
-                    shfile3 = open(recode_dir + pop + '.sh', 'w')
+                    shfile3 = open(dir_name + "." + pop + '.sh', 'w')
 
                     shfile3.write('#!/bin/bash\n' +
-                                  '#SBATCH -J ' + recode_dir + pop + '.sh' + '\n' +
-                                  '#SBATCH -e ' + self.oande + recode_dir + prefix + '.wpm.err' + '\n' +
-                                  '#SBATCH -o ' + self.oande + recode_dir + prefix + '.wpm.out' + '\n' +
+                                  '#SBATCH -J ' + dir_name + "." + pop + '.sh' + '\n' +
+                                  '#SBATCH -e ' + self.oande + dir_name + "." + prefix + '.wpm.err' + '\n' +
+                                  '#SBATCH -o ' + self.oande + dir_name + "." + prefix + '.wpm.out' + '\n' +
                                   '#SBATCH -p nbi-' + str(partition) + '\n' +
                                   '#SBATCH -n ' + str(numcores) + '\n' +
                                   '#SBATCH -t ' + str(time) + '\n' +
@@ -421,16 +423,16 @@ class scantools:
                     shfile3.close()
 
                     if print1 is False:
-                        cmd3 = ('sbatch -d singleton ' + recode_dir + pop + '.sh')
+                        cmd3 = ('sbatch -d singleton ' + dir_name + "." + pop + '.sh')
                         p3 = subprocess.Popen(cmd3, shell=True)
                         sts3 = os.waitpid(p3.pid, 0)[1]
 
                     else:
-                        file3 = open(recode_dir + pop + '.sh', 'r')
+                        file3 = open(dir_name + "." + pop + '.sh', 'r')
                         data3 = file3.read()
                         print(data3)
 
-                    os.remove(recode_dir + pop + '.sh')
+                    os.remove(dir_name + "." + pop + '.sh')
                 else:
                     print("Did not find input files for: ", pop)
 
