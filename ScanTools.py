@@ -739,7 +739,7 @@ class scantools:
             raise ValueError("File error for mergeAnnotation: %s" % recode_dir + annotated_outlier_file)
 
 
-    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size, bootstrap_reps, mem=16000, numcores=1, time='2-00:00', print1=False):
+    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size, bootstrap_reps, mem=16000, numcores=1, time='2-00:00', print1=False, use_repol=True):
         '''Purpose:  Generate --multiSFS for fastsimcoal2 along with a given number of non-parametric block-bootstrapped replicates
            Notes: Must provide the block size for bootstrapping as well as number of bootstrap replicates
                   As of now, the necessary template files for FSC2 must come from elsewhere.  Beware of running this method with numerous populations'''
@@ -754,12 +754,19 @@ class scantools:
 
         num_pops = len(pops)
 
+        if use_repol is True:
+            suffix = '.table.repol.txt'
+            concat_file = open(recode_dir + output_name + '.repol.concat.txt', 'w')
+        else:
+            suffix = '.table.recode.txt'
+            concat_file = open(recode_dir + output_name + '.recode.concat.txt', 'w')
+
+
         # num_inds = [self.samp_nums.get(x) for x in pops]
         if os.path.exists(recode_dir) is True:
             print("Concatenating input files")
-            concat_file = open(recode_dir + output_name + '.repol.concat.txt', 'w')
             for file in os.listdir(recode_dir):
-                if file.endswith(".repol.txt") and file.split(".")[0] in pops:
+                if file.endswith(suffix) and file.split(".")[0] in pops:
                     pops.remove(file.split(".")[0])
                     with open(recode_dir + file) as infile:
                         for line in infile:
@@ -781,7 +788,7 @@ class scantools:
                               '#SBATCH --mem=' + str(mem) + '\n' +
                               'source python-3.5.1\n' +
                               'source env/bin/activate\n' +
-                              'python3 ' + self.code_dir + '/FSC2input.py -i ' + recode_dir + output_name + '.repol.concat.txt -o ' + outdir + ' -prefix ' + output_name + ' -ws ' + str(bootstrap_block_size) + ' -bs ' + str(bootstrap_reps) + ' -np ' + str(num_pops) + '\n')
+                              'python3 ' + self.code_dir + '/FSC2input.py -i ' + recode_dir + output_name + suffix + ' -o ' + outdir + ' -prefix ' + output_name + ' -ws ' + str(bootstrap_block_size) + ' -bs ' + str(bootstrap_reps) + ' -np ' + str(num_pops) + '\n')
                 shfile4.close()
 
                 if print1 is False:
