@@ -757,9 +757,11 @@ class scantools:
         if use_repol is True:
             suffix = '.table.repol.txt'
             concat_file = open(recode_dir + output_name + '.repol.concat.txt', 'w')
+            concat_name = recode_dir + output_name + '.repol.concat.txt'
         else:
             suffix = '.table.recode.txt'
             concat_file = open(recode_dir + output_name + '.recode.concat.txt', 'w')
+            concat_name = recode_dir + output_name + '.recode.concat.txt'
 
 
         # num_inds = [self.samp_nums.get(x) for x in pops]
@@ -788,7 +790,7 @@ class scantools:
                               '#SBATCH --mem=' + str(mem) + '\n' +
                               'source python-3.5.1\n' +
                               'source env/bin/activate\n' +
-                              'python3 ' + self.code_dir + '/FSC2input.py -i ' + recode_dir + output_name + suffix + ' -o ' + outdir + ' -prefix ' + output_name + ' -ws ' + str(bootstrap_block_size) + ' -bs ' + str(bootstrap_reps) + ' -np ' + str(num_pops) + '\n')
+                              'python3 ' + self.code_dir + '/FSC2input.py -i ' + concat_name + ' -o ' + outdir + ' -prefix ' + output_name + ' -ws ' + str(bootstrap_block_size) + ' -bs ' + str(bootstrap_reps) + ' -np ' + str(num_pops) + '\n')
                 shfile4.close()
 
                 if print1 is False:
