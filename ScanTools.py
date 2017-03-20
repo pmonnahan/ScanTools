@@ -776,6 +776,8 @@ class scantools:
                         with open(recode_dir + file) as infile:
                             for line in infile:
                                 concat_file.write(line)
+            else:
+                pops = []
             if len(pops) != 0:
                 print("Did not find input files for the following populations:", pops, ".  Aborting!!")
             else:
