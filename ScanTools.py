@@ -845,9 +845,24 @@ class scantools:
                 for tpl in tpl_files:
                     tpl_name = tpl.split(".tpl")[0]
                     new_tpl = open(name + "_" + tpl_name + ".tpl", 'w')
+                    new_data = open(name + "_" + tpl_name + "_DSFS.obs", 'w')
+                    with open(file) as data:
+                        for i, line in enumerate(data):
+                            if i == 1:
+                                pop_info = line.strip("\n").strip("\t").split("\t")
+                                pop_num = int(pop_info[0])
+                                samp_nums = pop_info[-pop_num:]
+                            new_data.write(line)
                     with open(input_dir + tpl) as template:
-                        for line in template:
-                            new_tpl.write(line)
+                        samp_num_lines = pop_num + 4
+                        for i, line in enumerate(template):
+                            if i < samp_num_lines:
+                                new_tpl.write(line)
+                            elif i == samp_num_lines:
+                                for num in samp_nums:
+                                    new_tpl.write(num + "\n")
+                            elif i >= samp_num_lines + len(samp_nums):
+                                new_tpl.write(line)
                     new_est = open(name + "_" + tpl_name + ".est", 'w')
                     try:
                         with open(input_dir + tpl_name + ".est") as est:
@@ -855,10 +870,7 @@ class scantools:
                                 new_est.write(line)
                     except FileNotFoundError:
                         print("Did not find est file for: ", tpl)
-                    new_data = open(name + "_" + tpl_name + "_DSFS.obs", 'w')
-                    with open(file) as data:
-                        for line in data:
-                            new_data.write(line)
+                    
 
                     shfile5 = open(name.split("/")[-1] + tpl_name + ".sh", 'w')
                     shfile5.write('#!/bin/bash\n' +
