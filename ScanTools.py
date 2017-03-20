@@ -1,5 +1,5 @@
 #!/usr/bin/env python35
-
+import re
 import os
 import subprocess
 import pandas
@@ -818,3 +818,70 @@ class scantools:
 
         else:
             print("!!!Did not find recode_dir!!!!")
+
+    def FSC2(self, input_dir, min_sims=10000, max_sims=100000, conv_crit=0.001, min_ecm=10, max_ecm=40, calc_CI=False, partition="short", numcores=1, time="0-02:00", mem="8000", print1=False):
+
+        Data_Files = []
+        tpl_files = []
+        est_files = []
+        # CI_Data_Files = []
+        for path in os.listdir(input_dir):
+            if os.path.isdir(input_dir + path) and path.startswith("FSC2input"):
+                samp_name = path.split("_")[1]
+                if samp_name + "_DSFS.obs" in os.listdir(input_dir + path):
+                    Data_Files.append(input_dir + path + "/" + samp_name + "_DSFS.obs")
+                else:
+                    print("Did not find input data file for: ", samp_name)
+                    # if file.split("_")[0].split(".")[-1].beginswith("rep") is True:
+            if path.endswith(".tpl"):
+                tpl_files.append(path)
+                est_files.append(path.split(".")[0])
+        if len(tpl_files) == 0:
+            print("Did not find any tpl files!! Aborting!!")
+        else:
+            for file in Data_Files:
+                name = file.split("_DSFS")[0]
+                print(file)
+                print(name)
+                for tpl in tpl_files:
+                    tpl_name = tpl.split(".tpl")[0]
+                    new_tpl = open(name + "_" + tpl_name + ".tpl", 'w')
+                    with open(input_dir + tpl) as template:
+                        for line in template:
+                            new_tpl.write(line)
+                    new_est = open(name + "_" + tpl_name + ".est", 'w')
+                    try:
+                        with open(input_dir + tpl_name + ".est") as est:
+                            for line in est:
+                                new_est.write(line)
+                    except FileNotFoundError:
+                        print("Did not find est file for: ", tpl)
+                    new_data = open(name + "_" + tpl_name + "_DSFS.obs", 'w')
+                    with open(file) as data:
+                        for line in data:
+                            new_data.write(line)
+
+                    shfile5 = open(name.split("/")[-1] + tpl_name + ".sh", 'w')
+                    shfile5.write('#!/bin/bash\n' +
+                                  '#SBATCH -J ' + name.split("/")[-1] + "_" + tpl_name + ".fsc2.sh" + '\n' +
+                                  '#SBATCH -e ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.err" + '\n' +
+                                  '#SBATCH -o ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.out" + '\n' +
+                                  '#SBATCH -p nbi-' + str(partition) + '\n' +
+                                  '#SBATCH -n ' + str(numcores) + '\n' +
+                                  '#SBATCH -t ' + str(time) + '\n' +
+                                  '#SBATCH --mem=' + str(mem) + '\n' +
+                                  '/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221 -t ' + name + "_" + tpl_name + ".tpl" + ' -e ' + name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
+
+                    shfile5.close()
+
+                    if print1 is False:
+                        cmd1 = ('sbatch ' + name.split("/")[-1] + tpl_name + ".sh")
+                        p1 = subprocess.Popen(cmd1, shell=True)
+                        sts1 = os.waitpid(p1.pid, 0)[1]
+
+                    else:
+                        file3 = open(name.split("/")[-1] + tpl_name + ".sh", 'r')
+                        data3 = file3.read()
+                        print(data3)
+
+                    os.remove(name.split("/")[-1] + tpl_name + ".sh")
