@@ -756,22 +756,19 @@ class scantools:
 
         num_pops = len(pops)
 
-        if use_repol is True:
-            suffix = '.table.repol.txt'
-            concat_file = open(recode_dir + output_name + '.repol.concat.txt', 'w')
-            concat_name = recode_dir + output_name + '.repol.concat.txt'
-        else:
-            suffix = '.table.recode.txt'
-            concat_file = open(recode_dir + output_name + '.recode.concat.txt', 'w')
-            concat_name = recode_dir + output_name + '.recode.concat.txt'
-
-
-        # num_inds = [self.samp_nums.get(x) for x in pops]
         if os.path.exists(recode_dir) is True:
+            if use_repol is True:
+                suffix1 = '.table.repol.txt'
+                suffix2 = 'repol.concat.txt'
+            else:
+                suffix1 = '.table.recode.txt'
+                suffix2 = '.recode.concat.txt'
+            concat_name = recode_dir + output_name + suffix2
             if os.path.exists(concat_name) is False:
                 print("Concatenating input files")
+                concat_file = open(recode_dir + output_name + suffix2, 'w')
                 for file in os.listdir(recode_dir):
-                    if file.endswith(suffix) and file.split(".")[0] in pops:
+                    if file.endswith(suffix1) and file.split(".")[0] in pops:
                         pops.remove(file.split(".")[0])
                         with open(recode_dir + file) as infile:
                             for line in infile:
