@@ -841,8 +841,7 @@ class scantools:
         else:
             for file in Data_Files:
                 name = file.split("_DSFS")[0]
-                print(file)
-                print(name)
+                samp_name = name.split("/")[-1]
                 for tpl in tpl_files:
                     tpl_name = tpl.split(".tpl")[0]
                     new_tpl = open(name + "_" + tpl_name + ".tpl", 'w')
@@ -870,7 +869,8 @@ class scantools:
                                   '#SBATCH -n ' + str(numcores) + '\n' +
                                   '#SBATCH -t ' + str(time) + '\n' +
                                   '#SBATCH --mem=' + str(mem) + '\n' +
-                                  '/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221 -t ' + name + "_" + tpl_name + ".tpl" + ' -e ' + name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
+                                  'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
+                                  '/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221 -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
 
                     shfile5.close()
 
