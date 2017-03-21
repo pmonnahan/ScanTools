@@ -1,12 +1,10 @@
 #!/usr/bin/env python35
-import re
 import os
 import subprocess
 import pandas
 import math
 import datetime
 import time
-
 
 # Directions:
 # import WPM_Wrapper2 into python console
@@ -898,3 +896,43 @@ class scantools:
                         os.remove(name.split("/")[-1] + tpl_name + ".sh")
                     else:
                         print("Output directory for " + samp_name + "_" + tpl_name + " already exists.  Use overwrite = True to overwrite.")
+
+
+    def gatherFSC2output(self, parent_dir):
+
+        if parent_dir.endswith("/") is False:
+            parent_dir += "/"
+        get_header = True
+        dirname = parent_dir.strip("/").split("/")[-1]
+        Lhoodfile = open(parent_dir + dirname + "_FSC2_Likelihoods.txt", 'w')
+        paramsfile = open(parent_dir + dirname + "_FSC2_Params.txt", 'w')
+        for root, dirs, files in os.walk(parent_dir):
+            for file in files:
+                if file.endswith(".bestlhoods"):
+                    name = file.split(".best")[0]
+                    samp_names, model = name.split("_")
+                    if get_header is True:
+                        get_header = False
+                        with open(os.path.join(root, file), 'r') as ff:
+                            for i, line in enumerate(ff):
+                                if i == 0:
+                                    Lhoodfile.write("Model\tSampleNames\tnum_params\tLhood_est\tLhood_obs\tLhood_diff\tAIC\n")
+                                else:
+                                    info = line.strip("\n").split("\t")
+                                    num_params = len(info) - 2
+                                    Lhood_est = float(info[-2])
+                                    AIC = (2 * num_params) - (2 * (Lhood_est * math.log(10)))
+                                    Lhoodfile.write(model + "\t" + samp_names + "\t" + str(num_params) + "\t" + str(Lhood_est) + "\t" + info[-1] + "\t" + str(Lhood_est - float(info[-1])) + "\t" + str(AIC) + "\n")
+                                    paramsfile.write(model + "\t" + samp_names + "\t" + line)
+                    else:
+                        with open(os.path.join(root, file), 'r') as ff:
+                            for i, line in enumerate(ff):
+                                if i > 0:
+                                    info = line.strip("\n").split("\t")
+                                    num_params = len(info) - 2
+                                    Lhood_est = float(info[-2])
+                                    AIC = (2 * num_params) - (2 * (Lhood_est * math.log(10)))
+                                    Lhoodfile.write(model + "\t" + samp_names + "\t" + str(num_params) + "\t" + str(Lhood_est) + "\t" + info[-1] + "\t" + str(Lhood_est - float(info[-1])) + "\t" + str(AIC) + "\n")
+                                    paramsfile.write(model + "\t" + samp_names + "\t" + line)
+        Lhoodfile.close()
+        paramsfile.close()
