@@ -14,7 +14,7 @@ from functools import reduce
 # Add within population varP...could just use average SSI
 
 
-def generateFSC2input(input_file, output, outname, numpops, window_size, num_bootstraps):
+def generateFSC2input(input_file, output, outname, numpops, window_size, num_bootstraps, alphabetical_pop_order=True):
 
 
     scaff_lengths = [33684748, 19642879, 24872290, 23717143, 21575646, 25532148, 25060017, 23333815]  # Scaffold lengths determined from alygenomes.fasta
@@ -35,7 +35,10 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
     print("sorting input file")
     data = open(input_file, 'r')
     data = [j.strip("\n").strip("\t").split("\t") for j in data]
-    data = sorted(data, key=lambda k: (int(k[2].split("_")[1]), int(k[3]), k[0]))  # Sorts by scaffold then position, then population
+    if alphabetical_pop_order is True:
+        data = sorted(data, key=lambda k: (int(k[2].split("_")[1]), int(k[3]), k[0]))  # Sorts by scaffold then position, then population
+    else:
+        data = sorted(data, key=lambda k: (int(k[2].split("_")[1]), int(k[3])))  # Sorts by scaffold then position, then population
     print("finished sorting input file")
     # Begin loop over data file
     snp_count = 0
@@ -152,7 +155,8 @@ if __name__ == '__main__':  # Used to run code from command line
     parser.add_argument('-prefix', type=str, metavar='output_file_prefix', required=True, help='Name indicating populations in input file')
     parser.add_argument('-ws', type=float, metavar='window_size', required=False, default='10000.0', help='Size of windows in bp; used for bootstrapping')
     parser.add_argument('-bs', type=int, metavar='bootstrap_reps', required=False, default='5', help='number of bootstrap replicate datasets to generate')
+    parser.add_argument('-alpha', type=bool, metavar='alphabetical_pop_order', required=False, default=True, help='Should order of populations in output file be alphabetical?')
 
     args = parser.parse_args()
 
-    j1, j2, j3 = generateFSC2input(args.i, args.o, args.prefix, args.np, args.ws, args.bs)
+    j1, j2, j3 = generateFSC2input(args.i, args.o, args.prefix, args.np, args.ws, args.bs, args.alpha)
