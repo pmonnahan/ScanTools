@@ -739,7 +739,7 @@ class scantools:
             raise ValueError("File error for mergeAnnotation: %s" % recode_dir + annotated_outlier_file)
 
 
-    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size, bootstrap_reps, mem=16000, numcores=1, time='2-00:00', print1=False, use_repol=True, keep_intermediates=False, alphabetical_pop_order=False):
+    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size, bootstrap_reps, mem=16000, numcores=1, time='2-00:00', print1=False, use_repol=True, keep_intermediates=False, alphabetical_pop_order='false'):
         '''Purpose:  Generate --multiSFS for fastsimcoal2 along with a given number of non-parametric block-bootstrapped replicates
            Notes: Must provide the block size for bootstrapping as well as number of bootstrap replicates
                   As of now, the necessary template files for FSC2 must come from elsewhere.  Beware of running this method with numerous populations'''

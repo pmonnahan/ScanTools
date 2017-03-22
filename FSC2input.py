@@ -14,7 +14,7 @@ from functools import reduce
 # Add within population varP...could just use average SSI
 
 
-def generateFSC2input(input_file, output, outname, numpops, window_size, num_bootstraps, alphabetical_pop_order=True):
+def generateFSC2input(input_file, output, outname, numpops, window_size, num_bootstraps, alphabetical_pop_order):
 
 
     scaff_lengths = [33684748, 19642879, 24872290, 23717143, 21575646, 25532148, 25060017, 23333815]  # Scaffold lengths determined from alygenomes.fasta
@@ -30,12 +30,12 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
     outfile = output + outname + '_DSFS.obs'
     out = open(outfile, 'w')
     out.write("1 observations.  No. of demes and sample sizes are on next line\n")
-
     # Sort intput data
     print("sorting input file")
     data = open(input_file, 'r')
     data = [j.strip("\n").strip("\t").split("\t") for j in data]
-    if alphabetical_pop_order is True:
+
+    if alphabetical_pop_order == 'true':
         data = sorted(data, key=lambda k: (int(k[2].split("_")[1]), int(k[3]), k[0]))  # Sorts by scaffold then position, then population
     else:
         data = sorted(data, key=lambda k: (int(k[2].split("_")[1]), int(k[3])))  # Sorts by scaffold then position, then population
@@ -155,7 +155,7 @@ if __name__ == '__main__':  # Used to run code from command line
     parser.add_argument('-prefix', type=str, metavar='output_file_prefix', required=True, help='Name indicating populations in input file')
     parser.add_argument('-ws', type=float, metavar='window_size', required=False, default='10000.0', help='Size of windows in bp; used for bootstrapping')
     parser.add_argument('-bs', type=int, metavar='bootstrap_reps', required=False, default='5', help='number of bootstrap replicate datasets to generate')
-    parser.add_argument('-alpha', type=bool, metavar='alphabetical_pop_order', required=False, default=True, help='Should order of populations in output file be alphabetical?')
+    parser.add_argument('-alpha', type=str, metavar='alphabetical_pop_order', required=False, default='true', help='Should order of populations in output file be alphabetical?')
 
     args = parser.parse_args()
 
