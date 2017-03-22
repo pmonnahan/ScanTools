@@ -739,7 +739,7 @@ class scantools:
             raise ValueError("File error for mergeAnnotation: %s" % recode_dir + annotated_outlier_file)
 
 
-    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size, bootstrap_reps, mem=16000, numcores=1, time='2-00:00', print1=False, use_repol=True,keep_intermediates=False):
+    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size, bootstrap_reps, mem=16000, numcores=1, time='2-00:00', print1=False, use_repol=True, keep_intermediates=False):
         '''Purpose:  Generate --multiSFS for fastsimcoal2 along with a given number of non-parametric block-bootstrapped replicates
            Notes: Must provide the block size for bootstrapping as well as number of bootstrap replicates
                   As of now, the necessary template files for FSC2 must come from elsewhere.  Beware of running this method with numerous populations'''
@@ -765,12 +765,14 @@ class scantools:
             if os.path.exists(concat_name) is False:
                 print("Concatenating input files")
                 concat_file = open(recode_dir + output_name + suffix2, 'w')
-                for file in os.listdir(recode_dir):
-                    if file.endswith(suffix1) and file.split(".")[0] in pops:
-                        pops.remove(file.split(".")[0])
-                        with open(recode_dir + file) as infile:
+                for pop in pops:
+                    try:
+                        with open(recode_dir + pop + suffix1) as infile:
                             for line in infile:
                                 concat_file.write(line)
+                            pops.remove(pop)
+                    except FileNotFoundError:
+                        pass
             else:
                 pops = []
             if len(pops) != 0:
@@ -892,7 +894,6 @@ class scantools:
                         os.remove(name.split("/")[-1] + tpl_name + ".sh")
 
                     elif os.path.exists(name + "_" + tpl_name + "/" + samp_name + "_" + tpl_name + ".bestlhoods") is False and soft_overwrite is True:  # Intended to catch instances where FSC2 had run previously (and therefore created the output directory), but did not converge (and therefore output directory does not contain .bestlhoods file)
-                        print('here')
                         new_tpl = open(name + "_" + tpl_name + ".tpl", 'w')
                         new_data = open(name + "_" + tpl_name + "_DSFS.obs", 'w')
                         with open(file) as data:
