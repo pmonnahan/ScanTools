@@ -762,6 +762,7 @@ class scantools:
                 suffix1 = '.table.recode.txt'
                 suffix2 = '.recode.concat.txt'
             concat_name = recode_dir + output_name + suffix2
+            missing = []
             if os.path.exists(concat_name) is False:
                 print("Concatenating input files")
                 concat_file = open(recode_dir + output_name + suffix2, 'w')
@@ -770,13 +771,10 @@ class scantools:
                         with open(recode_dir + pop + suffix1) as infile:
                             for line in infile:
                                 concat_file.write(line)
-                            pops.remove(pop)
                     except FileNotFoundError:
-                        pass
-            else:
-                pops = []
-            if len(pops) != 0:
-                print("Did not find input files for the following populations:", pops, ".  Aborting!!")
+                        missing.append(pop)
+            if len(missing) != 0:
+                print("Did not find input files for the following populations:", missing, ".  Aborting!!")
             else:
                 print("Finished preparing input data")
 
