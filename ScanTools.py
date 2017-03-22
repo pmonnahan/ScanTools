@@ -817,7 +817,7 @@ class scantools:
         else:
             print("!!!Did not find recode_dir!!!!")
 
-    def FSC2(self, input_dir, min_sims=10000, max_sims=100000, conv_crit=0.001, min_ecm=10, max_ecm=40, calc_CI=False, partition="short", numcores=1, time="0-02:00", mem="8000", print1=False, overwrite=False):
+    def FSC2(self, input_dir, min_sims=10000, max_sims=100000, conv_crit=0.001, min_ecm=10, max_ecm=40, calc_CI=False, partition="short", numcores=1, time="0-02:00", mem="8000", print1=False, hard_overwrite=False, soft_overwrite=False):
 
         Data_Files = []
         tpl_files = []
@@ -842,7 +842,7 @@ class scantools:
                 samp_name = name.split("/")[-1]
                 for tpl in tpl_files:
                     tpl_name = tpl.split(".tpl")[0]
-                    if os.path.isdir(name + "_" + tpl_name) is False or overwrite is True:
+                    if os.path.isdir(name + "_" + tpl_name) is False or hard_overwrite is True:
                         new_tpl = open(name + "_" + tpl_name + ".tpl", 'w')
                         new_data = open(name + "_" + tpl_name + "_DSFS.obs", 'w')
                         with open(file) as data:
@@ -880,22 +880,68 @@ class scantools:
                                       '#SBATCH --mem=' + str(mem) + '\n' +
                                       'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
                                       '/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221 -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
-
                         shfile5.close()
-
                         if print1 is False:
                             cmd1 = ('sbatch ' + name.split("/")[-1] + tpl_name + ".sh")
                             p1 = subprocess.Popen(cmd1, shell=True)
                             sts1 = os.waitpid(p1.pid, 0)[1]
-
                         else:
                             file3 = open(name.split("/")[-1] + tpl_name + ".sh", 'r')
                             data3 = file3.read()
                             print(data3)
+                        os.remove(name.split("/")[-1] + tpl_name + ".sh")
 
+                    elif os.path.exists(name + "_" + tpl_name + "/" + samp_name + "_" + tpl_name + ".bestlhoods") is False and soft_overwrite is True:  # Intended to catch instances where FSC2 had run previously (and therefore created the output directory), but did not converge (and therefore output directory does not contain .bestlhoods file)
+                        print('here')
+                        new_tpl = open(name + "_" + tpl_name + ".tpl", 'w')
+                        new_data = open(name + "_" + tpl_name + "_DSFS.obs", 'w')
+                        with open(file) as data:
+                            for i, line in enumerate(data):
+                                if i == 1:
+                                    pop_info = line.strip("\n").strip("\t").split("\t")
+                                    pop_num = int(pop_info[0])
+                                    samp_nums = pop_info[-pop_num:]
+                                new_data.write(line)
+                        with open(input_dir + tpl) as template:
+                            samp_num_lines = pop_num + 4
+                            for i, line in enumerate(template):
+                                if i < samp_num_lines:
+                                    new_tpl.write(line)
+                                elif i == samp_num_lines:
+                                    for num in samp_nums:
+                                        new_tpl.write(num + "\n")
+                                elif i >= samp_num_lines + len(samp_nums):
+                                    new_tpl.write(line)
+                        new_est = open(name + "_" + tpl_name + ".est", 'w')
+                        try:
+                            with open(input_dir + tpl_name + ".est") as est:
+                                for line in est:
+                                    new_est.write(line)
+                        except FileNotFoundError:
+                            print("Did not find est file for: ", tpl)
+                        shfile5 = open(name.split("/")[-1] + tpl_name + ".sh", 'w')
+                        shfile5.write('#!/bin/bash\n' +
+                                      '#SBATCH -J ' + name.split("/")[-1] + "_" + tpl_name + ".fsc2.sh" + '\n' +
+                                      '#SBATCH -e ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.err" + '\n' +
+                                      '#SBATCH -o ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.out" + '\n' +
+                                      '#SBATCH -p nbi-' + str(partition) + '\n' +
+                                      '#SBATCH -n ' + str(numcores) + '\n' +
+                                      '#SBATCH -t ' + str(time) + '\n' +
+                                      '#SBATCH --mem=' + str(mem) + '\n' +
+                                      'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
+                                      '/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221 -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
+                        shfile5.close()
+                        if print1 is False:
+                            cmd1 = ('sbatch ' + name.split("/")[-1] + tpl_name + ".sh")
+                            p1 = subprocess.Popen(cmd1, shell=True)
+                            sts1 = os.waitpid(p1.pid, 0)[1]
+                        else:
+                            file3 = open(name.split("/")[-1] + tpl_name + ".sh", 'r')
+                            data3 = file3.read()
+                            print(data3)
                         os.remove(name.split("/")[-1] + tpl_name + ".sh")
                     else:
-                        print("Output directory for " + samp_name + "_" + tpl_name + " already exists.  Use overwrite = True to overwrite.")
+                        print("Output directory for " + samp_name + "_" + tpl_name + " already exists.  Use hard_overwrite = True to overwrite.")
 
 
     def gatherFSC2output(self, parent_dir):
