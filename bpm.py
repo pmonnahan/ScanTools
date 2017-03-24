@@ -140,7 +140,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
     # Prepare output file
     outfile = output + outname + '_BPM.txt'
     out1 = open(outfile, 'w')
-    out1.write("outname\tscaff\tstart\tend\twin_size\tnum_snps\tRho\tFst\tdxy\n")
+    out1.write("outname\tscaff\tstart\tend\twin_size\tnum_snps\tRho\tFst\tdxy\tDn\n")
 
     # Begin loop over data file
     snp_count = 0
@@ -167,6 +167,8 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                 rho = [0.0, 0.0]  # Rho[0] is numerator for window, [1] is denominator for window
                 dxy = 0.0  # Dxy for window
                 Dxy = 0.0
+                dn = 0
+                Dn = 0
 
             if pos > start and pos <= end and scaff == oldscaff:
                 if pos == old_pos:  # Accruing information from multiple populations but same locus
@@ -174,8 +176,12 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                 elif len(Locus) == num_pops:  # Within current window but have moved on from previous locus
                     rnum, rden, fnum, fden = NestedAnova(Locus)
                     if num_pops == 2:
-                        dxy += calcDxy(Locus)
-                        Dxy += dxy
+                        d = calcDxy(Locus)
+                        dxy += d
+                        Dxy += d
+                        if d == 1.0:
+                            dn += 1
+                            Dn += 1
                     snp_count += 1
                     fst = [sum(x) for x in zip(fst, [fnum, fden])]  # Adds numerator and denominators from current site to running sums for window and genome respectively
                     rho = [sum(x) for x in zip(rho, [rnum, rden])]
@@ -200,8 +206,12 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                     Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
                     Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
                     if num_pops == 2:
-                        dxy += calcDxy(Locus)
-                        Dxy += dxy
+                        d = calcDxy(Locus)
+                        dxy += d
+                        Dxy += d
+                        if d == 1.0:
+                            dn += 1
+                            Dn += 1
 
                 if snp_count >= minimum_snps:  # Report or exclude window
                     Snp_count += snp_count
@@ -215,6 +225,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                             dxy = dxy / float(snp_count)
                         else:
                             dxy = "-9"
+                            dn = "-9"
                         out1.write(outname + '\t' + scaff + '\t' +  # Write calculations to file
                                    str(start) + '\t' +
                                    str(end) + '\t' +
@@ -222,7 +233,8 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                                    str(snp_count) + '\t' +
                                    str(rho_i) + '\t' +
                                    str(fst) + '\t' +
-                                   str(dxy) + '\n')
+                                   str(dxy) + '\t' +
+                                   str(dn) + '\n')
                     except ZeroDivisionError:
                         print('ZeroDivisionError:', snp_count, fst, rho, Fst, Rho)
 
@@ -233,6 +245,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                 fst = [0.0, 0.0]
                 rho = [0.0, 0.0]
                 dxy = 0.0
+                dn = 0
 
                 # Moving on to deal with current SNP.  Must reset window boundaries based on current position
                 if float(pos) > end:
@@ -258,8 +271,12 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
         Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
         Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
         if num_pops == 2:
-            dxy += calcDxy(Locus)
-            Dxy += dxy
+            d = calcDxy(Locus)
+            dxy += d
+            Dxy += d
+            if d == 1.0:
+                dn += 1
+                Dn += 1
 
     if snp_count >= minimum_snps:  # Use or exclude window
         num_wind += 1
@@ -271,6 +288,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                 dxy = dxy / float(snp_count)
             else:
                 dxy = "-9"
+                dn = "-9"
             out1.write(outname + '\t' + scaff + '\t' +  # Write calculations to file
                        str(start) + '\t' +
                        str(end) + '\t' +
@@ -278,7 +296,8 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                        str(snp_count) + '\t' +
                        str(rho_i) + '\t' +
                        str(fst) + '\t' +
-                       str(dxy) + '\n')
+                       str(dxy) + '\t' +
+                       str(dn) + '\n')
         except ZeroDivisionError:
             print('ZeroDivisionError:', snp_count, fst, rho, Fst, Rho)
 
@@ -292,6 +311,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
         Dxy = Dxy / Snp_count
     else:
         Dxy = "-9"
+        Dn = "-9"
     out1.write(outname + '\t' + "Genome" + '\t' +
                "-9" + '\t' +
                "-9" + '\t' +
@@ -299,7 +319,8 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                str(Snp_count) + '\t' +
                str(rho_G) + '\t' +
                str(Fst_G) + '\t' +
-               str(Dxy) + '\n')
+               str(Dxy) + '\t' +
+               str(Dn) + '\n')
 
     out1.close()
 
