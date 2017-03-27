@@ -116,7 +116,12 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
         fnum = fs2_g
         fden = fs2_w + fs2_g + fs2_i
 
-        return rnum, rden, fnum, fden
+        if all(p == 0.0 for p in p_i) or all(p == 1.0 for p in p_i):
+            poly = False
+        else:
+            poly = True
+
+        return rnum, rden, fnum, fden, poly
 
 
     def calcDxy(locus_list):
@@ -134,13 +139,14 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                 p2 = (ac / an)
 
         dxy = (p1 * (1.0 - p2)) + (p2 * (1.0 - p1))
+        afd = abs(p1 - p2)
 
-        return dxy
+        return dxy, afd
 
     # Prepare output file
     outfile = output + outname + '_BPM.txt'
     out1 = open(outfile, 'w')
-    out1.write("outname\tscaff\tstart\tend\twin_size\tnum_snps\tRho\tFst\tdxy\tDn\n")
+    out1.write("outname\tscaff\tstart\tend\twin_size\tnum_snps\tRho\tFst\tdxy\tFixedDiff\tAFD\n")
 
     # Begin loop over data file
     snp_count = 0
@@ -169,27 +175,32 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                 Dxy = 0.0
                 dn = 0
                 Dn = 0
+                afd = 0.0
+                AFD = 0.0
 
             if pos > start and pos <= end and scaff == oldscaff:
                 if pos == old_pos:  # Accruing information from multiple populations but same locus
                     Locus.append(line)
                 elif len(Locus) == num_pops:  # Within current window but have moved on from previous locus
-                    rnum, rden, fnum, fden = NestedAnova(Locus)
-                    if num_pops == 2:
-                        d = calcDxy(Locus)
-                        dxy += d
-                        Dxy += d
-                        if d == 1.0:
-                            dn += 1
-                            Dn += 1
-                    snp_count += 1
-                    fst = [sum(x) for x in zip(fst, [fnum, fden])]  # Adds numerator and denominators from current site to running sums for window and genome respectively
-                    rho = [sum(x) for x in zip(rho, [rnum, rden])]
-                    Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
-                    Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
-                    Locus = []  # Clear site information
-                    Locus.append(line)  # Append current site to site info
-                    old_pos = pos
+                    rnum, rden, fnum, fden, poly = NestedAnova(Locus)
+                    if poly is True:
+                        if num_pops == 2:
+                            d, a = calcDxy(Locus)
+                            dxy += d
+                            Dxy += d
+                            afd += a
+                            AFD += a
+                            if a == 1.0:
+                                dn += 1
+                                Dn += 1
+                        snp_count += 1
+                        fst = [sum(x) for x in zip(fst, [fnum, fden])]  # Adds numerator and denominators from current site to running sums for window and genome respectively
+                        rho = [sum(x) for x in zip(rho, [rnum, rden])]
+                        Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
+                        Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
+                        Locus = []  # Clear site information
+                        Locus.append(line)  # Append current site to site info
+                        old_pos = pos
 
                 else:  # Previous site contained data from only one population, so skip calculations
                     Locus = []
@@ -199,19 +210,22 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
 
             elif int(pos) > end or scaff != oldscaff:   # Current snp is onto next window, but must do calculation for previous locus before moving on
                 if len(Locus) == num_pops:  # Skip locus calc if data not available for all populations
-                    snp_count += 1
-                    rnum, rden, fnum, fden = NestedAnova(Locus)
-                    fst = [sum(x) for x in zip(fst, [fnum, fden])]
-                    rho = [sum(x) for x in zip(rho, [rnum, rden])]
-                    Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
-                    Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
-                    if num_pops == 2:
-                        d = calcDxy(Locus)
-                        dxy += d
-                        Dxy += d
-                        if d == 1.0:
-                            dn += 1
-                            Dn += 1
+                    rnum, rden, fnum, fden, poly = NestedAnova(Locus)
+                    if poly is True:
+                        snp_count += 1
+                        fst = [sum(x) for x in zip(fst, [fnum, fden])]
+                        rho = [sum(x) for x in zip(rho, [rnum, rden])]
+                        Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
+                        Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
+                        if num_pops == 2:
+                            d, a = calcDxy(Locus)
+                            dxy += d
+                            Dxy += d
+                            afd += a
+                            AFD += a
+                            if a == 1.0:
+                                dn += 1
+                                Dn += 1
 
                 if snp_count >= minimum_snps:  # Report or exclude window
                     Snp_count += snp_count
@@ -223,9 +237,11 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                         rho_i = fac / (1 + fac)
                         if num_pops == 2:
                             dxy = dxy / float(snp_count)
+                            afd = afd / float(snp_count)
                         else:
                             dxy = "-9"
                             dn = "-9"
+                            afd = "-9"
                         out1.write(outname + '\t' + scaff + '\t' +  # Write calculations to file
                                    str(start) + '\t' +
                                    str(end) + '\t' +
@@ -234,6 +250,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                                    str(rho_i) + '\t' +
                                    str(fst) + '\t' +
                                    str(dxy) + '\t' +
+                                   str(afd) + '\t' +
                                    str(dn) + '\n')
                     except ZeroDivisionError:
                         print('ZeroDivisionError:', snp_count, fst, rho, Fst, Rho)
@@ -246,6 +263,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                 rho = [0.0, 0.0]
                 dxy = 0.0
                 dn = 0
+                afd = 0.0
 
                 # Moving on to deal with current SNP.  Must reset window boundaries based on current position
                 if float(pos) > end:
@@ -264,19 +282,22 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                     old_pos = pos
 
     if len(Locus) == num_pops:  # Final window calculations
-        snp_count += 1
-        rnum, rden, fnum, fden = NestedAnova(Locus)
-        fst = [sum(x) for x in zip(fst, [fnum, fden])]
-        rho = [sum(x) for x in zip(rho, [rnum, rden])]
-        Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
-        Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
-        if num_pops == 2:
-            d = calcDxy(Locus)
-            dxy += d
-            Dxy += d
-            if d == 1.0:
-                dn += 1
-                Dn += 1
+        rnum, rden, fnum, fden, poly = NestedAnova(Locus)
+        if poly is True:
+            snp_count += 1
+            fst = [sum(x) for x in zip(fst, [fnum, fden])]
+            rho = [sum(x) for x in zip(rho, [rnum, rden])]
+            Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
+            Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
+            if num_pops == 2:
+                d, a = calcDxy(Locus)
+                dxy += d
+                Dxy += d
+                afd += a
+                AFD += a
+                if a == 1.0:
+                    dn += 1
+                    Dn += 1
 
     if snp_count >= minimum_snps:  # Use or exclude window
         num_wind += 1
@@ -286,9 +307,11 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
             rho_i = fac / (1 + fac)
             if num_pops == 2:
                 dxy = dxy / float(snp_count)
+                afd = afd / float(snp_count)
             else:
                 dxy = "-9"
                 dn = "-9"
+                afd = "-9"
             out1.write(outname + '\t' + scaff + '\t' +  # Write calculations to file
                        str(start) + '\t' +
                        str(end) + '\t' +
@@ -297,6 +320,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                        str(rho_i) + '\t' +
                        str(fst) + '\t' +
                        str(dxy) + '\t' +
+                       str(afd) + '\t' +
                        str(dn) + '\n')
         except ZeroDivisionError:
             print('ZeroDivisionError:', snp_count, fst, rho, Fst, Rho)
@@ -308,10 +332,12 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
     rho_G = FAC / (1 + FAC)
     Fst_G = Fst[0] / Fst[1]
     if num_pops == 2:
-        Dxy = Dxy / Snp_count
+        Dxy = Dxy / float(Snp_count)
+        AFD = AFD / float(Snp_count)
     else:
         Dxy = "-9"
         Dn = "-9"
+        AFD = "-9"
     out1.write(outname + '\t' + "Genome" + '\t' +
                "-9" + '\t' +
                "-9" + '\t' +
@@ -319,7 +345,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                str(Snp_count) + '\t' +
                str(rho_G) + '\t' +
                str(Fst_G) + '\t' +
-               str(Dxy) + '\t' +
+               str(AFD) + '\t' +
                str(Dn) + '\n')
 
     out1.close()

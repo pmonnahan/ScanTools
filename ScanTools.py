@@ -489,7 +489,7 @@ class scantools:
         if os.path.exists(recode_dir) is True and len(pops) > 1:
             pop_num = 0
             file_string = ""
-            for pop in pops: 
+            for pop in pops:
                 try:
                     a = open(recode_dir + pop + suffix, 'r')
                     a.close()
@@ -822,12 +822,20 @@ class scantools:
         Data_Files = []
         tpl_files = []
         est_files = []
-        # CI_Data_Files = []
+        CI_Data_Files = []
         for path in os.listdir(input_dir):
             if os.path.isdir(input_dir + path) and path.startswith("FSC2input"):
                 samp_name = path.split("_")[1]
                 if samp_name + "_DSFS.obs" in os.listdir(input_dir + path):
                     Data_Files.append(input_dir + path + "/" + samp_name + "_DSFS.obs")
+                    if calc_CI is True:
+                        for file in os.listdir(input_dir + path):
+                            if file.endswith("_DSFS.obs"):
+                                CI_Data_Files.append(input_dir + path + file)
+                        if len(CI_Data_Files) < 1:
+                            print("Did not find bootstrap replicates for: ", samp_name)
+                        else:
+                            print("Found ", len(CI_Data_Files), " for CI calculation for ", samp_name)
                 else:
                     print("Did not find input data file for: ", samp_name)
                     # if file.split("_")[0].split(".")[-1].beginswith("rep") is True:
@@ -837,6 +845,8 @@ class scantools:
         if len(tpl_files) == 0:
             print("Did not find any tpl files!! Aborting!!")
         else:
+            if calc_CI is True:
+                Data_Files = CI_Data_Files
             for file in Data_Files:
                 name = file.split("_DSFS")[0]
                 samp_name = name.split("/")[-1]
