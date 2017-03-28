@@ -830,7 +830,7 @@ class scantools:
                     Data_Files.append(input_dir + path + "/" + samp_name + "_DSFS.obs")
                 if calc_CI is True:
                     for file in os.listdir(input_dir + path):
-                        if file.endswith("_DSFS.obs") and file != samp_name + "_DSFS.obs":
+                        if file.endswith("_DSFS.obs") and file.split("_")[-2].split(".")[-1][0:3] == "rep" and file != samp_name + "_DSFS.obs":
                             CI_Data_Files.append(input_dir + path + "/" + file)
                     if len(CI_Data_Files) < 1:
                         print("Did not find bootstrap replicates for: ", samp_name)
