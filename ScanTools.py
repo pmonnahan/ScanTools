@@ -106,7 +106,7 @@ class scantools:
         self.log_file.write("Combined Pops: " + str(pops) + " as " + popname + "\n")
 
 
-    def splitVCFs(self, vcf_dir, min_dp, mffg, ref_path="/nbi/Research-Groups/JIC/Levi-Yant/Lyrata_ref/alygenomes.fasta", repolarization_key="-99", pops='all', mem=16000, time='0-04:00', numcores=1, print1=False, overwrite=False, partition="long", keep_intermediates=False):
+    def splitVCFs(self, vcf_dir, min_dp, mffg, ref_path="/nbi/Research-Groups/JIC/Levi-Yant/Lyrata_ref/alygenomes.fasta", gatk_path="/nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar", repolarization_key="-99", pops='all', mem=16000, time='0-04:00', numcores=1, print1=False, overwrite=False, partition="long", keep_intermediates=False):
         '''Purpose:  Find all vcfs in vcf_dir and split them by population according to samples associated with said population.
                     Then, take only biallelic snps and convert vcf to table containing scaff, pos, ac, an, dp, and genotype fields.
                     Finally, concatenate all per-scaffold tables to one giant table. Resulting files will be put into ~/Working_Dir/VCFs/
@@ -165,12 +165,12 @@ class scantools:
                                   '#SBATCH -t ' + str(time) + '\n' +
                                   '#SBATCH --mem=' + str(mem) + '\n' +
                                   'source GATK-nightly.2016.09.26\n' +
-                                  'java -Xmx' + str(mem1) + 'g -jar /nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar -T SelectVariants -R ' + ref_path + ' -V ' + vcf_dir + vcf + sample_string1 + ' -o ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf\n' +
+                                  'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T SelectVariants -R ' + ref_path + ' -V ' + vcf_dir + vcf + sample_string1 + ' -o ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf\n' +
                                   'gunzip ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf.gz\n' +
-                                  'java -Xmx' + str(mem1) + 'g -jar /nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar -T VariantFiltration -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf --genotypeFilterExpression "DP < ' + str(min_dp) + '" --genotypeFilterName "DP" -o ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.1.vcf\n' +
-                                  'java -Xmx' + str(mem1) + 'g -jar /nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar -T VariantFiltration -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.1.vcf --setFilteredGtToNocall -o ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.vcf\n' +
-                                  'java -Xmx' + str(mem1) + 'g -jar /nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar -T SelectVariants -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.vcf --maxNOCALLnumber ' + str(mfg) + ' -o ' + outdir + vcf_basenames[v] + '.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf\n' +
-                                  'java -Xmx' + str(mem1) + 'g -jar /nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar -T VariantsToTable -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf -F CHROM -F POS -F AN -F DP -GF GT -o ' + outdir + vcf_basenames[v] + '.' + pop + '_raw.table\n')
+                                  'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T VariantFiltration -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf --genotypeFilterExpression "DP < ' + str(min_dp) + '" --genotypeFilterName "DP" -o ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.1.vcf\n' +
+                                  'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T VariantFiltration -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.1.vcf --setFilteredGtToNocall -o ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.vcf\n' +
+                                  'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T SelectVariants -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.vcf --maxNOCALLnumber ' + str(mfg) + ' -o ' + outdir + vcf_basenames[v] + '.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf\n' +
+                                  'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T VariantsToTable -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf -F CHROM -F POS -F AN -F DP -GF GT -o ' + outdir + vcf_basenames[v] + '.' + pop + '_raw.table\n')
 
                     shfile1.close()
 
@@ -817,7 +817,7 @@ class scantools:
         else:
             print("!!!Did not find recode_dir!!!!")
 
-    def FSC2(self, input_dir, min_sims=10000, max_sims=100000, conv_crit=0.001, min_ecm=10, max_ecm=40, calc_CI=False, partition="short", numcores=1, time="0-02:00", mem="8000", print1=False, hard_overwrite=False, soft_overwrite=False):
+    def FSC2(self, input_dir, min_sims=10000, max_sims=100000, conv_crit=0.001, min_ecm=10, max_ecm=40, calc_CI=False, partition="short", numcores=1, time="0-02:00", mem="8000", print1=False, hard_overwrite=False, soft_overwrite=False, fsc2_path="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221"):
 
         Data_Files = []
         tpl_files = []
@@ -828,17 +828,20 @@ class scantools:
                 samp_name = path.split("_")[1]
                 if samp_name + "_DSFS.obs" in os.listdir(input_dir + path):
                     Data_Files.append(input_dir + path + "/" + samp_name + "_DSFS.obs")
-                if calc_CI is True:
-                    for file in os.listdir(input_dir + path):
-                        if file.endswith("_DSFS.obs") and file.split("_")[-2].split(".")[-1][0:3] == "rep" and file != samp_name + "_DSFS.obs":
-                            CI_Data_Files.append(input_dir + path + "/" + file)
-                    if len(CI_Data_Files) < 1:
-                        print("Did not find bootstrap replicates for: ", samp_name)
-                    else:
-                        print("Found ", len(CI_Data_Files), " replicate dsfs files for CI calculation for ", samp_name)
                 else:
                     print("Did not find input data file for: ", samp_name)
                     # if file.split("_")[0].split(".")[-1].beginswith("rep") is True:
+                if calc_CI is True:
+                    num_files = 0
+                    for file in os.listdir(input_dir + path):
+                        if file.endswith("_DSFS.obs") and file.split("_")[-2].split(".")[-1][0:3] == "rep" and file != samp_name + "_DSFS.obs":
+                            CI_Data_Files.append(input_dir + path + "/" + file)
+                            num_files += 1
+                    if len(CI_Data_Files) < 1:
+                        print("Did not find bootstrap replicates for: ", samp_name)
+                    else:
+                        print("Found ", num_files, " replicate dsfs files for CI calculation for ", samp_name)
+        
             if path.endswith(".tpl"):
                 tpl_files.append(path)
                 est_files.append(path.split(".")[0])
@@ -889,7 +892,7 @@ class scantools:
                                       '#SBATCH -t ' + str(time) + '\n' +
                                       '#SBATCH --mem=' + str(mem) + '\n' +
                                       'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
-                                      '/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221 -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
+                                      fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
                         shfile5.close()
                         if print1 is False:
                             cmd1 = ('sbatch ' + name.split("/")[-1] + tpl_name + ".sh")
@@ -938,7 +941,7 @@ class scantools:
                                       '#SBATCH -t ' + str(time) + '\n' +
                                       '#SBATCH --mem=' + str(mem) + '\n' +
                                       'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
-                                      '/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221 -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
+                                      fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
                         shfile5.close()
                         if print1 is False:
                             cmd1 = ('sbatch ' + name.split("/")[-1] + tpl_name + ".sh")
@@ -965,7 +968,8 @@ class scantools:
             for file in files:
                 if file.endswith(".bestlhoods"):
                     name = file.split(".best")[0]
-                    samp_names, model = name.split("_")
+                    samp_names = name.split("_")[0]
+                    model = ".".join(name.split("_")[1:])
                     if get_header is True:
                         get_header = False
                         with open(os.path.join(root, file), 'r') as ff:
