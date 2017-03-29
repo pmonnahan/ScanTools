@@ -140,7 +140,6 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
 
         dxy = (p1 * (1.0 - p2)) + (p2 * (1.0 - p1))
         afd = abs(p1 - p2)
-
         return dxy, afd
 
     # Prepare output file
@@ -198,9 +197,9 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                         rho = [sum(x) for x in zip(rho, [rnum, rden])]
                         Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
                         Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
-                        Locus = []  # Clear site information
-                        Locus.append(line)  # Append current site to site info
-                        old_pos = pos
+                    Locus = []  # Clear site information
+                    Locus.append(line)  # Append current site to site info
+                    old_pos = pos
 
                 else:  # Previous site contained data from only one population, so skip calculations
                     Locus = []
@@ -285,6 +284,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
         rnum, rden, fnum, fden, poly = NestedAnova(Locus)
         if poly is True:
             snp_count += 1
+            Snp_count += 1
             fst = [sum(x) for x in zip(fst, [fnum, fden])]
             rho = [sum(x) for x in zip(rho, [rnum, rden])]
             Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
