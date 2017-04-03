@@ -473,7 +473,7 @@ class scantools:
                     print("Did not find _WPM.txt file for population: ", pop)
 
 
-    def concatBPM(self, recode_dir, suffix, outname, pops='all'):
+    def concatBPM(self, recode_dir, suffix, outname, pops='all', strict=False):
         '''Purpose:  Concatenate _WPM.txt files corresponding to populations indicated in pops parameter.'''
 
         if recode_dir.endswith("/") is False:
@@ -484,18 +484,26 @@ class scantools:
             if pops == 'all':
                 pops = self.pops
             head = False
-            for i, pop in enumerate(pops):
-                try:
-                    with open(recode_dir + pop + suffix, 'r') as inf:
-                        for j, line in enumerate(inf):
-                            if j == 0 and head is False:
-                                new.write(line)
-                                head = True
-                            elif j != 0:
-                                new.write(line)
-                except FileNotFoundError:
-                    print("Did not find _BPM.txt file for population: ", pop)
-
+            for file in os.listdir(recode_dir):
+                if file.endswith(suffix):
+                    if strict is False:
+                        if file.split("_")[0][:3] in pops or file.split("_")[0][3:] in pops:
+                            with open(recode_dir + file, 'r') as inf:
+                                for j, line in enumerate(inf):
+                                    if j == 0 and head is False:
+                                        new.write(line)
+                                        head = True
+                                    elif j != 0:
+                                        new.write(line)
+                    elif strict is True:
+                        if file.split("_")[0][:3] in pops and file.split("_")[0][3:] in pops:
+                            with open(recode_dir + file, 'r') as inf:
+                                for j, line in enumerate(inf):
+                                    if j == 0 and head is False:
+                                        new.write(line)
+                                        head = True
+                                    elif j != 0:
+                                        new.write(line)
 
 
     def calcbpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False, time="0-12:00"):
