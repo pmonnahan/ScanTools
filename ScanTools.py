@@ -448,6 +448,7 @@ class scantools:
         else:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate within population metrics")
 
+
     def concatWPM(self, recode_dir, suffix, outname, pops='all'):
         '''Purpose:  Concatenate _WPM.txt files corresponding to populations indicated in pops parameter.'''
 
@@ -470,6 +471,31 @@ class scantools:
                                 new.write(line)
                 except FileNotFoundError:
                     print("Did not find _WPM.txt file for population: ", pop)
+
+
+    def concatBPM(self, recode_dir, suffix, outname, pops='all'):
+        '''Purpose:  Concatenate _WPM.txt files corresponding to populations indicated in pops parameter.'''
+
+        if recode_dir.endswith("/") is False:
+            recode_dir += "/"
+
+        if os.path.exists(recode_dir) is True:
+            new = open(recode_dir + outname + "_BPM.txt", 'w')
+            if pops == 'all':
+                pops = self.pops
+            head = False
+            for i, pop in enumerate(pops):
+                try:
+                    with open(recode_dir + pop + suffix, 'r') as inf:
+                        for j, line in enumerate(inf):
+                            if j == 0 and head is False:
+                                new.write(line)
+                                head = True
+                            elif j != 0:
+                                new.write(line)
+                except FileNotFoundError:
+                    print("Did not find _BPM.txt file for population: ", pop)
+
 
 
     def calcbpm(self, recode_dir, pops, output_name, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False, time="0-12:00"):
