@@ -145,7 +145,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
     # Prepare output file
     outfile = output + outname + '_BPM.txt'
     out1 = open(outfile, 'w')
-    out1.write("outname\tscaff\tstart\tend\twin_size\tnum_snps\tRho\tFst\tdxy\tFixedDiff\tAFD\n")
+    out1.write("outname\tscaff\tstart\tend\twin_size\tnum_snps\tRho\tFst\tdxy\tAFD\tFixedDiff\n")
 
     # Begin loop over data file
     snp_count = 0
@@ -345,6 +345,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                str(Snp_count) + '\t' +
                str(rho_G) + '\t' +
                str(Fst_G) + '\t' +
+               str(Dxy) + '\t' +
                str(AFD) + '\t' +
                str(Dn) + '\n')
 
