@@ -1126,7 +1126,7 @@ class scantools:
 
 
     def queryFSC2input(self, input_dir, index_list, outname):
-        outfile = (input_dir + outname + ".txt", 'w')
+        outfile = open(input_dir + outname + ".txt", 'w')
         outfile.write("Outname\tPops\tProp\n")
         for path in os.listdir(input_dir):
             if os.path.isdir(input_dir + path) and path.startswith("FSC2input"):
