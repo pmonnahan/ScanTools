@@ -244,6 +244,100 @@ class scantools:
                                     "Populations: " + str(pops) + "\n")
 
 
+    # def calcMissing(self, vcf_dir, min_dp, window_size, ref_path="/nbi/Research-Groups/JIC/Levi-Yant/Lyrata_ref/alygenomes.fasta", gatk_path="/nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar", pops='all', mem=16000, time='0-04:00', numcores=1, print1=False, partition="long", keep_intermediates=False):
+    #     """NOT FUNCTIONAL"""
+    #     if vcf_dir.endswith("/") is False:
+    #         vcf_dir += "/"
+    #     vcf_dir_name = vcf_dir.split("/")[-2]
+    #     outdir = self.dir + "VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/"
+    #     self.vcf_dir = vcf_dir
+    #     if outdir not in self.split_dirs:
+    #         self.split_dirs.append(outdir)
+
+    #     mem1 = int(mem / 1000)
+
+    #     if os.path.exists(outdir) is False:
+    #             os.mkdir(outdir)
+
+    #     if pops == 'all':
+    #         pops = self.pops
+
+    #     for pop in pops:
+    #         # Add samples to list for each population according to PF file
+    #         sample_string1 = ""
+    #         for samp in self.samps[pop]:
+    #             sample_string1 += " -sn " + samp
+
+    #         vcf_list = []
+    #         vcf_basenames = []
+    #         for file in os.listdir(vcf_dir):
+    #             if file[-6:] == 'vcf.gz':
+    #                 vcf_list.append(file)
+    #                 vcf_basenames.append(file[:-7])
+    #             elif file[-3:] == 'vcf':
+    #                 vcf_list.append(file)
+    #                 vcf_basenames.append(file[:-4])
+    #         for v, vcf in enumerate(vcf_list):
+    #             # Select single population and biallelic SNPs for each scaffold and convert to variants table
+    #             shfile1 = open(vcf_dir_name + '.sh', 'w')
+    #             shfile1.write('#!/bin/bash\n' +
+    #                           '#SBATCH -J ' + vcf_dir_name + '.sh' + '\n' +
+    #                           '#SBATCH -e ' + self.oande + pop + vcf + '.gatk.err' + '\n' +
+    #                           '#SBATCH -o ' + self.oande + pop + vcf + '.gatk.out' + '\n' +
+    #                           '#SBATCH -p nbi-' + str(partition) + '\n' +
+    #                           '#SBATCH -n ' + str(numcores) + '\n' +
+    #                           '#SBATCH -t ' + str(time) + '\n' +
+    #                           '#SBATCH --mem=' + str(mem) + '\n' +
+    #                           'source GATK-nightly.2016.09.26\n' +
+    #                           'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T SelectVariants -R ' + ref_path + ' -V ' + vcf_dir + vcf + sample_string1 + ' -o ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf\n' +
+    #                           'gunzip ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf.gz\n')
+    #             shfile1.close()
+
+    #             if print1 is False:  # send slurm job to NBI SLURM cluster
+    #                 cmd1 = ('sbatch ' + pop + vcf_dir_name + '.sh')
+    #                 p1 = subprocess.Popen(cmd1, shell=True)
+    #                 sts1 = os.waitpid(p1.pid, 0)[1]
+
+    #             else:
+    #                 file1 = open(pop + vcf_dir_name + '.sh', 'r')
+    #                 data1 = file1.read()
+    #                 print(data1)
+
+    #             os.remove(pop + vcf_dir_name + '.sh')
+
+
+    #     # combine all variants table for each scaffold within a population
+
+    #     shfile3 = open(vcf_dir_name + '.sh', 'w')
+
+    #     shfile3.write('#!/bin/bash\n' +
+    #                   '#SBATCH -J ' + vcf_dir_name + '.sh' + '\n' +
+    #                   '#SBATCH -e ' + self.oande + vcf_dir_name + '.missing.err' + '\n' +
+    #                   '#SBATCH -o ' + self.oande + vcf_dir_name + '.missing.out' + '\n' +
+    #                   '#SBATCH -p nbi-medium\n' +
+    #                   '#SBATCH -n ' + str(numcores) + '\n' +
+    #                   '#SBATCH -t 2-00:00\n' +
+    #                   '#SBATCH --mem=' + str(mem) + '\n' +
+    #                   'source python-3.5.1\n' +
+    #                   'python3 ' + self.code_dir + '/MissingData.py -v ' + outdir + ' -w ' + str(window_size) + ' -dp ' + str(min_dp) + ' -gz false -o ' + outdir + 'MissingData_PerPop.txt\n')
+
+    #     if keep_intermediates is False:
+    #         shfile3.write('rm ' + outdir + '*.' + pop + '.vcf\n')
+    #         shfile3.write('rm ' + outdir + '*.' + pop + '.vcf.idx\n')
+    #     shfile3.close()
+
+    #     if print1 is False:
+    #         cmd3 = ('sbatch -d singleton ' + pop + vcf_dir_name + '.sh')
+    #         p3 = subprocess.Popen(cmd3, shell=True)
+    #         sts3 = os.waitpid(p3.pid, 0)[1]
+    #     else:
+    #         file3 = open(pop + vcf_dir_name + '.sh', 'r')
+    #         data3 = file3.read()
+    #         print(data3)
+
+    #     os.remove(vcf_dir_name + '.sh')
+
+
     def recode(self, split_dir, pops="all", print1=False, mem=4000, numcores=1, partition="medium"):
         '''Call: recode(self, min_avg_dp, missingness, print1=False, mem=16000, numcores=1)
            Purpose: Take the concatenated table files in ~/Working_Dir/VCFs/ and recode them so that genotypes are represented as number of alternative alleles
@@ -1029,3 +1123,23 @@ class scantools:
                                     paramsfile.write(model + "\t" + samp_names + "\t" + line)
         Lhoodfile.close()
         paramsfile.close()
+
+
+    def queryFSC2input(self, input_dir, index_list, outname):
+        outfile = (input_dir + outname + ".txt", 'w')
+        outfile.write("Outname\tPops\tProp\n")
+        for path in os.listdir(input_dir):
+            if os.path.isdir(input_dir + path) and path.startswith("FSC2input"):
+                samp_name = path.split("_")[1]
+                if samp_name + "_DSFS.obs" in os.listdir(input_dir + path):
+                    with open(input_dir + path + samp_name + "_DSFS.obs") as fsc2input:
+                        for i, line in enumerate(fsc2input):
+                            if i == 2:
+                                line = line.strip("\n").split("\t")
+                                tot = sum([int(j) for j in line])
+                                sp = 0  # Shared polymorphisms
+                                for ix in index_list:
+                                    sp += int(line[ix])
+                    outfile.write(outname + '\t' + samp_name + '\t' + str(float(sp) / float(tot)) + '\n')
+
+
