@@ -1135,7 +1135,7 @@ class scantools:
                     with open(input_dir + path + '/' + samp_name + "_DSFS.obs") as fsc2input:
                         for i, line in enumerate(fsc2input):
                             if i == 2:
-                                line = line.strip("\n").split("\t")
+                                line = line.strip("\n").strip("\t").split("\t")
                                 tot = sum([int(j) for j in line])
                                 sp = 0  # Shared polymorphisms
                                 for ix in index_list:
