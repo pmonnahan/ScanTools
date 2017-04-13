@@ -1132,7 +1132,7 @@ class scantools:
             if os.path.isdir(input_dir + path) and path.startswith("FSC2input"):
                 samp_name = path.split("_")[1]
                 if samp_name + "_DSFS.obs" in os.listdir(input_dir + path):
-                    with open(input_dir + path + samp_name + "_DSFS.obs") as fsc2input:
+                    with open(input_dir + path + '/' + samp_name + "_DSFS.obs") as fsc2input:
                         for i, line in enumerate(fsc2input):
                             if i == 2:
                                 line = line.strip("\n").split("\t")
