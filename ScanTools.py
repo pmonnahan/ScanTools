@@ -669,7 +669,7 @@ class scantools:
         else:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate between population metrics")
 
-    def calcPairwisebpm(self, recode_dir, pops, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False, time="0-01:00"):
+    def calcPairwisebpm(self, recode_dir, pops, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False, time="0-01:00", overwrite=False):
         '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
            Notes: User provides a list of populations to be included.  For pairwise estimates, simply provide two populations
                     Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps in a window
@@ -703,6 +703,8 @@ class scantools:
                         skip = True
                     if skip is True:
                         print("Did not find all input files!!  Aborting pairwise bpm for contrast: ", output_name)
+                    elif os.path.exists(recode_dir + output_name + '_BPM.txt') and overwrite is False:
+                        print(recode_dir + output_name + '_BPM.txt already exists.  Set "overwrite" to True if you want to overwrite.')
                     else:
                         shfile3 = open(recode_dir + output_name + '.bpm.sh', 'w')
 
