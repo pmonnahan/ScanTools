@@ -760,7 +760,7 @@ class scantools:
             suffix = '.table.recode.txt'
         for pop in pops:
             infile = recode_dir + pop + suffix
-            shfile3 = open(recode_dir + infile + '.afs.sh', 'w')
+            shfile3 = open(infile + '.afs.sh', 'w')
             prefix = pop + "_" + data_name
             shfile3.write('#!/bin/bash\n' +
                           '#SBATCH -J ' + pop + '.afs.sh' + '\n' +
@@ -774,12 +774,12 @@ class scantools:
                           'python3 ' + self.code_dir + '/calcAFS.py -i ' + infile + ' -o ' + recode_dir + ' -prefix ' + prefix + '\n')
             shfile3.close()
             if print1 is False:
-                cmd3 = ('sbatch ' + recode_dir + infile + '.afs.sh')
+                cmd3 = ('sbatch ' + infile + '.afs.sh')
                 p3 = subprocess.Popen(cmd3, shell=True)
                 sts3 = os.waitpid(p3.pid, 0)[1]
 
             else:
-                file3 = open(recode_dir + infile + '.afs.sh', 'r')
+                file3 = open(infile + '.afs.sh', 'r')
                 data3 = file3.read()
                 print(data3)
 
