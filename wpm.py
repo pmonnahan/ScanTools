@@ -34,7 +34,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
             if i == 0:
                 outfile = output + prefix + "_WPM.txt"
                 out1 = open(outfile, 'w')
-                out1.write("pop\tploidy\tsampind\tscaff\tstart\tend\twin_size\tnum_snps\tnum_singletons\tavg_freq\tavg_Ehet\tDiversity\tThetaW\tPi\tThetaH\tThetaL\tD\tH\tE\n")
+                out1.write("pop\tploidy\tsampind\tscaff\tstart\tend\twin_size\tnum_snps\tnum_sites\tnum_singletons\tavg_freq\tavg_Ehet\tDiversity\tThetaW\tPi\tThetaH\tThetaL\tD\tH\tE\n")
                 oldscaff = scaff
                 AN = int(sampind * int(float(ploidy)))
                 n = float(AN)
@@ -121,6 +121,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                                    str(end) + '\t' +
                                    str(window_size) + '\t' +
                                    str(snp_count) + '\t' +
+                                   str(tot_count) + '\t' +
                                    str(num_sing) + '\t' +
                                    str(numpy.mean(p)) + '\t' +
                                    str(numpy.mean(Ehet)) + '\t' +
@@ -215,6 +216,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                            str(end) + '\t' +
                            str(window_size) + '\t' +
                            str(snp_count) + '\t' +
+                           str(tot_count) + '\t' +
                            str(num_sing) + '\t' +
                            str(numpy.mean(p)) + '\t' +
                            str(numpy.mean(Ehet)) + '\t' +
@@ -266,6 +268,7 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                    "-99" + '\t' +
                    "-99" + '\t' +
                    str(Snp_count) + '\t' +
+                   str(Tot_count) + '\t' +
                    str(Num_sing) + '\t' +
                    "-99" + '\t' +
                    "-99" + '\t' +

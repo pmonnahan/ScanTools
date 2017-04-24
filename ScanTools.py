@@ -748,6 +748,41 @@ class scantools:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate between population metrics")
 
 
+    def calcAFS(self, recode_dir, sampind, data_name, pops="-99", time="0-00:30", mem="8000", use_repol=True, print1=False):
+        if recode_dir.endswith("/") is False:
+            recode_dir += "/"
+        if pops == "-99":
+            pops = self.pops
+
+        if use_repol is True:
+            suffix = '.table.repol.txt'
+        else:
+            suffix = '.table.recode.txt'
+        for pop in pops:
+            infile = recode_dir + pop + suffix
+            shfile3 = open(recode_dir + infile + '.afs.sh', 'w')
+            prefix = pop + "_" + data_name
+            shfile3.write('#!/bin/bash\n' +
+                          '#SBATCH -J ' + pop + '.afs.sh' + '\n' +
+                          '#SBATCH -e ' + self.oande + pop + '.afs.err' + '\n' +
+                          '#SBATCH -o ' + self.oande + pop + '.afs.out' + '\n' +
+                          '#SBATCH -p nbi-short' + '\n'
+                          '#SBATCH -n 1' + '\n' +
+                          '#SBATCH -t ' + str(time) + '\n' +
+                          '#SBATCH --mem=' + str(mem) + '\n' +
+                          'source python-3.5.1\n' +
+                          'python3 ' + self.code_dir + '/calcAFS.py -i ' + infile + ' -o ' + recode_dir + ' -prefix ' + prefix + '\n')
+            shfile3.close()
+            if print1 is False:
+                cmd3 = ('sbatch ' + recode_dir + infile + '.afs.sh')
+                p3 = subprocess.Popen(cmd3, shell=True)
+                sts3 = os.waitpid(p3.pid, 0)[1]
+
+            else:
+                file3 = open(recode_dir + infile + '.afs.sh', 'r')
+                data3 = file3.read()
+                print(data3)
+
     def findOutliers(self, recode_dir, in_file, column_index_list, percentile, tails='upper'):
         '''Purpose:  Take output from either calcwpm or calcbpm and determine outlier metrics for a given percentile.
            Notes: Output will be two csv files (one containing all sites with outliers indicated by 0 or 1 and another containing just outliers)
