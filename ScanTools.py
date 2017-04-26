@@ -748,7 +748,7 @@ class scantools:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate between population metrics")
 
 
-    def calcAFS(self, recode_dir, sampind, data_name, pops="-99", time="0-00:30", mem="8000", use_repol=True, print1=False):
+    def calcAFS(self, recode_dir, data_name, sampind="-99", pops="-99", time="0-00:30", mem="8000", use_repol=True, print1=False, allow_one_missing=True):
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
         if pops == "-99":
@@ -759,6 +759,12 @@ class scantools:
         else:
             suffix = '.table.recode.txt'
         for pop in pops:
+            if sampind != "-99":
+                si = self.samp_nums[pop]
+                if allow_one_missing is True:
+                    si -= 1
+            else:
+                si = sampind
             infile = recode_dir + pop + suffix
             shfile3 = open(infile + '.afs.sh', 'w')
             prefix = pop + "_" + data_name
@@ -771,7 +777,7 @@ class scantools:
                           '#SBATCH -t ' + str(time) + '\n' +
                           '#SBATCH --mem=' + str(mem) + '\n' +
                           'source python-3.5.1\n' +
-                          'python3 ' + self.code_dir + '/calcAFS.py -i ' + infile + ' -o ' + recode_dir + ' -p ' + prefix + ' -sampind ' + str(sampind) + '\n')
+                          'python3 ' + self.code_dir + '/calcAFS.py -i ' + infile + ' -o ' + recode_dir + ' -p ' + prefix + ' -sampind ' + str(si) + '\n')
             shfile3.close()
             if print1 is False:
                 cmd3 = ('sbatch ' + infile + '.afs.sh')
