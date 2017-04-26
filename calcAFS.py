@@ -36,10 +36,8 @@ def calcAFS(input_file, output, prefix, sampind=5):
                     sac = sum([int(x) for x in sgt])
                     AFS[sac] += 1
 
-        out1.write(prefix + '\t')
-        for j in AFS:
-            out1.write(str(j) + '\t')
-        out1.write("\n")
+        for k, j in enumerate(AFS):
+            out1.write(prefix + '\t' + str(k) + "\t" + str(j) + '\n')
 
     out1.close()
     return AFS
