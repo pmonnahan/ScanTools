@@ -759,7 +759,7 @@ class scantools:
         else:
             suffix = '.table.recode.txt'
         for pop in pops:
-            if sampind != "-99":
+            if sampind == "-99":
                 si = self.samp_nums[pop]
                 if allow_one_missing is True:
                     si -= 1
