@@ -106,7 +106,7 @@ class scantools:
         self.log_file.write("Combined Pops: " + str(pops) + " as " + popname + "\n")
 
 
-    def splitVCFs(self, vcf_dir, min_dp, mffg, ref_path="/nbi/Research-Groups/JIC/Levi-Yant/Lyrata_ref/alygenomes.fasta", gatk_path="/nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar", repolarization_key="-99", pops='all', mem=16000, time='0-04:00', numcores=1, print1=False, overwrite=False, partition="long", keep_intermediates=False):
+    def splitVCFs(self, vcf_dir, min_dp, mffg, ref_path="/nbi/Research-Groups/JIC/Levi-Yant/Lyrata_ref/alygenomes.fasta", gatk_path="/nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar", repolarization_key="-99", pops='all', mem=16000, time='0-04:00', numcores=1, print1=False, overwrite=False, partition="long", keep_intermediates=False, use_scratch=False):
         '''Purpose:  Find all vcfs in vcf_dir and split them by population according to samples associated with said population.
                     Then, take only biallelic snps and convert vcf to table containing scaff, pos, ac, an, dp, and genotype fields.
                     Finally, concatenate all per-scaffold tables to one giant table. Resulting files will be put into ~/Working_Dir/VCFs/
@@ -117,7 +117,10 @@ class scantools:
         if vcf_dir.endswith("/") is False:
             vcf_dir += "/"
         vcf_dir_name = vcf_dir.split("/")[-2]
-        outdir = self.dir + "VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/"
+        if use_scratch is True:
+            outdir = "/nbi/scratch/monnahap/VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/"
+        else:
+            outdir = self.dir + "VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/"
         self.vcf_dir = vcf_dir
         if outdir not in self.split_dirs:
             self.split_dirs.append(outdir)
@@ -988,7 +991,7 @@ class scantools:
         else:
             print("!!!Did not find recode_dir!!!!")
 
-    def FSC2(self, input_dir, min_sims=10000, max_sims=100000, conv_crit=0.001, min_ecm=10, max_ecm=40, calc_CI=False, partition="short", numcores=1, time="0-02:00", mem="8000", print1=False, hard_overwrite=False, soft_overwrite=False, fsc2_path="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221"):
+    def FSC2(self, input_dir, min_sims=10000, max_sims=100000, conv_crit=0.001, min_ecm=10, max_ecm=40, calc_CI=False, partition="short", numcores=1, time="0-02:00", mem="8000", print1=False, hard_overwrite=False, soft_overwrite=False, fsc2_path="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221", cluster="JIC"):
 
         Data_Files = []
         tpl_files = []
@@ -1053,18 +1056,32 @@ class scantools:
                                     new_est.write(line)
                         except FileNotFoundError:
                             print("Did not find est file for: ", tpl)
-                        shfile5 = open(name.split("/")[-1] + tpl_name + ".sh", 'w')
-                        shfile5.write('#!/bin/bash\n' +
-                                      '#SBATCH -J ' + name.split("/")[-1] + "_" + tpl_name + ".fsc2.sh" + '\n' +
-                                      '#SBATCH -e ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.err" + '\n' +
-                                      '#SBATCH -o ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.out" + '\n' +
-                                      '#SBATCH -p nbi-' + str(partition) + '\n' +
-                                      '#SBATCH -n ' + str(numcores) + '\n' +
-                                      '#SBATCH -t ' + str(time) + '\n' +
-                                      '#SBATCH --mem=' + str(mem) + '\n' +
-                                      'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
-                                      fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
-                        shfile5.close()
+                        if cluster == "JIC":
+                            shfile5 = open(name.split("/")[-1] + tpl_name + ".sh", 'w')
+                            shfile5.write('#!/bin/bash\n' +
+                                          '#SBATCH -J ' + name.split("/")[-1] + "_" + tpl_name + ".fsc2.sh" + '\n' +
+                                          '#SBATCH -e ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.err" + '\n' +
+                                          '#SBATCH -o ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.out" + '\n' +
+                                          '#SBATCH -p nbi-' + str(partition) + '\n' +
+                                          '#SBATCH -n ' + str(numcores) + '\n' +
+                                          '#SBATCH -t ' + str(time) + '\n' +
+                                          '#SBATCH --mem=' + str(mem) + '\n' +
+                                          'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
+                                          fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
+                            shfile5.close()
+                        elif cluster == "oslo":
+                            shfile5 = open(name.split("/")[-1] + tpl_name + ".sh", 'w')
+                            shfile5.write('#!/bin/bash\n' +
+                                          '#SBATCH --job-name= ' + name.split("/")[-1] + "_" + tpl_name + ".fsc2.sh" + '\n' +
+                                          '#SBATCH --acount=nn9365k\n' + 
+                                          '#SBATCH --time=05:00:00\n' +
+                                          '#SBATCH --mem-per-cpu=4G\n' +
+                                          'source /cluster/bin/jobsetup\n' +
+                                          'cp $SUBMITDIR/##*.* $SCRATCH\n' +  # *.* originally VEL_TKO_DRA_VID
+                                          'chkfile "*.bestlhoods" "*.par"\n' +
+                                          'cd $SCRATCH\n' +
+                                          fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
+                            shfile5.close()
                         if print1 is False:
                             cmd1 = ('sbatch ' + name.split("/")[-1] + tpl_name + ".sh")
                             p1 = subprocess.Popen(cmd1, shell=True)
