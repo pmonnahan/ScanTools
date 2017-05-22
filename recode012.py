@@ -24,6 +24,7 @@ with open(args.i, "rU") as table:
                 ploidy = float(max([len(x.split("/")) for x in line[5:]]))
                 get_ploidy = False
             ref = line[2]
+            numind = len(line[4:])
             scaff = line[0]
             pos = line[1]
             an = line[3]
@@ -47,3 +48,4 @@ with open(args.i, "rU") as table:
             GT += "\n"
             GTfile.write(GT)
 
+    print("number of individuals = ", numind)

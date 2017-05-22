@@ -127,18 +127,19 @@ class scantools:
 
         mem1 = int(mem / 1000)
 
-        if os.path.exists(outdir) is True and overwrite is False:
-            print("VCF directory already exists.  Set 'overwrite = True' if you want to overwrite existing files")
-        else:
-            if os.path.exists(outdir) is False:
-                os.mkdir(outdir)
-            elif overwrite is True:
-                print("Overwriting files in existing VCF directory")
+        if os.path.exists(outdir) is False:
+            os.mkdir(outdir)
+        elif overwrite is True:
+            print("Overwriting files in existing VCF directory")
 
-            if pops == 'all':
-                pops = self.pops
+        if pops == 'all':
+            pops = self.pops
 
-            for pop in pops:
+        for pop in pops:
+
+            if (os.path.exists(outdir + pop + '.table.repol.txt') is True or os.path.exists(outdir + pop + '.table.recode.txt') is True) and overwrite is not True:
+                print("Found file for pop = " + pop + '.  Set overwrite = True to overwrite files.')
+            else:
                 # Add samples to list for each population according to PF file
                 sample_string1 = ""
                 for samp in self.samps[pop]:
@@ -473,7 +474,7 @@ class scantools:
 
 
     # CALCULATE WITHIN POPULATION METRICS
-    def calcwpm(self, recode_dir, window_size, min_snps, pops="all", print1=False, mem=16000, numcores=1, sampind="-99", partition="medium", use_repol=True, time="0-02:00"):
+    def calcwpm(self, recode_dir, window_size, min_snps, pops="all", print1=False, mem=16000, numcores=1, sampind="-99", partition="medium", use_repol=True, time="0-02:00",overwrite=False):
         '''Purpose: Calculate within population metrics including: allele frequency, expected heterozygosity, Wattersons theta, Pi, ThetaH, ThetaL and neutrality tests: D, normalized H, E
            Notes:  Currently, all populations are downsampled to same number of individuals.  By default, this minimum individuals across populations minus 1 to allow for some missing data
                     It is worth considering whether downsampling should be based on number of individuals or number of alleles.
@@ -501,35 +502,37 @@ class scantools:
             for pop in pops:
 
                 prefix = pop + ".WS" + str(window_size / 1000) + "k_MS" + str(min_snps) + "_" + str(sind) + "ind"
-
-                if os.path.exists(recode_dir + pop + suffix) is True:
-                    shfile3 = open(dir_name + "." + pop + '.sh', 'w')
-
-                    shfile3.write('#!/bin/bash\n' +
-                                  '#SBATCH -J ' + dir_name + "." + pop + '.sh' + '\n' +
-                                  '#SBATCH -e ' + self.oande + dir_name + "." + prefix + '.wpm.err' + '\n' +
-                                  '#SBATCH -o ' + self.oande + dir_name + "." + prefix + '.wpm.out' + '\n' +
-                                  '#SBATCH -p nbi-' + str(partition) + '\n' +
-                                  '#SBATCH -n ' + str(numcores) + '\n' +
-                                  '#SBATCH -t ' + str(time) + '\n' +
-                                  '#SBATCH --mem=' + str(mem) + '\n' +
-                                  'source python-3.5.1\n' +
-                                  'python3 ' + self.code_dir + '/wpm.py -i ' + recode_dir + pop + suffix + ' -o ' + recode_dir + ' -p ' + prefix + ' -sampind ' + str(sind) + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + '\n')
-                    shfile3.close()
-
-                    if print1 is False:
-                        cmd3 = ('sbatch -d singleton ' + dir_name + "." + pop + '.sh')
-                        p3 = subprocess.Popen(cmd3, shell=True)
-                        sts3 = os.waitpid(p3.pid, 0)[1]
-
-                    else:
-                        file3 = open(dir_name + "." + pop + '.sh', 'r')
-                        data3 = file3.read()
-                        print(data3)
-
-                    os.remove(dir_name + "." + pop + '.sh')
+                if os.path.exists(recode_dir + prefix + '_WPM.txt') is True and overwrite is not True:
+                    print("Output file for pop " + pop + ' already exists.  Set overwrite = True to overwrite.  Aborting.')
                 else:
-                    print("Did not find input files for: ", pop)
+                    if os.path.exists(recode_dir + pop + suffix) is True:
+                        shfile3 = open(dir_name + "." + pop + '.sh', 'w')
+
+                        shfile3.write('#!/bin/bash\n' +
+                                      '#SBATCH -J ' + dir_name + "." + pop + '.sh' + '\n' +
+                                      '#SBATCH -e ' + self.oande + dir_name + "." + prefix + '.wpm.err' + '\n' +
+                                      '#SBATCH -o ' + self.oande + dir_name + "." + prefix + '.wpm.out' + '\n' +
+                                      '#SBATCH -p nbi-' + str(partition) + '\n' +
+                                      '#SBATCH -n ' + str(numcores) + '\n' +
+                                      '#SBATCH -t ' + str(time) + '\n' +
+                                      '#SBATCH --mem=' + str(mem) + '\n' +
+                                      'source python-3.5.1\n' +
+                                      'python3 ' + self.code_dir + '/wpm.py -i ' + recode_dir + pop + suffix + ' -o ' + recode_dir + ' -p ' + prefix + ' -sampind ' + str(sind) + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + '\n')
+                        shfile3.close()
+
+                        if print1 is False:
+                            cmd3 = ('sbatch -d singleton ' + dir_name + "." + pop + '.sh')
+                            p3 = subprocess.Popen(cmd3, shell=True)
+                            sts3 = os.waitpid(p3.pid, 0)[1]
+
+                        else:
+                            file3 = open(dir_name + "." + pop + '.sh', 'r')
+                            data3 = file3.read()
+                            print(data3)
+
+                        os.remove(dir_name + "." + pop + '.sh')
+                    else:
+                        print("Did not find input files for: ", pop)
 
             if print1 is False:
                 self.log_file.write("###  Calculate Within-Population-Metrics  ###\n" +
