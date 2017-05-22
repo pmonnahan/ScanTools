@@ -994,7 +994,7 @@ class scantools:
         else:
             print("!!!Did not find recode_dir!!!!")
 
-    def FSC2(self, input_dir, min_sims=10000, max_sims=100000, conv_crit=0.001, min_ecm=10, max_ecm=40, calc_CI=False, partition="short", numcores=1, time="0-02:00", mem="8000", print1=False, hard_overwrite=False, soft_overwrite=False, fsc2_path="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221", cluster="JIC"):
+    def FSC2(self, input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.001, min_ecm=10, max_ecm=40, calc_CI=False, partition="short", numcores=1, time="0-02:00", mem="8000", print1=False, hard_overwrite=False, soft_overwrite=False, fsc2_path="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221", cluster="JIC"):
 
         Data_Files = []
         tpl_files = []
@@ -1004,7 +1004,13 @@ class scantools:
             if os.path.isdir(input_dir + path) and path.startswith("FSC2input"):
                 samp_name = path.split("_")[1]
                 if samp_name + "_DSFS.obs" in os.listdir(input_dir + path):
-                    Data_Files.append(input_dir + path + "/" + samp_name + "_DSFS.obs")
+                    for i in range(0, num_reps):
+                        new_file = open(input_dir + path + "/" + samp_name + str(i) + "_DSFS.obs")
+                        with open(input_dir + path + "/" + samp_name + "_DSFS.obs") as data_file:
+                            for line in data_file:
+                                new_file.write(line)
+                            new_file.close()
+                        Data_Files.append(input_dir + path + "/" + samp_name + str(i) + "_DSFS.obs")
                 else:
                     print("Did not find input data file for: ", samp_name)
                     # if file.split("_")[0].split(".")[-1].beginswith("rep") is True:
@@ -1018,7 +1024,6 @@ class scantools:
                         print("Did not find bootstrap replicates for: ", samp_name)
                     else:
                         print("Found ", num_files, " replicate dsfs files for CI calculation for ", samp_name)
-        
             if path.endswith(".tpl"):
                 tpl_files.append(path)
                 est_files.append(path.split(".")[0])
