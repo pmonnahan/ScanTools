@@ -619,7 +619,7 @@ class scantools:
 
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
-        output_name += "_WS" + str(window_size) + "_MS" + str(minimum_snps)
+        output_name += "_WS" + str(window_size) + "_MS" + str(min_snps)
         if os.path.exists(recode_dir) is True and len(pops) > 1:
             pop_num = 0
             file_string = ""
@@ -647,7 +647,7 @@ class scantools:
                               '#SBATCH --mem=' + str(mem) + '\n' +
                               'source python-3.5.1\n' +
                               'sort -k3,3 -k4,4n -m ' + file_string + '> ' + recode_dir + output_name + '.concat.txt\n' +
-                              'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + ' -np ' + str(pop_num) + '\n')
+                              'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + ' -np ' + str(pop_num) + '\n')
                 if keep_intermediates is False:
                     shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
                 shfile3.close()
@@ -660,7 +660,7 @@ class scantools:
                     self.log_file.write("###  Calculate Between-Population-Metrics  ###\n" +
                                         "Input Directory: " + recode_dir + "\n" +
                                         "Window Size: " + str(window_size) + "\n" +
-                                        "Minimum SNPs in a window: " + str(minimum_snps) + "\n" +
+                                        "Minimum SNPs in a window: " + str(min_snps) + "\n" +
                                         "Use repolarized data: " + str(use_repol) + "\n" +
                                         "Populations: " + str(pops) + "\n")
 
@@ -675,7 +675,7 @@ class scantools:
         else:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate between population metrics")
 
-    def calcPairwisebpm(self, recode_dir, pops, window_size, minimum_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False, time="0-01:00", overwrite=False):
+    def calcPairwisebpm(self, recode_dir, pops, window_size, min_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False, time="0-01:00", overwrite=False):
         '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
            Notes: User provides a list of populations to be included.  For pairwise estimates, simply provide two populations
                     Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps in a window
@@ -693,7 +693,7 @@ class scantools:
             # Concatenate input files and sort them
             for i, pop1 in enumerate(pops):  # Add data from all populations to single, huge listg
                 for pop2 in pops[i + 1:]:
-                    output_name = pop1 + pop2 + "_WS" + str(window_size) + "_MS" + str(minimum_snps)
+                    output_name = pop1 + pop2 + "_WS" + str(window_size) + "_MS" + str(min_snps)
                     skip = False
                     try:
                         a = open(recode_dir + pop1 + suffix, 'r')
@@ -724,7 +724,7 @@ class scantools:
                                       '#SBATCH --mem=' + str(mem) + '\n' +
                                       'source python-3.5.1\n' +
                                       'sort -k3,3 -k4,4n -m ' + recode_dir + pop1 + suffix + " " + recode_dir + pop2 + suffix + " > " + recode_dir + output_name + '.concat.txt\n' +
-                                      'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(minimum_snps) + ' -np 2\n')
+                                      'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + ' -np 2\n')
                         if keep_intermediates is False:
                             shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
                         shfile3.close()
@@ -745,7 +745,7 @@ class scantools:
                 self.log_file.write("###  Calculate PAIRWISE Between-Population-Metrics  ###\n" +
                                     "Input Directory: " + recode_dir + "\n" +
                                     "Window Size: " + str(window_size) + "\n" +
-                                    "Minimum SNPs in a window: " + str(minimum_snps) + "\n" +
+                                    "Minimum SNPs in a window: " + str(min_snps) + "\n" +
                                     "Use repolarized data: " + str(use_repol) + "\n" +
                                     "Populations: " + str(pops) + "\n")
         elif len(pops) < 2:
