@@ -1005,7 +1005,7 @@ class scantools:
                 samp_name = path.split("_")[1]
                 if samp_name + "_DSFS.obs" in os.listdir(input_dir + path):
                     for i in range(0, num_reps):
-                        new_file = open(input_dir + path + "/" + samp_name + str(i) + "_DSFS.obs")
+                        new_file = open(input_dir + path + "/" + samp_name + str(i) + "_DSFS.obs",'w')
                         with open(input_dir + path + "/" + samp_name + "_DSFS.obs") as data_file:
                             for line in data_file:
                                 new_file.write(line)
