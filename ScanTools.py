@@ -441,7 +441,7 @@ class scantools:
 
 
 
-    def getPloidies(self, recode_dir):
+    def getPloidies(self, recode_dir, use_repol=True):
         '''Purpose: Create new methods of scantools object containing ploidy of each population (.ploidies) as well as a list of dips (.dips) and tetraploid populations (.tets)
            Notes: Can only be executed after recode has been executed on vcfs'''
 
@@ -454,7 +454,10 @@ class scantools:
         if os.path.exists(recode_dir) is True:
             for pop in self.pops:
                 try:
-                    tmp = open(recode_dir + pop + '.table.recode.txt', 'r')
+                    if use_repol is True:
+                        tmp = open(recode_dir + pop + '.table.repol.txt', 'r')
+                    else:    
+                        tmp = open(recode_dir + pop + '.table.recode.txt', 'r')
                     line = tmp.readline()
                     ploidy = line.split("\t")[1]
                     ploidies[pop] = ploidy
@@ -794,6 +797,7 @@ class scantools:
                 file3 = open(infile + '.afs.sh', 'r')
                 data3 = file3.read()
                 print(data3)
+            os.remove(infile + '.afs.sh')
 
     def findOutliers(self, recode_dir, in_file, column_index_list, percentile, tails='upper'):
         '''Purpose:  Take output from either calcwpm or calcbpm and determine outlier metrics for a given percentile.
