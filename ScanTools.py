@@ -171,11 +171,14 @@ class scantools:
                                   'source GATK-nightly.2016.09.26\n' +
                                   'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T SelectVariants -R ' + ref_path + ' -V ' + vcf_dir + vcf + sample_string1 + ' -o ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf\n' +
                                   'gunzip ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf.gz\n' +
-                                  'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T VariantFiltration -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf --genotypeFilterExpression "DP < ' + str(min_dp) + '" --genotypeFilterName "DP" -o ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.1.vcf\n' +
-                                  'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T VariantFiltration -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.1.vcf --setFilteredGtToNocall -o ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.vcf\n' +
-                                  'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T SelectVariants -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.vcf --maxNOCALLnumber ' + str(mfg) + ' -o ' + outdir + vcf_basenames[v] + '.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf\n' +
-                                  'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T VariantsToTable -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf -F CHROM -F POS -F REF -F AN -F DP -GF GT -o ' + outdir + vcf_basenames[v] + '.' + pop + '_raw.table\n')
-
+                                  'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T VariantFiltration -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf --genotypeFilterExpression "DP < ' + str(min_dp) + '" --genotypeFilterName "DP" -o ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.1.vcf\n')
+                    if keep_intermediates is False: shfile1.write('rm ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf\nrm ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf.idx\n')
+                    shfile1.write('java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T VariantFiltration -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.1.vcf --setFilteredGtToNocall -o ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.vcf\n')
+                    if keep_intermediates is False: shfile1.write('rm ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.1.vcf\nrm ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.1.vcf.idx\n')
+                    shfile1.write('java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T SelectVariants -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.vcf --maxNOCALLnumber ' + str(mfg) + ' -o ' + outdir + vcf_basenames[v] + '.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf\n')
+                    if keep_intermediates is False: shfile1.write('rm ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.vcf\nrm ' + outdir + vcf_basenames[v] + '.' + pop + '.dp' + str(min_dp) + '.vcf.idx\n')
+                    shfile1.write('java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T VariantsToTable -R ' + ref_path + ' -V ' + outdir + vcf_basenames[v] + '.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf -F CHROM -F POS -F REF -F AN -F DP -GF GT -o ' + outdir + vcf_basenames[v] + '.' + pop + '_raw.table\n')
+                    if keep_intermediates is False: shfile1.write('rm ' + outdir + vcf_basenames[v] + '.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf\nrm ' + outdir + vcf_basenames[v] + '.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf.idx\n')
                     shfile1.close()
 
                     if print1 is False:  # send slurm job to NBI SLURM cluster
@@ -205,25 +208,17 @@ class scantools:
                               '#SBATCH -t 0-12:00\n' +
                               '#SBATCH --mem=' + str(mem) + '\n' +
                               'source python-3.5.1\n' +
-                              'cat ' + outdir + '*' + pop + '_raw.table | tail -n+2 > ' + outdir + pop + '.table\n' +
-                              'python3 ' + self.code_dir + '/recode012.py -i ' + outdir + pop + '.table -pop ' + pop + ' -o ' + outdir + '\n')
+                              'cat ' + outdir + '*' + pop + '_raw.table | tail -n+2 > ' + outdir + pop + '.table\n')
+                if keep_intermediates is False: shfile3.write('rm ' + outdir + '*' + pop + '_raw.table\n')
+                shfile3.write('python3 ' + self.code_dir + '/recode012.py -i ' + outdir + pop + '.table -pop ' + pop + ' -o ' + outdir + '\n')
+                if keep_intermediates is False: shfile3.write('rm ' + outdir + pop + '.table\n')
+
                 if repolarization_key == "-99":
                     print("No repolarization key provided.  Repolarized input files will not be produced.  Must set 'use_repol' to False in subsequent steps")
                 else:
                     shfile3.write('python3 ' + self.code_dir + '/repol.py -i ' + outdir + pop + '.table.recode.txt -o ' + outdir + pop + ' -r ' + repolarization_key + '\n')
-                    if keep_intermediates is False:
-                        shfile3.write('rm ' + outdir + pop + '.table.recode.txt\n')
-                if keep_intermediates is False:
-                    shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.vcf\n')
-                    shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.vcf.idx\n')
-                    shfile3.write('rm ' + outdir + '*.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf\n')
-                    shfile3.write('rm ' + outdir + '*.' + pop + '.m' + str(mffg) + '.dp' + str(min_dp) + '.bi.vcf.idx\n')
-                    shfile3.write('rm ' + outdir + '*.' + pop + '.vcf\n')
-                    shfile3.write('rm ' + outdir + '*.' + pop + '.vcf.idx\n')
-                    shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.1.vcf\n')
-                    shfile3.write('rm ' + outdir + '*.' + pop + '.dp' + str(min_dp) + '.1.vcf.idx\n')
-                    shfile3.write('rm ' + outdir + '*' + pop + '_raw.table\n' +
-                                  'rm ' + outdir + pop + '.table\n')
+                    if keep_intermediates is False: shfile3.write('rm ' + outdir + pop + '.table.recode.txt\n')
+
                 shfile3.close()
 
                 if print1 is False:
