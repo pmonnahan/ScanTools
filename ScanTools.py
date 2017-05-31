@@ -915,13 +915,19 @@ class scantools:
             raise ValueError("File error for mergeAnnotation: %s" % recode_dir + annotated_outlier_file)
 
 
-    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size, bootstrap_reps, mem=16000, numcores=1, time='2-00:00', print1=False, use_repol=True, keep_intermediates=False, alphabetical_pop_order='false'):
+    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size=50000, bootstrap_reps=0, mem=16000, numcores=1, time='2-00:00', print1=False, use_repol=True, keep_intermediates=False, alphabetical_pop_order='false', use_scratch=True):
         '''Purpose:  Generate --multiSFS for fastsimcoal2 along with a given number of non-parametric block-bootstrapped replicates
            Notes: Must provide the block size for bootstrapping as well as number of bootstrap replicates
                   As of now, the necessary template files for FSC2 must come from elsewhere.  Beware of running this method with numerous populations'''
 
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
+
+        if use_scratch is True:
+            tmpdir = "/nbi/scratch/monnahap/"
+        else:
+            tmpdir = recode_dir
+
 
         outdir = recode_dir + "FSC2input_" + output_name + "/"
 
@@ -937,11 +943,11 @@ class scantools:
             else:
                 suffix1 = '.table.recode.txt'
                 suffix2 = '.recode.concat.txt'
-            concat_name = recode_dir + output_name + suffix2
+            concat_name = tmpdir + output_name + suffix2
             missing = []
             if os.path.exists(concat_name) is False:
                 print("Concatenating input files")
-                concat_file = open(recode_dir + output_name + suffix2, 'w')
+                concat_file = open(tmpdir + output_name + suffix2, 'w')
                 for pop in pops:
                     try:
                         with open(recode_dir + pop + suffix1) as infile:
