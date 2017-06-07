@@ -794,6 +794,47 @@ class scantools:
                 print(data3)
             os.remove(infile + '.afs.sh')
 
+
+    def calcFreqs(self, recode_dir, outfile_name, sites_file, pops="-99", time="0-02:00", partition="short", mem="8000", use_repol=True, print1=False, allow_one_missing=True):
+        if recode_dir.endswith("/") is False:
+            recode_dir += "/"
+        if pops == "-99":
+            pops = self.pops
+
+        pop_string = ""
+        for pop in pops:
+            pop_string += pop + ","
+        pop_string.strip(",")
+
+        if use_repol is True:
+            suffix = '.table.repol.txt'
+        else:
+            suffix = '.table.recode.txt'
+
+        shfile3 = open('CalcFreqs.sh', 'w')
+        shfile3.write('#!/bin/bash\n' +
+                      '#SBATCH -J ' + pop + '.afs.sh' + '\n' +
+                      '#SBATCH -e ' + self.oande + 'CalcFreqs.err' + '\n' +
+                      '#SBATCH -o ' + self.oande + 'CalcFreqs.out' + '\n' +
+                      '#SBATCH -p nbi-' + partition + '\n'
+                      '#SBATCH -n 1' + '\n' +
+                      '#SBATCH -t ' + str(time) + '\n' +
+                      '#SBATCH --mem=' + str(mem) + '\n' +
+                      'source python-3.5.1\n' +
+                      'python3 ' + self.code_dir + '/calcFreqs_atSites.py -i ' + recode_dir + ' -of ' + outfile_name + ' -s ' + sites_file + ' -pops ' + pop_string + ' -suffix ' + suffix + '\n')
+        shfile3.close()
+        if print1 is False:
+            cmd3 = ('sbatch CalcFreqs.sh')
+            p3 = subprocess.Popen(cmd3, shell=True)
+            sts3 = os.waitpid(p3.pid, 0)[1]
+
+        else:
+            file3 = open('CalcFreqs.sh', 'r')
+            data3 = file3.read()
+            print(data3)
+        os.remove('CalcFreqs.sh')
+
+
     def findOutliers(self, recode_dir, in_file, column_index_list, percentile, tails='upper'):
         '''Purpose:  Take output from either calcwpm or calcbpm and determine outlier metrics for a given percentile.
            Notes: Output will be two csv files (one containing all sites with outliers indicated by 0 or 1 and another containing just outliers)
