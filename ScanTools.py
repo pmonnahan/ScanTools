@@ -915,7 +915,7 @@ class scantools:
             raise ValueError("File error for mergeAnnotation: %s" % recode_dir + annotated_outlier_file)
 
 
-    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size=50000, bootstrap_reps=0, mem=16000, numcores=1, time='2-00:00', print1=False, use_repol=True, keep_intermediates=False, alphabetical_pop_order='false', use_scratch=True):
+    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size=50000, bootstrap_reps=0, mem=16000, numcores=1, time='2-00:00', print1=False, use_repol=True, keep_intermediates=False, alphabetical_pop_order='false', use_scratch=True, partition="medium"):
         '''Purpose:  Generate --multiSFS for fastsimcoal2 along with a given number of non-parametric block-bootstrapped replicates
            Notes: Must provide the block size for bootstrapping as well as number of bootstrap replicates
                   As of now, the necessary template files for FSC2 must come from elsewhere.  Beware of running this method with numerous populations'''
@@ -966,7 +966,7 @@ class scantools:
                               '#SBATCH -J ' + output_name + '.fsc2input.sh' + '\n' +
                               '#SBATCH -e ' + self.oande + output_name + '.fsc2input.err' + '\n' +
                               '#SBATCH -o ' + self.oande + output_name + '.fsc2input.out' + '\n' +
-                              '#SBATCH -p nbi-medium\n' +
+                              '#SBATCH -p nbi-' + str(partition) + '\n' +
                               '#SBATCH -n ' + str(numcores) + '\n' +
                               '#SBATCH -t ' + str(time) + '\n' +
                               '#SBATCH --mem=' + str(mem) + '\n' +
