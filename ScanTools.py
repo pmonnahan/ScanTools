@@ -241,6 +241,7 @@ class scantools:
                                     "Min Depth Per Individual: " + str(min_dp) + "\n" +
                                     "Max Fraction of Filtered Genotypes: " + str(mffg) + "\n" +
                                     "Populations: " + str(pops) + "\n")
+                print("new line")
 
 
     # def calcMissing(self, vcf_dir, min_dp, window_size, ref_path="/nbi/Research-Groups/JIC/Levi-Yant/Lyrata_ref/alygenomes.fasta", gatk_path="/nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar", pops='all', mem=16000, time='0-04:00', numcores=1, print1=False, partition="long", keep_intermediates=False):
@@ -801,21 +802,22 @@ class scantools:
         if pops == "-99":
             pops = self.pops
 
-        pop_string = ""
-        for pop in pops:
-            pop_string += pop + ","
-        pop_string.strip(",")
-
         if use_repol is True:
             suffix = '.table.repol.txt'
         else:
             suffix = '.table.recode.txt'
 
+        pop_string = ""
+        for pop in pops:
+            if os.path.exists(recode_dir + pop + suffix) is True:
+                pop_string += pop + ","
+        pop_string.strip(",")
+
         shfile3 = open('CalcFreqs.sh', 'w')
         shfile3.write('#!/bin/bash\n' +
-                      '#SBATCH -J ' + pop + '.afs.sh' + '\n' +
+                      '#SBATCH -J CalcFreqs.sh' + '\n' +
                       '#SBATCH -e ' + self.oande + 'CalcFreqs.err' + '\n' +
-                      '#SBATCH -o ' + self.oande + 'CalcFreqs.out' + '\n' +
+                      '#SBATCH -o ' + self.oande + 'CalcFreqstest.out' + '\n' +
                       '#SBATCH -p nbi-' + partition + '\n'
                       '#SBATCH -n 1' + '\n' +
                       '#SBATCH -t ' + str(time) + '\n' +
