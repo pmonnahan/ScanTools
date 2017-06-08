@@ -106,19 +106,20 @@ class scantools:
         self.log_file.write("Combined Pops: " + str(pops) + " as " + popname + "\n")
 
 
-    def splitVCFs(self, vcf_dir, min_dp, mffg, ref_path="/nbi/Research-Groups/JIC/Levi-Yant/Lyrata_ref/alygenomes.fasta", gatk_path="/nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar", repolarization_key="-99", pops='all', mem=16000, time='0-04:00', numcores=1, print1=False, overwrite=False, partition="long", keep_intermediates=False, use_scratch=False):
+    def splitVCFs(self, vcf_dir, min_dp, mffg, ref_path="/nbi/Research-Groups/JIC/Levi-Yant/Lyrata_ref/alygenomes.fasta", gatk_path="/nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar", repolarization_key="-99", pops='all', mem=16000, time='0-04:00', numcores=1, print1=False, overwrite=False, partition="nbi-long", keep_intermediates=False, use_scratch=False, scratch_path="/nbi/scratch/monnahap/", partition2="nbi-medium", time2="0-12:00"):
         '''Purpose:  Find all vcfs in vcf_dir and split them by population according to samples associated with said population.
                     Then, take only biallelic snps and convert vcf to table containing scaff, pos, ac, an, dp, and genotype fields.
                     Finally, concatenate all per-scaffold tables to one giant table. Resulting files will be put into ~/Working_Dir/VCFs/
             Notes: mffg is maximum fraction of filtered genotypes.  Number of actual genotypes allowed will be rounded up.
                     If you want to print the batch scripts, you must set print1 and overwrite to True'''
 
-
         if vcf_dir.endswith("/") is False:
             vcf_dir += "/"
         vcf_dir_name = vcf_dir.split("/")[-2]
         if use_scratch is True:
-            outdir = "/nbi/scratch/monnahap/VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/"
+            if scratch_path.endswith("/") is False:
+                scratch_path += "/"
+            outdir = scratch_path + "VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/"
         else:
             outdir = self.dir + "VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/"
         self.vcf_dir = vcf_dir
@@ -164,7 +165,7 @@ class scantools:
                                   '#SBATCH -J ' + pop + vcf_dir_name + '.sh' + '\n' +
                                   '#SBATCH -e ' + self.oande + pop + vcf + '.gatk.err' + '\n' +
                                   '#SBATCH -o ' + self.oande + pop + vcf + '.gatk.out' + '\n' +
-                                  '#SBATCH -p nbi-' + str(partition) + '\n' +
+                                  '#SBATCH -p ' + str(partition) + '\n' +
                                   '#SBATCH -n ' + str(numcores) + '\n' +
                                   '#SBATCH -t ' + str(time) + '\n' +
                                   '#SBATCH --mem=' + str(mem) + '\n' +
@@ -203,9 +204,9 @@ class scantools:
                               '#SBATCH -J ' + pop + vcf_dir_name + '.sh' + '\n' +
                               '#SBATCH -e ' + self.oande + pop + vcf_dir_name + '.cat.err' + '\n' +
                               '#SBATCH -o ' + self.oande + pop + vcf_dir_name + '.cat.out' + '\n' +
-                              '#SBATCH -p nbi-medium\n' +
+                              '#SBATCH -p ' + partition2 + '\n' +
                               '#SBATCH -n ' + str(numcores) + '\n' +
-                              '#SBATCH -t 0-12:00\n' +
+                              '#SBATCH -t ' + time2 + '\n' +
                               '#SBATCH --mem=' + str(mem) + '\n' +
                               'source python-3.5.1\n' +
                               'cat ' + outdir + '*' + pop + '_raw.table | tail -n+2 > ' + outdir + pop + '.table\n')
@@ -241,101 +242,6 @@ class scantools:
                                     "Min Depth Per Individual: " + str(min_dp) + "\n" +
                                     "Max Fraction of Filtered Genotypes: " + str(mffg) + "\n" +
                                     "Populations: " + str(pops) + "\n")
-                print("new line")
-
-
-    # def calcMissing(self, vcf_dir, min_dp, window_size, ref_path="/nbi/Research-Groups/JIC/Levi-Yant/Lyrata_ref/alygenomes.fasta", gatk_path="/nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar", pops='all', mem=16000, time='0-04:00', numcores=1, print1=False, partition="long", keep_intermediates=False):
-    #     """NOT FUNCTIONAL"""
-    #     if vcf_dir.endswith("/") is False:
-    #         vcf_dir += "/"
-    #     vcf_dir_name = vcf_dir.split("/")[-2]
-    #     outdir = self.dir + "VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/"
-    #     self.vcf_dir = vcf_dir
-    #     if outdir not in self.split_dirs:
-    #         self.split_dirs.append(outdir)
-
-    #     mem1 = int(mem / 1000)
-
-    #     if os.path.exists(outdir) is False:
-    #             os.mkdir(outdir)
-
-    #     if pops == 'all':
-    #         pops = self.pops
-
-    #     for pop in pops:
-    #         # Add samples to list for each population according to PF file
-    #         sample_string1 = ""
-    #         for samp in self.samps[pop]:
-    #             sample_string1 += " -sn " + samp
-
-    #         vcf_list = []
-    #         vcf_basenames = []
-    #         for file in os.listdir(vcf_dir):
-    #             if file[-6:] == 'vcf.gz':
-    #                 vcf_list.append(file)
-    #                 vcf_basenames.append(file[:-7])
-    #             elif file[-3:] == 'vcf':
-    #                 vcf_list.append(file)
-    #                 vcf_basenames.append(file[:-4])
-    #         for v, vcf in enumerate(vcf_list):
-    #             # Select single population and biallelic SNPs for each scaffold and convert to variants table
-    #             shfile1 = open(vcf_dir_name + '.sh', 'w')
-    #             shfile1.write('#!/bin/bash\n' +
-    #                           '#SBATCH -J ' + vcf_dir_name + '.sh' + '\n' +
-    #                           '#SBATCH -e ' + self.oande + pop + vcf + '.gatk.err' + '\n' +
-    #                           '#SBATCH -o ' + self.oande + pop + vcf + '.gatk.out' + '\n' +
-    #                           '#SBATCH -p nbi-' + str(partition) + '\n' +
-    #                           '#SBATCH -n ' + str(numcores) + '\n' +
-    #                           '#SBATCH -t ' + str(time) + '\n' +
-    #                           '#SBATCH --mem=' + str(mem) + '\n' +
-    #                           'source GATK-nightly.2016.09.26\n' +
-    #                           'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T SelectVariants -R ' + ref_path + ' -V ' + vcf_dir + vcf + sample_string1 + ' -o ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf\n' +
-    #                           'gunzip ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf.gz\n')
-    #             shfile1.close()
-
-    #             if print1 is False:  # send slurm job to NBI SLURM cluster
-    #                 cmd1 = ('sbatch ' + pop + vcf_dir_name + '.sh')
-    #                 p1 = subprocess.Popen(cmd1, shell=True)
-    #                 sts1 = os.waitpid(p1.pid, 0)[1]
-
-    #             else:
-    #                 file1 = open(pop + vcf_dir_name + '.sh', 'r')
-    #                 data1 = file1.read()
-    #                 print(data1)
-
-    #             os.remove(pop + vcf_dir_name + '.sh')
-
-
-    #     # combine all variants table for each scaffold within a population
-
-    #     shfile3 = open(vcf_dir_name + '.sh', 'w')
-
-    #     shfile3.write('#!/bin/bash\n' +
-    #                   '#SBATCH -J ' + vcf_dir_name + '.sh' + '\n' +
-    #                   '#SBATCH -e ' + self.oande + vcf_dir_name + '.missing.err' + '\n' +
-    #                   '#SBATCH -o ' + self.oande + vcf_dir_name + '.missing.out' + '\n' +
-    #                   '#SBATCH -p nbi-medium\n' +
-    #                   '#SBATCH -n ' + str(numcores) + '\n' +
-    #                   '#SBATCH -t 2-00:00\n' +
-    #                   '#SBATCH --mem=' + str(mem) + '\n' +
-    #                   'source python-3.5.1\n' +
-    #                   'python3 ' + self.code_dir + '/MissingData.py -v ' + outdir + ' -w ' + str(window_size) + ' -dp ' + str(min_dp) + ' -gz false -o ' + outdir + 'MissingData_PerPop.txt\n')
-
-    #     if keep_intermediates is False:
-    #         shfile3.write('rm ' + outdir + '*.' + pop + '.vcf\n')
-    #         shfile3.write('rm ' + outdir + '*.' + pop + '.vcf.idx\n')
-    #     shfile3.close()
-
-    #     if print1 is False:
-    #         cmd3 = ('sbatch -d singleton ' + pop + vcf_dir_name + '.sh')
-    #         p3 = subprocess.Popen(cmd3, shell=True)
-    #         sts3 = os.waitpid(p3.pid, 0)[1]
-    #     else:
-    #         file3 = open(pop + vcf_dir_name + '.sh', 'r')
-    #         data3 = file3.read()
-    #         print(data3)
-
-    #     os.remove(vcf_dir_name + '.sh')
 
 
     def recode(self, split_dir, pops="all", print1=False, mem=4000, numcores=1, partition="medium"):
@@ -473,7 +379,7 @@ class scantools:
 
 
     # CALCULATE WITHIN POPULATION METRICS
-    def calcwpm(self, recode_dir, window_size, min_snps, pops="all", print1=False, mem=16000, numcores=1, sampind="-99", partition="medium", use_repol=True, time="0-02:00", overwrite=False):
+    def calcwpm(self, recode_dir, window_size, min_snps, pops="all", print1=False, mem=16000, numcores=1, sampind="-99", partition="nbi-medium", use_repol=True, time="0-02:00", overwrite=False):
         '''Purpose: Calculate within population metrics including: allele frequency, expected heterozygosity, Wattersons theta, Pi, ThetaH, ThetaL and neutrality tests: D, normalized H, E
            Notes:  Currently, all populations are downsampled to same number of individuals.  By default, this minimum individuals across populations minus 1 to allow for some missing data
                     It is worth considering whether downsampling should be based on number of individuals or number of alleles.
@@ -511,7 +417,7 @@ class scantools:
                                       '#SBATCH -J ' + dir_name + "." + pop + '.sh' + '\n' +
                                       '#SBATCH -e ' + self.oande + dir_name + "." + prefix + '.wpm.err' + '\n' +
                                       '#SBATCH -o ' + self.oande + dir_name + "." + prefix + '.wpm.out' + '\n' +
-                                      '#SBATCH -p nbi-' + str(partition) + '\n' +
+                                      '#SBATCH -p ' + str(partition) + '\n' +
                                       '#SBATCH -n ' + str(numcores) + '\n' +
                                       '#SBATCH -t ' + str(time) + '\n' +
                                       '#SBATCH --mem=' + str(mem) + '\n' +
@@ -605,7 +511,7 @@ class scantools:
                                         new.write(line)
 
 
-    def calcbpm(self, recode_dir, pops, output_name, window_size, min_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False, time="0-12:00"):
+    def calcbpm(self, recode_dir, pops, output_name, window_size, min_snps, print1=False, mem=16000, numcores=1, partition="nbi-medium", use_repol=True, keep_intermediates=False, time="0-12:00", use_scratch=False, scratch_path="/nbi/scratch/monnahap"):
         '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
            Notes: User provides a list of populations to be included.  For pairwise estimates, simply provide two populations
                     Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps in a window
@@ -618,6 +524,16 @@ class scantools:
 
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
+
+        if use_scratch is True:
+            if scratch_path.endswith("/") is False:
+                scratch_path += "/"
+            tmpdir = scratch_path + recode_dir.split("/")[-2] + "/"
+            if os.path.exists(tmpdir) is False:
+                os.mkdir(tmpdir)
+        else:
+            tmpdir = recode_dir
+
         output_name += "_WS" + str(window_size) + "_MS" + str(min_snps)
         if os.path.exists(recode_dir) is True and len(pops) > 1:
             pop_num = 0
@@ -640,13 +556,13 @@ class scantools:
                               '#SBATCH -J ' + output_name + '.bpm.sh' + '\n' +
                               '#SBATCH -e ' + self.oande + output_name + '.bpm.err' + '\n' +
                               '#SBATCH -o ' + self.oande + output_name + '.bpm.out' + '\n' +
-                              '#SBATCH -p nbi-' + str(partition) + '\n' +
+                              '#SBATCH -p ' + str(partition) + '\n' +
                               '#SBATCH -n ' + str(numcores) + '\n' +
                               '#SBATCH -t ' + str(time) + '\n' +
                               '#SBATCH --mem=' + str(mem) + '\n' +
                               'source python-3.5.1\n' +
-                              'sort -k3,3 -k4,4n -m ' + file_string + '> ' + recode_dir + output_name + '.concat.txt\n' +
-                              'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + ' -np ' + str(pop_num) + '\n')
+                              'sort -k3,3 -k4,4n -m ' + file_string + '> ' + tmpdir + output_name + '.concat.txt\n' +
+                              'python3 ' + self.code_dir + '/bpm.py -i ' + tmpdir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + ' -np ' + str(pop_num) + '\n')
                 if keep_intermediates is False:
                     shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
                 shfile3.close()
@@ -674,10 +590,10 @@ class scantools:
         else:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate between population metrics")
 
-    def calcPairwisebpm(self, recode_dir, pops, window_size, min_snps, print1=False, mem=16000, numcores=1, partition="medium", use_repol=True, keep_intermediates=False, time="0-01:00", overwrite=False):
+    def calcPairwisebpm(self, recode_dir, pops, window_size, min_snps, print1=False, mem=16000, numcores=1, partition="nbi-medium", use_repol=True, keep_intermediates=False, time="0-01:00", overwrite=False, use_scratch=False, scratch_path="/nbi/scratch/monnahap/"):
         '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
            Notes: User provides a list of populations to be included.  For pairwise estimates, simply provide two populations
-                    Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps in a window
+                    Calculations are done for windows of a given bp size.  User also must specify the minimum number of snps (min_snps) in a window
                     for calculations to be made'''
 
         if use_repol is True:
@@ -687,6 +603,15 @@ class scantools:
 
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
+
+        if use_scratch is True:
+            if scratch_path.endswith("/") is False:
+                scratch_path += "/"
+            tmpdir = scratch_path + recode_dir.split("/")[-2] + "/"
+            if os.path.exists(tmpdir) is False:
+                os.mkdir(tmpdir)
+        else:
+            tmpdir = recode_dir
 
         if os.path.exists(recode_dir) is True and len(pops) > 1:
             # Concatenate input files and sort them
@@ -717,13 +642,13 @@ class scantools:
                                       '#SBATCH -J ' + output_name + '.bpm.sh' + '\n' +
                                       '#SBATCH -e ' + self.oande + output_name + '.bpm.err' + '\n' +
                                       '#SBATCH -o ' + self.oande + output_name + '.bpm.out' + '\n' +
-                                      '#SBATCH -p nbi-' + str(partition) + '\n' +
+                                      '#SBATCH -p ' + partition + '\n' +
                                       '#SBATCH -n ' + str(numcores) + '\n' +
                                       '#SBATCH -t ' + str(time) + '\n' +
                                       '#SBATCH --mem=' + str(mem) + '\n' +
                                       'source python-3.5.1\n' +
-                                      'sort -k3,3 -k4,4n -m ' + recode_dir + pop1 + suffix + " " + recode_dir + pop2 + suffix + " > " + recode_dir + output_name + '.concat.txt\n' +
-                                      'python3 ' + self.code_dir + '/bpm.py -i ' + recode_dir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + ' -np 2\n')
+                                      'sort -k3,3 -k4,4n -m ' + recode_dir + pop1 + suffix + " " + recode_dir + pop2 + suffix + " > " + tmpdir + output_name + '.concat.txt\n' +
+                                      'python3 ' + self.code_dir + '/bpm.py -i ' + tmpdir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + ' -np 2\n')
                         if keep_intermediates is False:
                             shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
                         shfile3.close()
@@ -753,7 +678,7 @@ class scantools:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate between population metrics")
 
 
-    def calcAFS(self, recode_dir, data_name, sampind="-99", pops="-99", time="0-00:30", mem="8000", use_repol=True, print1=False, allow_one_missing=True):
+    def calcAFS(self, recode_dir, data_name, sampind="-99", pops="-99", time="0-00:30", mem="8000", use_repol=True, print1=False, allow_one_missing=True, partition="nbi-short"):
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
         if pops == "-99":
@@ -777,7 +702,7 @@ class scantools:
                           '#SBATCH -J ' + pop + '.afs.sh' + '\n' +
                           '#SBATCH -e ' + self.oande + pop + '.afs.err' + '\n' +
                           '#SBATCH -o ' + self.oande + pop + '.afs.out' + '\n' +
-                          '#SBATCH -p nbi-short' + '\n'
+                          '#SBATCH -p ' + partition + '\n'
                           '#SBATCH -n 1' + '\n' +
                           '#SBATCH -t ' + str(time) + '\n' +
                           '#SBATCH --mem=' + str(mem) + '\n' +
@@ -796,7 +721,7 @@ class scantools:
             os.remove(infile + '.afs.sh')
 
 
-    def calcFreqs(self, recode_dir, outfile_name, sites_file, pops="-99", time="0-02:00", partition="short", mem="8000", use_repol=True, print1=False, allow_one_missing=True):
+    def calcFreqs(self, recode_dir, outfile_name, sites_file, pops="-99", time="0-02:00", partition="nbi-short", mem="8000", use_repol=True, print1=False):
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
         if pops == "-99":
@@ -818,7 +743,7 @@ class scantools:
                       '#SBATCH -J CalcFreqs.sh' + '\n' +
                       '#SBATCH -e ' + self.oande + 'CalcFreqs.err' + '\n' +
                       '#SBATCH -o ' + self.oande + 'CalcFreqstest.out' + '\n' +
-                      '#SBATCH -p nbi-' + partition + '\n'
+                      '#SBATCH -p ' + partition + '\n'
                       '#SBATCH -n 1' + '\n' +
                       '#SBATCH -t ' + str(time) + '\n' +
                       '#SBATCH --mem=' + str(mem) + '\n' +
@@ -882,7 +807,7 @@ class scantools:
                 print('Error with file: ' + recode_dir + in_file + "\n")
 
 
-    def annotateOutliers(self, recode_dir, in_file, annotation_file='/nbi/Research-Groups/JIC/Levi-Yant/GenomeScan/LyV2.gff', overlap_proportion=0.000001, print1=False):
+    def annotateOutliers(self, recode_dir, in_file, annotation_file='/nbi/Research-Groups/JIC/Levi-Yant/GenomeScan/LyV2.gff', overlap_proportion=0.000001, print1=False, partition="nbi-short", time="0-01:00", mem=4000):
         '''Purpose: annotate bed file from findOutliers using information in annotation_file
            Notes: The output (suffix ol_genes.gff) only contains the window locations along with annotation info and does not contain
                     the original metric information used to determine outliers.  Use mergeAnnotation to merge original outlier file with annotation info'''
@@ -896,10 +821,10 @@ class scantools:
                           '#SBATCH -J ' + in_file + '.bedtools.sh' + '\n' +
                           '#SBATCH -e ' + self.oande + in_file + '.bedtools.err\n' +
                           '#SBATCH -o ' + self.oande + in_file + '.bedtools.out\n' +
-                          '#SBATCH -p nbi-short\n' +
+                          '#SBATCH -p ' + partition + '\n' +
                           '#SBATCH -n 1\n' +
-                          '#SBATCH -t 0-01:00\n' +
-                          '#SBATCH --mem=4000\n' +
+                          '#SBATCH -t ' + time + '\n' +
+                          '#SBATCH --mem=' + str(mem) + '\n' +
                           'source bedtools-2.17.0\n' +
                           'bedtools intersect -a ' + recode_dir + in_file + ' -b ' + annotation_file + ' -f ' + str(overlap_proportion) + ' -wo | grep transcript | grep -v transcription | sort -u |' +
                           """awk '{print $1,$2,$3,$7,$8,$9,$10,$12}'""" +
@@ -958,7 +883,7 @@ class scantools:
             raise ValueError("File error for mergeAnnotation: %s" % recode_dir + annotated_outlier_file)
 
 
-    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size=50000, bootstrap_reps=0, mem=16000, numcores=1, time='2-00:00', print1=False, use_repol=True, keep_intermediates=False, alphabetical_pop_order='false', use_scratch=True, partition="medium"):
+    def generateFSC2input(self, recode_dir, pops, output_name, bootstrap_block_size=50000, bootstrap_reps=0, mem=16000, numcores=1, time='2-00:00', print1=False, use_repol=True, keep_intermediates=False, alphabetical_pop_order='false', use_scratch=True, partition="nbi-medium", scratch_path="/nbi/scratch/monnahap/"):
         '''Purpose:  Generate --multiSFS for fastsimcoal2 along with a given number of non-parametric block-bootstrapped replicates
            Notes: Must provide the block size for bootstrapping as well as number of bootstrap replicates
                   As of now, the necessary template files for FSC2 must come from elsewhere.  Beware of running this method with numerous populations'''
@@ -967,7 +892,9 @@ class scantools:
             recode_dir += "/"
 
         if use_scratch is True:
-            tmpdir = "/nbi/scratch/monnahap/"
+            if scratch_path.endswith("/") is False:
+                scratch_path += "/"
+            tmpdir = scratch_path
         else:
             tmpdir = recode_dir
 
@@ -1009,7 +936,7 @@ class scantools:
                               '#SBATCH -J ' + output_name + '.fsc2input.sh' + '\n' +
                               '#SBATCH -e ' + self.oande + output_name + '.fsc2input.err' + '\n' +
                               '#SBATCH -o ' + self.oande + output_name + '.fsc2input.out' + '\n' +
-                              '#SBATCH -p nbi-' + str(partition) + '\n' +
+                              '#SBATCH -p ' + str(partition) + '\n' +
                               '#SBATCH -n ' + str(numcores) + '\n' +
                               '#SBATCH -t ' + str(time) + '\n' +
                               '#SBATCH --mem=' + str(mem) + '\n' +
@@ -1042,7 +969,7 @@ class scantools:
         else:
             print("!!!Did not find recode_dir!!!!")
 
-    def FSC2(self, input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.001, min_ecm=10, max_ecm=40, calc_CI=False, partition="short", numcores=1, time="0-02:00", mem="8000", print1=False, hard_overwrite=False, soft_overwrite=False, fsc2_path="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221", cluster="JIC"):
+    def FSC2(self, input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.001, min_ecm=10, max_ecm=40, calc_CI=False, partition="nbi-short", numcores=1, time="0-02:00", mem="8000", print1=False, hard_overwrite=False, soft_overwrite=False, fsc2_path="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221", cluster="JIC"):
 
         Data_Files = []
         tpl_files = []
@@ -1118,26 +1045,14 @@ class scantools:
                                           '#SBATCH -J ' + name.split("/")[-1] + "_" + tpl_name + ".fsc2.sh" + '\n' +
                                           '#SBATCH -e ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.err" + '\n' +
                                           '#SBATCH -o ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.out" + '\n' +
-                                          '#SBATCH -p nbi-' + str(partition) + '\n' +
+                                          '#SBATCH -p ' + str(partition) + '\n' +
                                           '#SBATCH -n ' + str(numcores) + '\n' +
                                           '#SBATCH -t ' + str(time) + '\n' +
                                           '#SBATCH --mem=' + str(mem) + '\n' +
                                           'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
                                           fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
                             shfile5.close()
-                        elif cluster == "oslo":
-                            shfile5 = open(name.split("/")[-1] + tpl_name + ".sh", 'w')
-                            shfile5.write('#!/bin/bash\n' +
-                                          '#SBATCH --job-name= ' + name.split("/")[-1] + "_" + tpl_name + ".fsc2.sh" + '\n' +
-                                          '#SBATCH --acount=nn9365k\n' + 
-                                          '#SBATCH --time=05:00:00\n' +
-                                          '#SBATCH --mem-per-cpu=4G\n' +
-                                          'source /cluster/bin/jobsetup\n' +
-                                          'cp $SUBMITDIR/##*.* $SCRATCH\n' +  # *.* originally VEL_TKO_DRA_VID
-                                          'chkfile "*.bestlhoods" "*.par"\n' +
-                                          'cd $SCRATCH\n' +
-                                          fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
-                            shfile5.close()
+
                         if print1 is False:
                             cmd1 = ('sbatch ' + name.split("/")[-1] + tpl_name + ".sh")
                             p1 = subprocess.Popen(cmd1, shell=True)
@@ -1180,7 +1095,7 @@ class scantools:
                                       '#SBATCH -J ' + name.split("/")[-1] + "_" + tpl_name + ".fsc2.sh" + '\n' +
                                       '#SBATCH -e ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.err" + '\n' +
                                       '#SBATCH -o ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.out" + '\n' +
-                                      '#SBATCH -p nbi-' + str(partition) + '\n' +
+                                      '#SBATCH -p ' + str(partition) + '\n' +
                                       '#SBATCH -n ' + str(numcores) + '\n' +
                                       '#SBATCH -t ' + str(time) + '\n' +
                                       '#SBATCH --mem=' + str(mem) + '\n' +
@@ -1258,4 +1173,95 @@ class scantools:
                                     sp += int(line[ix])
                     outfile.write(outname + '\t' + samp_name + '\t' + str(float(sp) / float(tot)) + '\n')
 
+    # def calcMissing(self, vcf_dir, min_dp, window_size, ref_path="/nbi/Research-Groups/JIC/Levi-Yant/Lyrata_ref/alygenomes.fasta", gatk_path="/nbi/software/testing/GATK/nightly.2016.09.26/x86_64/jars/GenomeAnalysisTK.jar", pops='all', mem=16000, time='0-04:00', numcores=1, print1=False, partition="long", keep_intermediates=False):
+    #     """NOT FUNCTIONAL"""
+    #     if vcf_dir.endswith("/") is False:
+    #         vcf_dir += "/"
+    #     vcf_dir_name = vcf_dir.split("/")[-2]
+    #     outdir = self.dir + "VCF_" + str(vcf_dir_name) + "_DP" + str(min_dp) + ".M" + str(mffg) + "/"
+    #     self.vcf_dir = vcf_dir
+    #     if outdir not in self.split_dirs:
+    #         self.split_dirs.append(outdir)
 
+    #     mem1 = int(mem / 1000)
+
+    #     if os.path.exists(outdir) is False:
+    #             os.mkdir(outdir)
+
+    #     if pops == 'all':
+    #         pops = self.pops
+
+    #     for pop in pops:
+    #         # Add samples to list for each population according to PF file
+    #         sample_string1 = ""
+    #         for samp in self.samps[pop]:
+    #             sample_string1 += " -sn " + samp
+
+    #         vcf_list = []
+    #         vcf_basenames = []
+    #         for file in os.listdir(vcf_dir):
+    #             if file[-6:] == 'vcf.gz':
+    #                 vcf_list.append(file)
+    #                 vcf_basenames.append(file[:-7])
+    #             elif file[-3:] == 'vcf':
+    #                 vcf_list.append(file)
+    #                 vcf_basenames.append(file[:-4])
+    #         for v, vcf in enumerate(vcf_list):
+    #             # Select single population and biallelic SNPs for each scaffold and convert to variants table
+    #             shfile1 = open(vcf_dir_name + '.sh', 'w')
+    #             shfile1.write('#!/bin/bash\n' +
+    #                           '#SBATCH -J ' + vcf_dir_name + '.sh' + '\n' +
+    #                           '#SBATCH -e ' + self.oande + pop + vcf + '.gatk.err' + '\n' +
+    #                           '#SBATCH -o ' + self.oande + pop + vcf + '.gatk.out' + '\n' +
+    #                           '#SBATCH -p nbi-' + str(partition) + '\n' +
+    #                           '#SBATCH -n ' + str(numcores) + '\n' +
+    #                           '#SBATCH -t ' + str(time) + '\n' +
+    #                           '#SBATCH --mem=' + str(mem) + '\n' +
+    #                           'source GATK-nightly.2016.09.26\n' +
+    #                           'java -Xmx' + str(mem1) + 'g -jar ' + gatk_path + ' -T SelectVariants -R ' + ref_path + ' -V ' + vcf_dir + vcf + sample_string1 + ' -o ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf\n' +
+    #                           'gunzip ' + outdir + vcf_basenames[v] + '.' + pop + '.vcf.gz\n')
+    #             shfile1.close()
+
+    #             if print1 is False:  # send slurm job to NBI SLURM cluster
+    #                 cmd1 = ('sbatch ' + pop + vcf_dir_name + '.sh')
+    #                 p1 = subprocess.Popen(cmd1, shell=True)
+    #                 sts1 = os.waitpid(p1.pid, 0)[1]
+
+    #             else:
+    #                 file1 = open(pop + vcf_dir_name + '.sh', 'r')
+    #                 data1 = file1.read()
+    #                 print(data1)
+
+    #             os.remove(pop + vcf_dir_name + '.sh')
+
+
+    #     # combine all variants table for each scaffold within a population
+
+    #     shfile3 = open(vcf_dir_name + '.sh', 'w')
+
+    #     shfile3.write('#!/bin/bash\n' +
+    #                   '#SBATCH -J ' + vcf_dir_name + '.sh' + '\n' +
+    #                   '#SBATCH -e ' + self.oande + vcf_dir_name + '.missing.err' + '\n' +
+    #                   '#SBATCH -o ' + self.oande + vcf_dir_name + '.missing.out' + '\n' +
+    #                   '#SBATCH -p nbi-medium\n' +
+    #                   '#SBATCH -n ' + str(numcores) + '\n' +
+    #                   '#SBATCH -t 2-00:00\n' +
+    #                   '#SBATCH --mem=' + str(mem) + '\n' +
+    #                   'source python-3.5.1\n' +
+    #                   'python3 ' + self.code_dir + '/MissingData.py -v ' + outdir + ' -w ' + str(window_size) + ' -dp ' + str(min_dp) + ' -gz false -o ' + outdir + 'MissingData_PerPop.txt\n')
+
+    #     if keep_intermediates is False:
+    #         shfile3.write('rm ' + outdir + '*.' + pop + '.vcf\n')
+    #         shfile3.write('rm ' + outdir + '*.' + pop + '.vcf.idx\n')
+    #     shfile3.close()
+
+    #     if print1 is False:
+    #         cmd3 = ('sbatch -d singleton ' + pop + vcf_dir_name + '.sh')
+    #         p3 = subprocess.Popen(cmd3, shell=True)
+    #         sts3 = os.waitpid(p3.pid, 0)[1]
+    #     else:
+    #         file3 = open(pop + vcf_dir_name + '.sh', 'r')
+    #         data3 = file3.read()
+    #         print(data3)
+
+    #     os.remove(vcf_dir_name + '.sh')
