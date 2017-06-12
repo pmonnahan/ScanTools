@@ -144,31 +144,30 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                     chk_file = open(name + "_" + tpl_name + ".chk.txt", 'w')
                     chk_file.close()
                     chk_file_list.append(name + "_" + tpl_name + ".chk.txt")
-                    if os.path.exists(name + "_" + tpl_name + ".tpl") is False:
-                        with open(file) as data:
-                            for i, line in enumerate(data):
-                                if i == 1:
-                                    pop_info = line.strip("\n").strip("\t").split("\t")
-                                    pop_num = int(pop_info[0])
-                                    samp_nums = pop_info[-pop_num:]
-                                new_data.write(line)
-                        with open(input_dir + tpl) as template:
-                            samp_num_lines = pop_num + 4
-                            for i, line in enumerate(template):
-                                if i < samp_num_lines:
-                                    new_tpl.write(line)
-                                elif i == samp_num_lines:
-                                    for num in samp_nums:
-                                        new_tpl.write(num + "\n")
-                                elif i >= samp_num_lines + len(samp_nums):
-                                    new_tpl.write(line)
-                        new_est = open(name + "_" + tpl_name + ".est", 'w')
-                        try:
-                            with open(input_dir + tpl_name + ".est") as est:
-                                for line in est:
-                                    new_est.write(line)
-                        except FileNotFoundError:
-                            print("Did not find est file for: ", tpl)
+                    with open(file) as data:
+                        for i, line in enumerate(data):
+                            if i == 1:
+                                pop_info = line.strip("\n").strip("\t").split("\t")
+                                pop_num = int(pop_info[0])
+                                samp_nums = pop_info[-pop_num:]
+                            new_data.write(line)
+                    with open(input_dir + tpl) as template:
+                        samp_num_lines = pop_num + 4
+                        for i, line in enumerate(template):
+                            if i < samp_num_lines:
+                                new_tpl.write(line)
+                            elif i == samp_num_lines:
+                                for num in samp_nums:
+                                    new_tpl.write(num + "\n")
+                            elif i >= samp_num_lines + len(samp_nums):
+                                new_tpl.write(line)
+                    new_est = open(name + "_" + tpl_name + ".est", 'w')
+                    try:
+                        with open(input_dir + tpl_name + ".est") as est:
+                            for line in est:
+                                new_est.write(line)
+                    except FileNotFoundError:
+                        print("Did not find est file for: ", tpl)
                     shname = name + "_" + tpl_name + ".sh"
                     shlist.append(shname)
                     shfile5 = open(name + "_" + tpl_name + ".sh", 'w')
