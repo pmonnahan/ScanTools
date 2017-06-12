@@ -63,7 +63,7 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                     Data_Files.append(input_dir + path + "/" + samp_name + str(i) + "_DSFS.obs")
             else:
                 print("Did not find input data file for: ", samp_name)
-            if calc_CI is True:
+            if calc_CI == "True":
                 num_files = 0
                 for file in os.listdir(input_dir + path):
                     if file.endswith("_DSFS.obs") and file.split("_")[-2].split(".")[-1][0:3] == "rep" and file != samp_name + "_DSFS.obs":
@@ -79,7 +79,7 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
     if len(tpl_files) == 0:
         print("Did not find any tpl files!! Aborting!!")
     else:
-        if calc_CI is True:
+        if calc_CI == "True":
             Data_Files = CI_Data_Files
         for file in Data_Files:
             name = file.split("_DSFS")[0]
@@ -132,7 +132,7 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                                       fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
                         shfile5.close()
 
-                    if print1 is True:
+                    if print1 == "True":
                         file3 = open(name.split("/")[-1] + tpl_name + ".sh", 'r')
                         data3 = file3.read()
                         print(data3)
@@ -182,12 +182,12 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                                   'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
                                   fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
                     shfile5.close()
-                    if print1 is True:
+                    if print1 == "True":
                         file3 = open(name.split("/")[-1] + tpl_name + ".sh", 'r')
                         data3 = file3.read()
                         print(data3)
                 else:
-                    if verbose is True: print("Output for " + samp_name + "_" + tpl_name + " already exists.  Use hard_overwrite = True to overwrite.")
+                    if verbose == "True": print("Output for " + samp_name + "_" + tpl_name + " already exists.  Use hard_overwrite = True to overwrite.")
     return shlist, chk_file_list
 
 
@@ -209,7 +209,7 @@ if __name__ == "__main__":
     parser.add_argument('-ci', type=str, metavar='Calculate_Confidence_intervals', required=True, help='Must have requested bootstrap replicate data sets from generateFSC2input in order to calculate confidence intervals.')
     parser.add_argument('-Ov', type=str, metavar='Overwrite_type', required=True, help='set to hard if you want to overwrite .bestlhoods files')
     parser.add_argument('-fsc2path', type=str, metavar='absolute_path_to_fsc2_executable', required=True, help='')
-    parser.add_argument('-print1', type=bool, metavar='print_shell_scripts?', required=True, help='boolean designating whether shell scripts should be submitted or printed')
+    parser.add_argument('-print1', type=str, metavar='print_shell_scripts?', required=True, help='boolean designating whether shell scripts should be submitted or printed')
     parser.add_argument('-verbose', type=str, metavar='verbose', required=True, help='prints verbose output')
     parser.add_argument('-clust', type=str, metavar='Cluster', required=True, help='which cluster to submit to.  e.g. JIC')
     parser.add_argument('-oande', type=str, metavar='output_and_error_file_directory', required=True, help='')
