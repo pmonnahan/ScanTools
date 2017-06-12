@@ -119,7 +119,7 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                     if cluster == "JIC":
                         shname = name + "_" + tpl_name + ".sh"
                         shlist.append(shname)
-                        shfile5 = open(name.split("/")[-1] + tpl_name + ".sh", 'w')
+                        shfile5 = open(name + "_" + tpl_name + ".sh", 'w')
                         shfile5.write('#!/bin/bash\n' +
                                       '#SBATCH -J ' + name.split("/")[-1] + "_" + tpl_name + ".fsc2.sh" + '\n' +
                                       '#SBATCH -e ' + oande_dir + name.split("/")[-1] + "_" + tpl_name + ".fsc2.err" + '\n' +
@@ -170,7 +170,7 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                             print("Did not find est file for: ", tpl)
                     shname = name + "_" + tpl_name + ".sh"
                     shlist.append(shname)
-                    shfile5 = open(name.split("/")[-1] + tpl_name + ".sh", 'w')
+                    shfile5 = open(name + "_" + tpl_name + ".sh", 'w')
                     shfile5.write('#!/bin/bash\n' +
                                   '#SBATCH -J ' + name.split("/")[-1] + "_" + tpl_name + ".fsc2.sh" + '\n' +
                                   '#SBATCH -e ' + oande_dir + name.split("/")[-1] + "_" + tpl_name + ".fsc2.err" + '\n' +
@@ -183,7 +183,7 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                                   fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
                     shfile5.close()
                     if print1 == "True":
-                        file3 = open(name.split("/")[-1] + tpl_name + ".sh", 'r')
+                        file3 = open(name + "_" + tpl_name + ".sh", 'r')
                         data3 = file3.read()
                         print(data3)
                 else:
