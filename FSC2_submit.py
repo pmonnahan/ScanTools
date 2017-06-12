@@ -54,12 +54,11 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
             samp_name = path.split("_")[1]
             if samp_name + "_DSFS.obs" in os.listdir(input_dir + path):
                 for i in range(0, num_reps):
-                    if os.path.exists(input_dir + path + "/" + samp_name + str(i) + "_DSFS.obs") is False:
-                        new_file = open(input_dir + path + "/" + samp_name + str(i) + "_DSFS.obs", 'w')
-                        with open(input_dir + path + "/" + samp_name + "_DSFS.obs") as data_file:
-                            for line in data_file:
-                                new_file.write(line)
-                            new_file.close()
+                    new_file = open(input_dir + path + "/" + samp_name + str(i) + "_DSFS.obs", 'w')
+                    with open(input_dir + path + "/" + samp_name + "_DSFS.obs") as data_file:
+                        for line in data_file:
+                            new_file.write(line)
+                        new_file.close()
                     Data_Files.append(input_dir + path + "/" + samp_name + str(i) + "_DSFS.obs")
             else:
                 print("Did not find input data file for: ", samp_name)
