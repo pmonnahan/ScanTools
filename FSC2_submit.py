@@ -132,15 +132,10 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                                       fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
                         shfile5.close()
 
-                    if print1 is False:
-                        cmd1 = ('sbatch ' + name.split("/")[-1] + tpl_name + ".sh")
-                        p1 = subprocess.Popen(cmd1, shell=True)
-                        sts1 = os.waitpid(p1.pid, 0)[1]
-                    else:
+                    if print1 is True:
                         file3 = open(name.split("/")[-1] + tpl_name + ".sh", 'r')
                         data3 = file3.read()
                         print(data3)
-                    os.remove(name.split("/")[-1] + tpl_name + ".sh")
 
                 elif os.path.exists(name + "_" + tpl_name + "/" + samp_name + "_" + tpl_name + ".bestlhoods") is False:  # Intended to catch instances where FSC2 had run previously (and therefore created the output directory), but did not converge (and therefore output directory does not contain .bestlhoods file)
                     new_tpl = open(name + "_" + tpl_name + ".tpl", 'w')
@@ -187,15 +182,10 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                                   'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
                                   fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
                     shfile5.close()
-                    if print1 is False:
-                        cmd1 = ('sbatch ' + name.split("/")[-1] + tpl_name + ".sh")
-                        p1 = subprocess.Popen(cmd1, shell=True)
-                        sts1 = os.waitpid(p1.pid, 0)[1]
-                    else:
+                    if print1 is True:
                         file3 = open(name.split("/")[-1] + tpl_name + ".sh", 'r')
                         data3 = file3.read()
                         print(data3)
-                    os.remove(name.split("/")[-1] + tpl_name + ".sh")
                 else:
                     if verbose is True: print("Output for " + samp_name + "_" + tpl_name + " already exists.  Use hard_overwrite = True to overwrite.")
     return shlist, chk_file_list
@@ -219,7 +209,7 @@ if __name__ == "__main__":
     parser.add_argument('-ci', type=str, metavar='Calculate_Confidence_intervals', required=True, help='Must have requested bootstrap replicate data sets from generateFSC2input in order to calculate confidence intervals.')
     parser.add_argument('-Ov', type=str, metavar='Overwrite_type', required=True, help='set to hard if you want to overwrite .bestlhoods files')
     parser.add_argument('-fsc2path', type=str, metavar='absolute_path_to_fsc2_executable', required=True, help='')
-    parser.add_argument('-print1', type=str, metavar='print_shell_scripts?', required=True, help='boolean designating whether shell scripts should be submitted or printed')
+    parser.add_argument('-print1', type=bool, metavar='print_shell_scripts?', required=True, help='boolean designating whether shell scripts should be submitted or printed')
     parser.add_argument('-verbose', type=str, metavar='verbose', required=True, help='prints verbose output')
     parser.add_argument('-clust', type=str, metavar='Cluster', required=True, help='which cluster to submit to.  e.g. JIC')
     parser.add_argument('-oande', type=str, metavar='output_and_error_file_directory', required=True, help='')
