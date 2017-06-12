@@ -987,8 +987,6 @@ class scantools:
                 est_files.append(path.split(".")[0])
         if len(tpl_files) == 0:
             print("Did not find any tpl files!! Aborting!!")
-
-            elif os.path.exists(name + "_" + tpl_name + "/" + samp_name + "_" + tpl_name + ".bestlhoods") is False:
         else:
             if any(os.path.exists(input_dir + k.split(".tpl")[0] + ".est") is False for k in tpl_files):
                 print("Did not find all est files.  Aborting!!")
