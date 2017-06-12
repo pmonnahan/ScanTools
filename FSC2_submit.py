@@ -91,14 +91,16 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                     chk_file = open(name + "_" + tpl_name + ".chk.txt", 'w')
                     chk_file.close()
                     chk_file_list.append(name + "_" + tpl_name + ".chk.txt")
-                    with open(file) as data:
+                    with open(file, 'r') as data:
+                        print(file)
                         for i, line in enumerate(data):
+                            print(i,line)
                             if i == 1:
                                 pop_info = line.strip("\n").strip("\t").split("\t")
                                 pop_num = int(pop_info[0])
                                 samp_nums = pop_info[-pop_num:]
                             new_data.write(line)
-                    with open(input_dir + tpl) as template:
+                    with open(input_dir + tpl, 'r') as template:
                         samp_num_lines = pop_num + 4
                         for i, line in enumerate(template):
                             if i < samp_num_lines:
