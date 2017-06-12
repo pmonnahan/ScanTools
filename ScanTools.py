@@ -987,6 +987,8 @@ class scantools:
                 est_files.append(path.split(".")[0])
         if len(tpl_files) == 0:
             print("Did not find any tpl files!! Aborting!!")
+
+            elif os.path.exists(name + "_" + tpl_name + "/" + samp_name + "_" + tpl_name + ".bestlhoods") is False:
         else:
             if any(os.path.exists(input_dir + k.split(".tpl")[0] + ".est") is False for k in tpl_files):
                 print("Did not find all est files.  Aborting!!")
@@ -1003,7 +1005,7 @@ class scantools:
                               'unset SBATCH_PARTITION\n' +
                               'source python-3.5.1\n' +
                               'source env/bin/activate\n' +
-                              'python3 ' + self.code_dir + '/FSC2_submit.py -i ' + input_dir + ' -nj ' + str(num_jobs) + ' -reps ' + str(num_reps) + ' -minsims ' + str(min_sims) + ' -maxsims ' + str(max_sims) + ' -c ' + str(conv_crit) + ' -min_ecm ' + str(min_ecm) + ' -max_ecm ' + str(max_ecm) + ' -ci ' + str(calc_CI) + ' -p ' + job_partition + ' -nc ' + str(numcores) + ' -mem ' + str(mem) + ' -t ' + time + ' -print1 ' + str(print1) + ' -Ov ' + str(overwrite) + ' -fsc2path ' + fsc2_path + ' -clust ' + cluster + ' -oande ' + self.oande + ' -verbose ' + str(verbose) + '\n')
+                              'python3 ' + self.code_dir + '/FSC2_submit.py -i ' + input_dir + ' -nj ' + str(num_jobs) + ' -s ' + str(sleep_time) + ' -reps ' + str(num_reps) + ' -minsims ' + str(min_sims) + ' -maxsims ' + str(max_sims) + ' -c ' + str(conv_crit) + ' -min_ecm ' + str(min_ecm) + ' -max_ecm ' + str(max_ecm) + ' -ci ' + str(calc_CI) + ' -p ' + job_partition + ' -nc ' + str(numcores) + ' -mem ' + str(mem) + ' -t ' + time + ' -print1 ' + str(print1) + ' -Ov ' + str(overwrite) + ' -fsc2path ' + fsc2_path + ' -clust ' + cluster + ' -oande ' + self.oande + ' -verbose ' + str(verbose) + '\n')
 
                 shfile5.close()
                 if print1 is False:
