@@ -6,6 +6,16 @@ import math
 import datetime
 import time
 
+# Directions:
+# import WPM_Wrapper2 into python console
+# and pass path of Individual_Key file as object to class PopGen
+
+# USE BELOW COMMANDS TO CONCAT POP FILES after all are finished running
+# head -1 BEL_WPM.txt > WPM_All.txt
+# tail -n+2 -q *_WPM.txt >> WPM_All.txt
+
+# create variables that can be entered in the command line
+
 
 class scantools:
 
@@ -368,6 +378,7 @@ class scantools:
             print("recode_dir does not exist")
 
 
+    # CALCULATE WITHIN POPULATION METRICS
     def calcwpm(self, recode_dir, window_size, min_snps, pops="all", print1=False, mem=16000, numcores=1, sampind="-99", partition="nbi-medium", use_repol=True, time="0-02:00", overwrite=False):
         '''Purpose: Calculate within population metrics including: allele frequency, expected heterozygosity, Wattersons theta, Pi, ThetaH, ThetaL and neutrality tests: D, normalized H, E
            Notes:  Currently, all populations are downsampled to same number of individuals.  By default, this minimum individuals across populations minus 1 to allow for some missing data
@@ -668,7 +679,6 @@ class scantools:
 
 
     def calcAFS(self, recode_dir, data_name, sampind="-99", pops="-99", time="0-00:30", mem="8000", use_repol=True, print1=False, allow_one_missing=True, partition="nbi-short"):
-        """Purpose:  calculate allele frequency spectrum for each population in pops list and downsample to number specified in sampind.  If no downsampling is specified the number of indviduals in the population (minus one if allow_one_missing=True) will be used."""
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
         if pops == "-99":
@@ -712,7 +722,6 @@ class scantools:
 
 
     def calcFreqs(self, recode_dir, outfile_name, sites_file, pops="-99", time="0-02:00", partition="nbi-short", mem="8000", use_repol=True, print1=False):
-        """Calls calcFreqs_atSites.py.  Takes a list of sites in (sites_file, should be formatted so that each line simply has scaffold and position, with scaffold simply coded as an integer 0-8) and calculates the allele frequency in each population (list_of_populations) at each site"""
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
         if pops == "-99":
@@ -858,7 +867,6 @@ class scantools:
             print("Did not find recode_dir")
 
     def Outliers(self, recode_dir, in_file, column_index_list, percentile, tails='upper', annotation_file='/nbi/Research-Groups/JIC/Levi-Yant/GenomeScan/LyV2.gff', overlap_proportion=0.000001):
-        """Purpose:  Wraps .findOutliers, .annotateOutliers, and .mergeAnnotation into a single function"""
         print("Be sure that no old versions of gff files are in this directory")
         self.findOutliers(recode_dir, in_file, column_index_list, percentile, tails)
         bed_file = in_file.replace(".txt", "") + '_' + str(percentile) + 'tile_OutOnly.bed'
@@ -961,24 +969,33 @@ class scantools:
         else:
             print("!!!Did not find recode_dir!!!!")
 
-    def FSC2(self, input_dir, num_jobs=400, sleep_time=0.5, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.001, min_ecm=10, max_ecm=40, calc_CI=False, submit_partition="nbi-medium", job_partition="nbi-short", submit_time="2-00:00", job_time="0-02:00", numcores=1, time="0-02:00", mem="8000", print1=False, overwrite="None", fsc2_path="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221", cluster="JIC", verbose=False):
-        """This method parallelises job submission of fastsimcoal2, but requires a very specific set up of input files.  The output of '.generateFSC2input' should be a folder that contains the multi-dimensional SFS.  Place this folder in a new folder that will be the FSC2_Data_Parent_Directory.  This directory should also contain one or more template (.tpl) and estimates (.est) files whose format can be found in the fastsimcoal2 documentation.  For each sub-directory containing input data, this method will re-format and rename the .tpl and .est files to reflect the necessary information in the sub-directory multi-dimensional SFS and then submit these jobs to the cluster.  I've tried to make the code as general as possible, but this is one method that will likely require the user to read and understand the code in order to get things working well for them.  Also, a major potential source of errors is in the correct formatting of the .tpl and .est files, so it is worthwhile to ensure that these are correct (by running FSC2 on a subset of your sub-directories) before launching full-scale"""
-        # num_jobs is number of jobs to be queued.  the program will submit this number of jobs and then submit additional jobs as previous ones finish, but never exceeding the specified number of jobs at any given time.
+    def FSC2(self, input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.001, min_ecm=10, max_ecm=40, calc_CI=False, partition="nbi-short", numcores=1, time="0-02:00", mem="8000", print1=False, hard_overwrite=False, soft_overwrite=False, fsc2_path="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/fsc_linux64/fsc25221", cluster="JIC"):
 
+        Data_Files = []
         tpl_files = []
         est_files = []
-
+        CI_Data_Files = []
         for path in os.listdir(input_dir):
             if os.path.isdir(input_dir + path) and path.startswith("FSC2input"):
                 samp_name = path.split("_")[1]
-                if samp_name + "_DSFS.obs" not in os.listdir(input_dir + path):
+                if samp_name + "_DSFS.obs" in os.listdir(input_dir + path):
+                    for i in range(0, num_reps):
+                        new_file = open(input_dir + path + "/" + samp_name + str(i) + "_DSFS.obs",'w')
+                        with open(input_dir + path + "/" + samp_name + "_DSFS.obs") as data_file:
+                            for line in data_file:
+                                new_file.write(line)
+                            new_file.close()
+                        Data_Files.append(input_dir + path + "/" + samp_name + str(i) + "_DSFS.obs")
+                else:
                     print("Did not find input data file for: ", samp_name)
+                    # if file.split("_")[0].split(".")[-1].beginswith("rep") is True:
                 if calc_CI is True:
                     num_files = 0
                     for file in os.listdir(input_dir + path):
                         if file.endswith("_DSFS.obs") and file.split("_")[-2].split(".")[-1][0:3] == "rep" and file != samp_name + "_DSFS.obs":
+                            CI_Data_Files.append(input_dir + path + "/" + file)
                             num_files += 1
-                    if len(num_files) < 1:
+                    if len(CI_Data_Files) < 1:
                         print("Did not find bootstrap replicates for: ", samp_name)
                     else:
                         print("Found ", num_files, " replicate dsfs files for CI calculation for ", samp_name)
@@ -988,39 +1005,118 @@ class scantools:
         if len(tpl_files) == 0:
             print("Did not find any tpl files!! Aborting!!")
         else:
-            if any(os.path.exists(input_dir + k.split(".tpl")[0] + ".est") is False for k in tpl_files):
-                print("Did not find all est files.  Aborting!!")
-            else:
-                shfile5 = open("FSC2_submit.sh", 'w')
-                shfile5.write('#!/bin/bash\n' +
-                              '#SBATCH -J fsc2_submit.sh\n' +
-                              '#SBATCH -e ' + self.oande + 'fsc2_submit.err\n' +
-                              '#SBATCH -o ' + self.oande + 'fsc2_submit.out\n' +
-                              '#SBATCH -p ' + submit_partition + '\n' +
-                              '#SBATCH -n 1\n' +
-                              '#SBATCH -t ' + str(submit_time) + '\n' +
-                              '#SBATCH --mem=4000\n' +
-                              'unset SBATCH_PARTITION\n' +
-                              'source python-3.5.1\n' +
-                              'source env/bin/activate\n' +
-                              'python3 ' + self.code_dir + '/FSC2_submit.py -i ' + input_dir + ' -nj ' + str(num_jobs) + ' -s ' + str(sleep_time) + ' -reps ' + str(num_reps) + ' -minsims ' + str(min_sims) + ' -maxsims ' + str(max_sims) + ' -c ' + str(conv_crit) + ' -min_ecm ' + str(min_ecm) + ' -max_ecm ' + str(max_ecm) + ' -ci ' + str(calc_CI) + ' -p ' + job_partition + ' -nc ' + str(numcores) + ' -mem ' + str(mem) + ' -t ' + time + ' -print1 ' + str(print1) + ' -Ov ' + str(overwrite) + ' -fsc2path ' + fsc2_path + ' -clust ' + cluster + ' -oande ' + self.oande + ' -verbose ' + str(verbose) + '\n')
+            if calc_CI is True:
+                Data_Files = CI_Data_Files
+            for file in Data_Files:
+                name = file.split("_DSFS")[0]
+                samp_name = name.split("/")[-1]
+                for tpl in tpl_files:
+                    tpl_name = tpl.split(".tpl")[0]
+                    if os.path.isdir(name + "_" + tpl_name) is False or hard_overwrite is True:
+                        new_tpl = open(name + "_" + tpl_name + ".tpl", 'w')
+                        new_data = open(name + "_" + tpl_name + "_DSFS.obs", 'w')
+                        with open(file) as data:
+                            for i, line in enumerate(data):
+                                if i == 1:
+                                    pop_info = line.strip("\n").strip("\t").split("\t")
+                                    pop_num = int(pop_info[0])
+                                    samp_nums = pop_info[-pop_num:]
+                                new_data.write(line)
+                        with open(input_dir + tpl) as template:
+                            samp_num_lines = pop_num + 4
+                            for i, line in enumerate(template):
+                                if i < samp_num_lines:
+                                    new_tpl.write(line)
+                                elif i == samp_num_lines:
+                                    for num in samp_nums:
+                                        new_tpl.write(num + "\n")
+                                elif i >= samp_num_lines + len(samp_nums):
+                                    new_tpl.write(line)
+                        new_est = open(name + "_" + tpl_name + ".est", 'w')
+                        try:
+                            with open(input_dir + tpl_name + ".est") as est:
+                                for line in est:
+                                    new_est.write(line)
+                        except FileNotFoundError:
+                            print("Did not find est file for: ", tpl)
+                        if cluster == "JIC":
+                            shfile5 = open(name.split("/")[-1] + tpl_name + ".sh", 'w')
+                            shfile5.write('#!/bin/bash\n' +
+                                          '#SBATCH -J ' + name.split("/")[-1] + "_" + tpl_name + ".fsc2.sh" + '\n' +
+                                          '#SBATCH -e ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.err" + '\n' +
+                                          '#SBATCH -o ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.out" + '\n' +
+                                          '#SBATCH -p ' + str(partition) + '\n' +
+                                          '#SBATCH -n ' + str(numcores) + '\n' +
+                                          '#SBATCH -t ' + str(time) + '\n' +
+                                          '#SBATCH --mem=' + str(mem) + '\n' +
+                                          'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
+                                          fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
+                            shfile5.close()
 
-                shfile5.close()
-                if print1 is False:
-                    cmd1 = ("sbatch FSC2_submit.sh")
-                    p1 = subprocess.Popen(cmd1, shell=True)
-                    sts1 = os.waitpid(p1.pid, 0)[1]
+                        if print1 is False:
+                            cmd1 = ('sbatch ' + name.split("/")[-1] + tpl_name + ".sh")
+                            p1 = subprocess.Popen(cmd1, shell=True)
+                            sts1 = os.waitpid(p1.pid, 0)[1]
+                        else:
+                            file3 = open(name.split("/")[-1] + tpl_name + ".sh", 'r')
+                            data3 = file3.read()
+                            print(data3)
+                        os.remove(name.split("/")[-1] + tpl_name + ".sh")
 
-                else:
-                    file3 = open("FSC2_submit.sh", 'r')
-                    data3 = file3.read()
-                    print(data3)
-
-                os.remove("FSC2_submit.sh")
+                    elif os.path.exists(name + "_" + tpl_name + "/" + samp_name + "_" + tpl_name + ".bestlhoods") is False and soft_overwrite is True:  # Intended to catch instances where FSC2 had run previously (and therefore created the output directory), but did not converge (and therefore output directory does not contain .bestlhoods file)
+                        new_tpl = open(name + "_" + tpl_name + ".tpl", 'w')
+                        new_data = open(name + "_" + tpl_name + "_DSFS.obs", 'w')
+                        with open(file) as data:
+                            for i, line in enumerate(data):
+                                if i == 1:
+                                    pop_info = line.strip("\n").strip("\t").split("\t")
+                                    pop_num = int(pop_info[0])
+                                    samp_nums = pop_info[-pop_num:]
+                                new_data.write(line)
+                        with open(input_dir + tpl) as template:
+                            samp_num_lines = pop_num + 4
+                            for i, line in enumerate(template):
+                                if i < samp_num_lines:
+                                    new_tpl.write(line)
+                                elif i == samp_num_lines:
+                                    for num in samp_nums:
+                                        new_tpl.write(num + "\n")
+                                elif i >= samp_num_lines + len(samp_nums):
+                                    new_tpl.write(line)
+                        new_est = open(name + "_" + tpl_name + ".est", 'w')
+                        try:
+                            with open(input_dir + tpl_name + ".est") as est:
+                                for line in est:
+                                    new_est.write(line)
+                        except FileNotFoundError:
+                            print("Did not find est file for: ", tpl)
+                        shfile5 = open(name.split("/")[-1] + tpl_name + ".sh", 'w')
+                        shfile5.write('#!/bin/bash\n' +
+                                      '#SBATCH -J ' + name.split("/")[-1] + "_" + tpl_name + ".fsc2.sh" + '\n' +
+                                      '#SBATCH -e ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.err" + '\n' +
+                                      '#SBATCH -o ' + self.oande + name.split("/")[-1] + "_" + tpl_name + ".fsc2.out" + '\n' +
+                                      '#SBATCH -p ' + str(partition) + '\n' +
+                                      '#SBATCH -n ' + str(numcores) + '\n' +
+                                      '#SBATCH -t ' + str(time) + '\n' +
+                                      '#SBATCH --mem=' + str(mem) + '\n' +
+                                      'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
+                                      fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
+                        shfile5.close()
+                        if print1 is False:
+                            cmd1 = ('sbatch ' + name.split("/")[-1] + tpl_name + ".sh")
+                            p1 = subprocess.Popen(cmd1, shell=True)
+                            sts1 = os.waitpid(p1.pid, 0)[1]
+                        else:
+                            file3 = open(name.split("/")[-1] + tpl_name + ".sh", 'r')
+                            data3 = file3.read()
+                            print(data3)
+                        os.remove(name.split("/")[-1] + tpl_name + ".sh")
+                    else:
+                        print("Output directory for " + samp_name + "_" + tpl_name + " already exists.  Use hard_overwrite = True to overwrite.")
 
 
     def gatherFSC2output(self, parent_dir):
-        """This method collects all information from the '.bestlhood' output files of FSC2 that is buried in the sub-directories and outputs the information into one of two files:  Likelihoods file and parameters file."""
+
         if parent_dir.endswith("/") is False:
             parent_dir += "/"
         get_header = True
@@ -1061,7 +1157,6 @@ class scantools:
 
 
     def queryFSC2input(self, input_dir, index_list, outname):
-        """PROVIDE SUMMARY HERE AND IN README"""
         outfile = open(input_dir + outname + ".txt", 'w')
         outfile.write("Outname\tPops\tProp\n")
         for path in os.listdir(input_dir):

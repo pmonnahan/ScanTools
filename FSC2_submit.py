@@ -30,7 +30,7 @@ def CheckRunning(shlist, maxjobs, chk_file_list):
             if os.path.exists(Processes[p]) is False:  # If the process hasn't finished will return None
                 del Processes[p]  # Remove from list - this is why we needed reverse order
 
-    while (len(Processes) <= maxjobs) and (jobindex < len(shlist)):  # More to do and some spare slots
+    while (len(Processes) < maxjobs) and (jobindex < len(shlist)):  # More to do and some spare slots
         StartNew(shlist, maxjobs, chk_file_list)
 
 
@@ -130,7 +130,8 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                                       '#SBATCH -t ' + str(time) + '\n' +
                                       '#SBATCH --mem=' + str(mem) + '\n' +
                                       'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
-                                      fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
+                                      fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n' + 
+                                      'rm ' + name + "_" + tpl_name + ".chk.txt")
                         shfile5.close()
 
                     if print1 == "True":
@@ -180,7 +181,8 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                                   '#SBATCH -t ' + str(time) + '\n' +
                                   '#SBATCH --mem=' + str(mem) + '\n' +
                                   'cd ' + os.path.abspath(os.path.join(file, os.pardir)) + "\n" +
-                                  fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n')
+                                  fsc2_path + ' -t ' + samp_name + "_" + tpl_name + ".tpl" + ' -e ' + samp_name + "_" + tpl_name + '.est -n ' + str(min_sims) + ' -N ' + str(max_sims) + ' -u -d -q -l ' + str(min_ecm) + ' -L ' + str(max_ecm) + ' -M ' + str(conv_crit) + ' \n' +
+                                  'rm ' + name + "_" + tpl_name + ".chk.txt")
                     shfile5.close()
                     if print1 == "True":
                         file3 = open(name + "_" + tpl_name + ".sh", 'r')
