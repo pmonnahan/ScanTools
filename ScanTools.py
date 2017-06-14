@@ -739,7 +739,7 @@ class scantools:
                       '#SBATCH -t ' + str(time) + '\n' +
                       '#SBATCH --mem=' + str(mem) + '\n' +
                       'source python-3.5.1\n' +
-                      'python3 ' + self.code_dir + '/calcFreqs_atSites.py -i ' + recode_dir + ' -of ' + outfile_name + ' -s ' + sites_file + ' -pops ' + pop_string + ' -suffix ' + suffix + '\n')
+                      'python3 ' + self.code_dir + '/calcFreqs_atSites.py -i ' + recode_dir + ' -o ' + recode_dir + ' -of ' + outfile_name + ' -s ' + sites_file + ' -pops ' + pop_string + ' -suffix ' + suffix + '\n')
         shfile3.close()
         if print1 is False:
             cmd3 = ('sbatch CalcFreqs.sh')
