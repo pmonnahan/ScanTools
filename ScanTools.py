@@ -553,7 +553,7 @@ class scantools:
                               'sort -k3,3 -k4,4n -m ' + file_string + '> ' + tmpdir + output_name + '.concat.txt\n' +
                               'python3 ' + self.code_dir + '/bpm.py -i ' + tmpdir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + ' -np ' + str(pop_num) + '\n')
                 if keep_intermediates is False:
-                    shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
+                    shfile3.write('rm ' + tmpdir + output_name + '.concat.txt')
                 shfile3.close()
 
                 if print1 is False:
@@ -639,7 +639,7 @@ class scantools:
                                       'sort -k3,3 -k4,4n -m ' + recode_dir + pop1 + suffix + " " + recode_dir + pop2 + suffix + " > " + tmpdir + output_name + '.concat.txt\n' +
                                       'python3 ' + self.code_dir + '/bpm.py -i ' + tmpdir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + ' -np 2\n')
                         if keep_intermediates is False:
-                            shfile3.write('rm ' + recode_dir + output_name + '.concat.txt')
+                            shfile3.write('rm ' + tmpdir + output_name + '.concat.txt')
                         shfile3.close()
 
                         if print1 is False:
