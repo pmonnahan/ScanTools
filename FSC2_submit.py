@@ -224,7 +224,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     shell_script_list, Chk_files = FSC2(input_dir=args.i, num_reps=args.reps, min_sims=args.minsims, max_sims=args.maxsims, conv_crit=args.c, min_ecm=args.min_ecm, max_ecm=args.max_ecm, calc_CI=args.ci, partition=args.p, numcores=args.nc, mem=args.mem, time=args.t, print1=args.print1, overwrite=args.Ov, fsc2_path=args.fsc2path, cluster=args.clust, oande_dir=args.oande, verbose=args.verbose)
-
+    print(shell_script_list)
+    print(Chk_files)
     CheckRunning(shell_script_list, args.nj, Chk_files)  # This will start the max processes running
     while (len(Processes) > 0):  # Some thing still going on.
         time.sleep(float(args.s))  # You may wish to change the time for this
