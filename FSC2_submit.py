@@ -72,8 +72,8 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                                 for line in data_file:
                                     new_file.write(line)
                                 new_file.close()
-                        CI_Data_Files.append(input_dir + path + "/" + samp_name + file.split("_")[-2].split(".")[-1].split("_")[0]+ "_" + str(i) + "_DSFS.obs")
-                        num_files += 1
+                            CI_Data_Files.append(input_dir + path + "/" + samp_name + file.split("_")[-2].split(".")[-1].split("_")[0]+ "_" + str(i) + "_DSFS.obs")
+                            num_files += 1
                 if len(CI_Data_Files) < 1:
                     print("Did not find bootstrap replicates for: ", samp_name)
                 else:
