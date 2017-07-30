@@ -68,7 +68,7 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                     if file.endswith("_DSFS.obs") and file.split("_")[-2].split(".")[-1][0:3] == "rep" and file != samp_name + "_DSFS.obs":
                         for i in range(0, num_reps):
                             new_file = open(input_dir + path + "/" + samp_name + file.split("_")[-2].split(".")[-1].split("_")[0]+ "_" + str(i) + "_DSFS.obs", 'w')
-                            with open(input_dir + path + "/" + samp_name + file.split("_")[-2].split(".")[-1].split("_")[0]+ "_" + str(i) + "_DSFS.obs") as data_file:
+                            with open(input_dir + path + "/" + file) as data_file:
                                 for line in data_file:
                                     new_file.write(line)
                                 new_file.close()
@@ -100,7 +100,7 @@ def FSC2(input_dir, num_reps=50, min_sims=10000, max_sims=100000, conv_crit=0.00
                     with open(file, 'r') as data:
                         print(file)
                         for i, line in enumerate(data):
-                            print(i,line)
+                            print(i, line)
                             if i == 1:
                                 pop_info = line.strip("\n").strip("\t").split("\t")
                                 pop_num = int(pop_info[0])
