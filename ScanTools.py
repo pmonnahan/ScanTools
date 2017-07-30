@@ -978,7 +978,7 @@ class scantools:
                     for file in os.listdir(input_dir + path):
                         if file.endswith("_DSFS.obs") and file.split("_")[-2].split(".")[-1][0:3] == "rep" and file != samp_name + "_DSFS.obs":
                             num_files += 1
-                    if len(num_files) < 1:
+                    if num_files < 1:
                         print("Did not find bootstrap replicates for: ", samp_name)
                     else:
                         print("Found ", num_files, " replicate dsfs files for CI calculation for ", samp_name)
