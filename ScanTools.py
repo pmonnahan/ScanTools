@@ -718,7 +718,7 @@ class scantools:
                           '#SBATCH -t ' + str(time) + '\n' +
                           '#SBATCH --mem=' + str(mem) + '\n' +
                           'source python-3.5.1\n' +
-                          'python3 ' + self.code_dir + '/calcAFS.py -i ' + infile + ' -o ' + recode_dir + ' -p ' + prefix + ' -nreps ' + num_reps + ' -ws ' + window_size + '-sampind ' + str(si) + '\n')
+                          'python3 ' + self.code_dir + '/calcAFS.py -i ' + infile + ' -o ' + recode_dir + ' -p ' + prefix + ' -nreps ' + num_reps + ' -ws ' + window_size + ' -sampind ' + str(si) + '\n')
             shfile3.close()
             if print1 is False:
                 cmd3 = ('sbatch ' + infile + '.afs.sh')
