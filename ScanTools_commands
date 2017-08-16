@@ -1,0 +1,292 @@
+ScanTools_commands:
+
+# Invoke instance of scantools
+cd ./ScanTools
+source python-3.5.1
+python3
+import ScanTools
+test = ScanTools.scantools('/nbi/Research-Groups/JIC/Levi-Yant/Patrick/300/')
+
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/4dg/", repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.0,partition='medium',mem=8000,overwrite=True)
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/4dg/", pops=['TSC','TAL','TNC','TSW','TRL','DWC','DDI','DRL','DPA','DSC'], repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True)
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/",pops=['TSC','TAL','TNC','TSW','TRL','DWC','DDI','DRL','DPA','DSC'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True)
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/NSyn",pops=['TSC','TAL','TNC','TSW','TRL','DWC','DDI','DRL','DPA','DSC'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True)
+
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/4dg/", pops=['TWc','TAl','THE','DWc'], repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True)
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/",pops=['TWc','TAl','THE','DWc'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True)
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/NSyn",pops=['TWc','TAl','THE','DWc'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True)
+
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/4dg/", pops=['DCB','DTC','DTW','DTS','DTR','DIP','TET','TAS'], repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True)
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/",pops=['DCB','DTC','DTW','DTS','DTR','DIP','TET','TAS'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True)
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/NSyn",pops=['TWc','TAl','THE','DWc'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True)
+
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/",pops=['HNI', 'HOC', 'KAS', 'KOS', 'KOW', 'KZL', 'LAC', 'MIE'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True,time='1-00:00')
+
+# Combine Tets according to fastSTRUCTURE
+test.combinePops(['DRA','LAC','TZI'],'TSC') # 24 high cov inds
+test.combinePops(['SPI','TKO','TRT','TRE'], 'TNC') # 33 high cov inds
+test.combinePops(['BRD','WEK','HOC','GUL','KOS','SCH','KAS','BGS'],'TAL') # 50 high cov inds
+test.combinePops(['RFT','SWA','CHO'],'TSW') # 24 high cov inds
+test.combinePops(['TBG','KOW','STE'],'TRL') # 21 high cov inds
+
+# Combine Dips according to fastSTRUCTURE
+test.combinePops(['HNI','SNO','TRD','VEL'],'DWC') # 19 high cov inds
+test.combinePops(['BEL','BIH','FOJ'],'DDI') # 24 high cov inds
+test.combinePops(['MIE','PRE'],'DRL') # 16 high cov inds
+test.combinePops(['HNE','KZL','SZI'],'DPA') # 13 high cov inds
+test.combinePops(['RZA','GOR','VID'],'DSC') # 17 high cov inds
+test.combinePops(['VID'],'DDR') # 7 high cov inds
+
+# Filip's Lineages -- Based on fastStructure, but reduced to core populations in each group to equalize number of individuals in each lineage
+FIRST SET ('Fils1stLineages'):
+test.combinePops(['HNE','KZL','SZI'],'DPA') # 13 high cov inds  SAME AS ABOVE
+test.combinePops(['BEL','BIH','FOJ'],'DDI') # 24 high cov inds  SAME AS ABOVE
+test.combinePops(['RZA','GOR','VID'],'DSc') # 17 high cov inds  SAME AS ABOVE
+test.combinePops(['SNO','TRD','VEL'],'DWc') # 19 high cov inds
+test.combinePops(['MIE','PRE'],'DBA') # 16 high cov inds  SAME AS DRL
+
+test.combinePops(['DRA','LAC','TZI'],'TSC') # 24 high cov inds  SAME AS ABOVE
+test.combinePops(['TBG','KOW','STE'],'TRU') # 21 high cov inds SAME AS TRL
+test.combinePops(['SPI','TKO','TRE'], 'TWc') # XX high cov inds
+test.combinePops(['HOC','KAS','KOS'], 'TAl') # XX high cov inds
+test.combinePops(['BRD','WEK'], 'THE') # XX high cov inds
+test.combinePops(['RFT','SWA','CHO'],'TSW') # 24 high cov inds  SAME AS ABOVE
+
+['DPA','DDI','DSc','DWc','DBA','TSC','TRU','TWc','TAl','THE','TSW']
+
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/4dg/", pops=['DPA','DDI','DSc','DWc','DBA'], repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True,use_scratch=True)
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/",pops=['DPA','DDI','DSc','DWc','DBA'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=16000,overwrite=True,use_scratch=True)
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/NSynALL/",pops=['DPA','DDI','DSc','DWc','DBA'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True,use_scratch=True)
+
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/",pops=['DWc'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=16000,overwrite=True,use_scratch=True,time="2-00:00")
+
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/4dg/", pops=['TSC','TRU','TWc','TAl','THE','TSW'], repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True,use_scratch=True)
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/",pops=['TSC','TRU','TWc','TAl','THE','TSW'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=16000,overwrite=True,use_scratch=True,time="2-00:00")
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/NSynALL/",pops=['TSC','TRU','TWc','TAl','THE','TSW'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True,use_scratch=True)
+
+SECOND SET:  FOR CALCULATION OF GENOME-WIDE PER-GROUP STATISTICS  -- Suggested by Filip.  Geographic or ploidy groupings. ('Fils2ndLineages')
+test.combinePops(['GOR','RZA','VID','SNO','TRD','VEL','MIE','PRE'],'DCB')  # Carpathian + Baltic diploids
+test.combinePops(['GOR','RZA','VID','SNO','TRD','VEL','MIE','PRE','DRA','LAC','TZI','KOW','STE','TBG','SPI','TKO','TRE','TRT','ZAP','BRD','CHO','HOC','GUL','KAS','KOS','RFT','SCH','SWA','WEK'],'DTC')  #Carpathian + Baltic / diploids + tetraploids
+test.combinePops(['SNO','TRD','VEL','SPI','TKO','TRE','TRT','ZAP'],'DTW')  # W Carpathians diploids + tetraploids)
+test.combinePops(['GOR','RZA','VID','DRA','LAC','TZI'], 'DTS')  # S Carpathians diploids + tetraploids
+test.combinePops(['MIE','PRE','KOW','STE','TBG'],'DTR')  # Baltic diploids + Ruderal tetraploids
+test.combinePops(['HNE','KZL','SZI','BEL','BIH','FOJ','GOR','RZA','VID','SNO','TRD','VEL','MIE','PRE'],'DIP')  # diploids
+test.combinePops(['DRA','LAC','TZI','KOW','STE','TBG','SPI','TKO','TRE','TRT','ZAP','BRD','CHO','HOC','GUL','KAS','KOS','RFT','SCH','SWA','WEK'],'TET')  # tetraploids
+test.combinePops(['BRD','CHO','HOC','GUL','KAS','KOS','RFT','SCH','SWA','WEK'],'TAS')  # Alpine, Hercynian, Swabian tetraploids
+
+
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/4dg/", pops=['DCB','DTC','DTW','DTS','DTR','DIP','TET','TAS'], repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True,use_scratch=True)
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/NSynALL/",pops=['DCB','DTC','DTW','DTS','DTR','DIP','TET','TAS'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=8000,overwrite=True,use_scratch=True)
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/",pops=['DCB','DTC','DTW','DTS','DTR','DIP','TET','TAS'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=16000,overwrite=True,use_scratch=True,time="2-00:00")
+
+
+test.calcwpm(test.split_dirs[1],window_size=50000,min_snps=10,pops = ['DCB','DTC','DTW','DTS','DTR','DIP','TAS','TET','DPA','DDI','DSc','DWc','DBA','TSC','TRU','TWc','TAl','THE','TSW'],sampind=11,time="2-00:00")
+test.calcwpm(test.split_dirs[5],window_size=50000,min_snps=10,pops = ['DCB','DTC','DTW','DTS','DTR','DIP','TAS','TET','DPA','DDI','DSc','DWc','DBA','TSC','TRU','TWc','TAl','THE','TSW'],sampind=11,time="2-00:00")
+
+test.calcPairwisebpm(test.split_dirs[1],window_size=50000,min_snps=10,pops=['DCB','DTC','DTW','DTS','DTR','DIP','TAS','TET'],mem=32000,time="2-00:00")
+test.calcPairwisebpm(test.split_dirs[5],window_size=50000,min_snps=10,pops=['DCB','DTC','DTW','DTS','DTR','DIP','TAS','TET'],mem=32000,time="2-00:00")
+test.calcPairwisebpm(test.split_dirs[1],window_size=50000,min_snps=10,pops=['DPA','DDI','DSc','DWc','DBA','TSC','TRU','TWc','TAl','THE','TSW'],mem=32000,time="2-00:00")
+test.calcPairwisebpm(test.split_dirs[5],window_size=50000,min_snps=10,pops=['DPA','DDI','DSc','DWc','DBA','TSC','TRU','TWc','TAl','THE','TSW'],mem=32000,time="2-00:00")
+
+test.calcPairwisebpm(test.split_dirs[2],window_size=50000,min_snps=10,pops=['DCB','DTC','DTW','DTS','DTR','DIP','TAS','TET'],mem=64000,time="2-00:00",partition="medium")
+test.calcPairwisebpm(test.split_dirs[2],window_size=50000,min_snps=10,pops=['DPA','DDI','DSc','DWc','DBA','TSC','TRU','TWc','TAl','THE','TSW'],mem=64000,time="2-00:00",partition="medium")
+
+test.calcbpm(test.split_dirs[2],window_size=50000,min_snps=10,pops=['DCB','DTC'],outname="DCBDTC",mem=64000,time="2-00:00",partition="medium")
+test.calcbpm(test.split_dirs[2],window_size=50000,min_snps=10,pops=['DTC','DTW'],outname="DTCDTW",mem=64000,time="2-00:00",partition="medium")
+test.calcbpm(test.split_dirs[2],window_size=50000,min_snps=10,pops=['DTC','DTS'],outname="DTCDTS",mem=64000,time="2-00:00",partition="medium")
+test.calcbpm(test.split_dirs[2],window_size=50000,min_snps=10,pops=['DTC','DTR'],outname="DTCDTR",mem=64000,time="2-00:00",partition="medium")
+test.calcbpm(test.split_dirs[2],window_size=50000,min_snps=10,pops=['DTC','DIP'],outname="DTCDIP",mem=64000,time="2-00:00",partition="medium")
+test.calcbpm(test.split_dirs[2],window_size=50000,min_snps=10,pops=['DTC','TAS'],output_name="DTCTAS",mem=64000,time="2-00:00",partition="nbi-medium")
+test.calcbpm(test.split_dirs[2],window_size=50000,min_snps=10,pops=['DTC','TET'],output_name="DTCTET",mem=64000,time="2-00:00",partition="nbi-medium")
+
+
+test.calcwpm(test.split_dirs[1],window_size=10000,min_snps=10,pops = ['DPA','DDI','DSc','DWc','DBA','TSC','TRU','TWc','TAl','THE','TSW'],sampind=11,time="2-00:00")
+test.calcwpm(test.split_dirs[5],window_size=10000,min_snps=10,pops = ['DPA','DDI','DSc','DWc','DBA','TSC','TRU','TWc','TAl','THE','TSW'],sampind=11,time="2-00:00")
+test.calcwpm(test.split_dirs[2],window_size=10000,min_snps=10,pops = ['DPA','DDI','DSc','DWc','DBA','TSC','TRU','TWc','TAl','THE','TSW'],sampind=11,time="2-00:00")
+test.calcPairwisebpm(test.split_dirs[1],window_size=10000,min_snps=1,pops=['DPA','DDI','DSc','DWc','DBA','TSC','TRU','TWc','TAl','THE','TSW'],mem=32000,time="2-00:00",use_scratch=True)
+test.calcPairwisebpm(test.split_dirs[5],window_size=10000,min_snps=1,pops=['DPA','DDI','DSc','DWc','DBA','TSC','TRU','TWc','TAl','THE','TSW'],mem=32000,time="2-00:00",use_scratch=True)
+test.calcPairwisebpm(test.split_dirs[2],window_size=10000,min_snps=1,pops=['DPA','DDI','DSc','DWc','DBA','TSC','TRU','TWc','TAl','THE','TSW'],mem=32000,time="2-00:00",use_scratch=True)
+
+test.calcwpm(test.split_dirs[1],window_size=10000,min_snps=1,sampind=5,time="2-00:00")
+test.calcwpm(test.split_dirs[5],window_size=10000,min_snps=1,sampind=5,time="2-00:00")
+test.calcwpm(test.split_dirs[2],window_size=10000,min_snps=1,sampind=5,time="2-00:00")
+test.calcPairwisebpm(test.split_dirs[1],window_size=10000,min_snps=1,mem=32000,time="2-00:00",use_scratch=True)
+test.calcPairwisebpm(test.split_dirs[5],window_size=10000,min_snps=1,mem=32000,time="2-00:00",use_scratch=True)
+test.calcPairwisebpm(test.split_dirs[2],window_size=10000,min_snps=1,mem=32000,time="2-00:00",use_scratch=True)
+
+
+test.calcwpm(test.split_dirs[2],window_size=50000,min_snps=10,pops = ['DTC'],sampind=11,time="2-00:00")
+
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/4dg/",pops=['DCB','DTC','DTW','DTS','DTR','DIP','TAS','TET'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=16000,time="2-00:00",overwrite=True)
+
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/",pops=['KAS'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=32000,time="2-00:00",overwrite=True)
+
+# Remove low numbered populations
+test.removePop(['DFS']) # 1 ind, 0 low cov 
+test.removePop(['HAR']) # 2 ind, 1 low cov
+test.removePop(['CRO']) # 4 ind, 2 low cov
+test.removePop(['HNI']) # 4 ind, 3 low cov
+test.removePop(['BRD']) # 5 ind, 0 low cov
+test.removePop(['SNO']) # 5 ind, 0 low cov
+test.removePop(['TBG']) # 5 ind, 0 low cov
+test.removePop(['ZAP']) # 5 ind, 1 low cov
+test.removePop(['KZL']) # 5 ind, 2 low cov
+test.removePop(['SZI']) # 5 ind, 2 low cov
+test.removePop(['TRD']) # 6 ind, 1 low cov
+test.removePop(['SCH']) # 7 ind, 2 low cov
+test.removePop(['WEK']) # 8 ind, 6 low cov
+
+# Remove low coverage individuals
+test.removeInds(['TRD_001_ba','TRT_001_dj','VID_001_a','SWA_006_1','HAR_006_1','RFT_016_1','HOC_007_1','SZI_003_1','KOS_010_1','SNO_023_1','TRT_001_bd','CRO_002_b','HNI_003_1','HNI_004_1','SCH_001_a','TZI_008_1','WEK_001_i','CHO_001_b','SCH_001_b','SNO_009_1','SWA_008_1','WEK_001_e','SWA_005_1','KZL_020_1','CRO_001_bb','HNI_001_1','KZL_017_1','KOS_005_1','WEK_001_a','WEK_001_b','ZAP_001_a03','WEK_001_d','WEK_001_h','RFT_017_1','TRT_001_bk','SZI_012_1','TRT_001_co'])  # avg depth < 8 for 4dg sites  REMOVE ALL LOW-COVERAGE INDIVIDUALS FOR CREATION OF LINEAGE INPUT FILES
+
+test.removeInds(['TRD_001_ba','TRT_001_bk','TRT_001_dj','TRT_001_bd','HAR_006_1','RFT_016_1','RFT_017_1','HOC_007_1','SZI_003_1','SZI_012_1','KOS_010_1','CRO_002_b','CRO_001_bb','HNI_003_1','HNI_004_1','HNI_001_1','SCH_001_a','SCH_001_b','TZI_008_1','CHO_001_b','SWA_008_1','SWA_005_1','SWA_006_1','KOS_005_1','WEK_001_i','WEK_001_e','WEK_001_b','VID_001_a'])  ONLY REMOVE LOWEST COV INDIVIDUALS FROM POPULATIONS WITH OTHERWISE SUFFICIENT NUMBERS (5) FOR METRIC CALCULATIONS
+
+POPS TO REDO following removal of low cov individuals: ['TRD', 'TRT', 'RFT', 'HOC', 'SZI', 'KOS', 'SCH', 'TZI', 'CHO', 'SWA', 'KOS', 'WEK', 'VID']
+
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/4dg/", pops=['TRD', 'TRT', 'RFT', 'HOC', 'SZI', 'KOS', 'SCH', 'TZI', 'CHO', 'SWA', 'KOS', 'WEK', 'VID'], repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='short',mem=16000,overwrite=True,time="0-02:00")
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/",pops=['TRD', 'TRT', 'RFT', 'HOC', 'SZI', 'KOS', 'SCH', 'TZI', 'CHO', 'SWA', 'KOS', 'WEK', 'VID'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='medium',mem=16000,overwrite=True,time="2-00:00")
+test.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/300/PASS/NSynALL",pops=['TRD', 'TRT', 'RFT', 'HOC', 'SZI', 'KOS', 'SCH', 'TZI', 'CHO', 'SWA', 'KOS', 'WEK', 'VID'],repolarization_key="/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Repolarization/repolarized.lookupKey.perSpeciesThreshold.txt",min_dp=8,mffg=0.1,partition='short',mem=16000,overwrite=True,time="0-02:00")
+
+test.calcwpm(test.split_dirs[1], pops=['TRD', 'TRT', 'RFT', 'HOC', 'SZI', 'KOS', 'SCH', 'TZI', 'CHO', 'SWA', 'KOS', 'WEK', 'VID'],window_size=50000,min_snps=1,partition="short",time="0-02:00",sampind=5)
+test.calcwpm(test.split_dirs[2], pops=['TRD', 'TRT', 'RFT', 'HOC', 'SZI', 'KOS', 'SCH', 'TZI', 'CHO', 'SWA', 'KOS', 'WEK', 'VID'],window_size=50000,min_snps=1,partition="short",time="0-02:00",sampind=5)
+test.calcwpm(test.split_dirs[5], pops=['TRD', 'TRT', 'RFT', 'HOC', 'SZI', 'KOS', 'SCH', 'TZI', 'CHO', 'SWA', 'KOS', 'WEK', 'VID'],window_size=50000,min_snps=1,partition="short",time="0-02:00",sampind=5)
+test.calcwpm(test.split_dirs[1], pops=['TRD', 'TRT', 'RFT', 'HOC', 'SZI', 'KOS', 'SCH', 'TZI', 'CHO', 'SWA', 'KOS', 'WEK', 'VID'],window_size=50000,min_snps=1,partition="short",time="0-02:00",sampind=7)
+test.calcwpm(test.split_dirs[2], pops=['TRD', 'TRT', 'RFT', 'HOC', 'SZI', 'KOS', 'SCH', 'TZI', 'CHO', 'SWA', 'KOS', 'WEK', 'VID'],window_size=50000,min_snps=1,partition="short",time="0-02:00",sampind=7)
+test.calcwpm(test.split_dirs[5], pops=['TRD', 'TRT', 'RFT', 'HOC', 'SZI', 'KOS', 'SCH', 'TZI', 'CHO', 'SWA', 'KOS', 'WEK', 'VID'],window_size=50000,min_snps=1,partition="short",time="0-02:00",sampind=7)
+
+a=['BEL', 'BGS', 'BIH', 'BRD', 'CHO', 'CRO', 'DRA', 'FOJ', 'GOR', 'GUL', 'HNE', 'HNI', 'HOC', 'KAS', 'KOS', 'KOW', 'KZL', 'LAC', 'MIE', 'PRE', 'RFT', 'RZA', 'SCH', 'SNO', 'SPI', 'STE', 'SWA', 'SZI', 'TBG', 'TKO', 'TRD', 'TRE', 'TRT', 'TZI', 'VEL', 'VID', 'WEK', 'ZAP']
+b=['TRD', 'TRT', 'RFT', 'HOC', 'SZI', 'KOS', 'SCH', 'TZI', 'CHO', 'SWA', 'KOS', 'WEK', 'VID']
+itertools.product(a,b)
+c=list(itertools.product(a,b))
+
+for pops in c:
+    test.calcbpm(test.split_dirs[1],list(pops),"".join(pops),window_size=50000,min_snps=1,partition="short",time="0-02:00")
+    test.calcbpm(test.split_dirs[5],list(pops),"".join(pops),window_size=50000,min_snps=1,partition="short",time="0-02:00")
+
+test.calcPairwisebpm(test.split_dirs[2],test.pops,window_size=50000,min_snps=1,time="2-00:00")
+
+test.calcbpm(test.split_dirs[0],window_size=50000,minimum_snps=10,pops=['TWc','TRL','TAl','THE','TSW','TSC','DDI','DPA','DSC','DRL','DWc'],output_name='All_DipTet_Lineages',mem=150000,numcores=4,partition='long')
+
+test.calcPairwisebpm(test.split_dirs[0],window_size=50000,minimum_snps=1,pops=['TWc','TRL','TAl','THE','TSW','TSC','DDI','DPA','DSC','DRL','DWc'],mem=16000,numcores=1,partition='medium',time="2-00:00")
+test.calcPairwisebpm(test.split_dirs[2],window_size=50000,minimum_snps=1,pops=['TWc','TRL','TAl','THE','TSW','TSC','DDI','DPA','DSC','DRL','DWc'],mem=16000,numcores=1,partition='medium',time="2-00:00")
+test.calcPairwisebpm(test.split_dirs[3],window_size=50000,minimum_snps=1,pops=['TWc','TRL','TAl','THE','TSW','TSC','DDI','DPA','DSC','DRL','DWc'],mem=16000,numcores=1,partition='medium',time="2-00:00")
+
+>>> test.concatWPM(test.split_dirs[1],suffix=".WS50.0k_MS100_19ind_WPM.txt",outname="Tet_Lineages",pops=['TNC','TRL','TAL','TSC','TSW'])
+>>> test.concatWPM(test.split_dirs[3],suffix=".WS50.0k_MS100_19ind_WPM.txt",outname="Tet_Lineages",pops=['TNC','TRL','TAL','TSC','TSW'])
+>>> test.concatWPM(test.split_dirs[1],suffix=".WS50.0k_MS100_11ind_WPM.txt",outname="Dip_Lineages",pops=['DDI','DPA','DSC','DRL','DWC'])
+>>> test.concatWPM(test.split_dirs[3],suffix=".WS50.0k_MS100_11ind_WPM.txt",outname="Dip_Lineages",pops=['DDI','DPA','DSC','DRL','DWC'])
+
+
+for file in os.listdir(test.split_dirs[1]+'/10k_Windows/'):
+test.findOutliers(test.split_dirs[1]+'/10k_Windows/', file, [15,16,17],0.99)
+
+for file in os.listdir(test.split_dirs[1]+'/10k_Windows/'):
+if file.endswith(".bed"):
+test.annotateOutliers(test.split_dirs[1]+'/10k_Windows/',file,'/nbi/Research-Groups/JIC/Levi-Yant/GenomeScan/LyV2.gff')
+
+for file in os.listdir(test.split_dirs[1]+'/10k_Windows/'):
+if file.endswith("OutOnly.csv"):
+test.mergeAnnotation(test.split_dirs[1]+'/10k_Windows/', file)
+
+ 
+for file in os.listdir(test.dir+'GenomeScanResults/BPM/'):
+if file.endswith(".bed"):
+test.annotateOutliers(test.dir+'GenomeScanResults/BPM/',file,'/nbi/Research-Groups/JIC/Levi-Yant/GenomeScan/LyV2.gff')
+ 
+for file in os.listdir(test.dir+'GenomeScanResults/BPM/'):
+if file.endswith("OutOnly.csv"):
+test.mergeAnnotation(test.dir+'GenomeScanResults/BPM/', file)
+
+scenario2=[['VEL'],['SPI','TKO','TRE','HOC'],['DRA','LAC','TZI','HOC','BRD','SWA'],['VID']]
+
+scenario3=[['VEL'],['SPI','TKO','TRE','HOC'],['STE','TBG','KOW'],['MIE']]
+
+Scenarios2=list(itertools.product(*scenario2))
+
+Scenarios3=list(itertools.product(*scenario3))
+
+for scenario in Scenarios3:
+    test.generateFSC2input(test.split_dirs[4],list(scenario),".".join(scenario), 50000, 0, use_scratch=True,mem=64000)
+
+for scenario in Scenarios2:
+    test.generateFSC2input(test.split_dirs[4],list(scenario),".".join(scenario), 50000, 0, use_scratch=True,mem=64000)
+
+Scenarios1=[['DRA','HOC','VEL','VID'], ['LAC','HOC','VEL','VID'],['STE','HOC','VEL','MIE'],['TBG','HOC','VEL','MIE'],['TZI','HOC','VEL','VID'],['DRA','TKO','VEL','VID'],['LAC','TKO','VEL','VID'],['STE','TKO','VEL','MIE'],['TBG','TKO','VEL','MIE'],['TZI','TKO','VEL','VID'],['DRA','TRE','VEL','VID'], ['LAC','TRE','VEL','VID'],['STE','TRE','VEL','MIE'],['TBG','TRE','VEL','MIE'],['TZI','TRE','VEL','VID']]
+scenarios2=[['VEL','DRA','VID'],['VEL','LAC','VID'],['VEL','TZI','VID'],['HOC','DRA','VID'],['HOC','LAC','VID'],['HOC','TZI','VID'],['SPI','DRA','VID'],['SPI','LAC','VID'],['SPI','TZI','VID'],['TKO','DRA','VID'],['TKO','LAC','VID'],['TKO','TZI','VID'],['TRE','DRA','VID'],['TRE','LAC','VID'],['TRE','TZI','VID'],['VEL','KOW','MIE'],['VEL','STE','MIE'],['VEL','TBG','MIE'],['HOC','KOW','MIE'],['HOC','STE','MIE'],['HOC','TBG','MIE'],['SPI','KOW','MIE'],['SPI','STE','MIE'],['SPI','TBG','MIE'],['TKO','KOW','MIE'],['TKO','STE','MIE'],['TKO','TBG','MIE'],['TRE','KOW','MIE'],['TRE','STE','MIE'],['TRE','TBG','MIE']]
+scenarios3=["VEL","MIE","GOR"],["VEL","PRE","GOR"],["BEL","GOR","VEL"],["BEL","VID","VEL"],["FOJ","GOR","VEL"],["FOJ","VID","VEL"],["CRO","HNE","BEL"],["CRO","HNE","FOJ"],["VEL","SPI","DRA","VID"],["VEL","SPI","LAC","VID"],["VEL","SPI","TZI","VID"],["VEL","TRE","DRA","VID"],["VEL","TRE","LAC","VID"],["VEL","TRE","TZI","VID"],["VEL","SPI","KOW","MIE"],["VEL","SPI","STE","MIE"],["VEL","SPI","TBG","MIE"],["VEL","TRE","KOW","MIE"],["VEL","TRE","STE","MIE"],["VEL","TRE","TBG","MIE"],["VEL","SPI","BRD","VID"],["VEL","SPI","HOC","VID"],["VEL","SPI","KAS","VID"],["VEL","SPI","SWA","VID"],["VEL","TRE","BRD","VID"],["VEL","TRE","HOC","VID"],["VEL","TRE","KAS","VID"],["VEL","TRE","SWA","VID"]
+for scenario in scenarios3:
+    test.generateFSC2input(test.split_dirs[2],list(scenario),".".join(scenario), 50000, 100, use_repol=True,use_scratch=True)
+
+test.calcFreqs(test.split_dirs[],"PrivateBaltic_MinMax0.0001to0.3_TetFreqs","/nbi/Research-Groups/JIC/Levi-Yant/Patrick/300/private_alleles_diploid_lineages/private_min0.3_max0.0001_baltic.txt",pops=test.tets)
+
+LYRATA HYBRIDIZATION:
+cd ./ScanTools
+source python-3.5.1
+python3
+import ScanTools
+ly=ScanTools.scantools("/nbi/Research-Groups/JIC/Levi-Yant/Patrick/Lyrata_hyb/",encoding='utf-8-sig')
+
+ly.removeInds(['VLH2','SCB11a','SCB7a','SWA1a','SWA3a','HAL1','SEN1'])
+
+ly.combinePops(['KZL','SZI'],'APD')
+ly.combinePops(['HOC','GUL','BGS'],'AAT')
+ly.combinePops(['WEK','BRD'],'AHT')
+ly.combinePops(['HAL','ROK','FRE','OCH','KEH'],'HY1')
+ly.combinePops(['HAL','ROK','FRE','OCH'],'HY2')
+ly.combinePops(['LIC','MOD'],'LET')
+ly.combinePops(['PIL','KAG','LOI','MAU'],'LWT')
+ly.combinePops(['PEQ','PER','VLH'],'LYD')
+
+ly.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/Sarah/Lyrata/Joint-HC-gvcf/SNP_Nonvariants/DP-5/SNPs-AND-Nonvariants/",min_dp=5,mffg=0.0,overwrite=True,partition="medium")
+
+ly.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/Sarah/Lyrata/Joint-HC-gvcf/SNP_Nonvariants/DP-8/SNP_Nonvariant/Biallelic-Nonvariants/RD/",min_dp=8,mffg=0.1,partition="nbi-medium",time="2-00:00",use_scratch=True,pops=['APD','AAT','HY1','HY2','LET','LWT','LYD'])
+
+ly.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/Sarah/Lyrata/Joint-HC-gvcf/SNP_Nonvariants/DP-8/Degenerate/Bi-allelic/RD/",min_dp=8,mffg=0,overwrite=True,partition="medium",use_scratch=True)
+
+ly.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/Sarah/Lyrata/Joint-HC-gvcf/SNP_Nonvariants/DP-8/SNP_Nonvariant/Biallelic-Nonvariants/RD/Zero-Fold/",min_dp=8,mffg=0.1,partition="nbi-medium",time="2-00:00",use_scratch=True,pops=['APD','AAT','HY1','HY2','LET','LWT','LYD'])
+
+ly.splitVCFs("/nbi/Research-Groups/JIC/Levi-Yant/Sarah/Lyrata/Joint-HC-gvcf/SNP_Nonvariants/DP-8/Degenerate/Bi-allelic/RD/",min_dp=8,mffg=0.1,partition="nbi-medium",time="2-00:00",pops=['LYD'])
+
+scenario1=[['PEQ','PER','VLH'],['MAU','MOD','LIC','PIL','SWA','LOI','GYE','SCB','KAG','FRE','ROK','HAL'],['GUL','HOC','WEK','OCH','KEH','BGS','BRD','TRE'],['BEL','KZL']]
+
+scenario2=[['PEQ','PER'],['MAU','MOD','LIC','PIL','SWA','LIC'],['GUL','HOC'],['WEK'],['BEL','SZI']]
+
+scenario3=[['MAU','MOD','LIC','PIL','SWA','LOI','GYE','SCB','KAG','FRE','ROK','HAL'],['GUL','HOC','OCH','KEH','BGS','BRD','TRE'],['WEK']]
+
+scenario4=[['PEQ','PER'],['BEL','KZL'],['GUL','WEK']]
+
+scenario5=[['BEL','KZL'],['PEQ','PER'],['MOD','MAU']]
+
+scenario6=[['MOD','MAU'],['GUL','WEK'],['BEL','KZL']]
+
+scenario7=[['GUL','WEK'],['MOD','MAU'],['PEQ','PER']]
+
+scenario8=[['PEQ'],['LIC','MAU'],['BEL'],['GUL','WEK']]
+Scenarios8=list(itertools.product(*scenario8))
+Scenarios6=list(itertools.product(*scenario6))
+Scenarios7=list(itertools.product(*scenario7))
+
+Scenarios1=list(itertools.product(*scenario1))
+
+Scenarios2=list(itertools.product(*scenario2))
+
+Scenarios3=list(itertools.product(*scenario3))
+
+Scenarios4=list(itertools.product(*scenario4))
+Scenarios5=list(itertools.product(*scenario5))
+
+
+
+for scenario in Scenarios8:
+    ly.generateFSC2input(ly.split_dirs[1],list(scenario),".".join(scenario), 50000, 100, use_repol=False, use_scratch=True,mem=64000)
+
+ly.FSC2(ly.split_dirs[0] + "/FSC2_3pop/", job_partition="nbi-short",numcores=2,job_time="0-02:00",submit_partition="nbi-long",submit_time="7-00:00",mem=32000)
+ly.FSC2(ly.split_dirs[0] + "/FSC2_3pop/", job_partition="nbi-short",numcores=2,job_time="0-02:00",submit_partition="nbi-short",submit_time="0-02:00",mem=16000,num_jobs=5)
+
+ly.FSC2(ly.split_dirs[1] + "/FSC2_3pop_DipMig/", job_partition="nbi-short",numcores=1,job_time="0-02:00",submit_partition="nbi-medium",submit_time="2-00:00",mem=2000,num_jobs=500)
+ly.FSC2(ly.split_dirs[1] + "/FSC2_3pop_TetMig/", job_partition="nbi-short",numcores=1,job_time="0-02:00",submit_partition="nbi-medium",submit_time="2-00:00",mem=2000,num_jobs=500)
+
+Still need to run!!:
+
+ly.FSC2(ly.split_dirs[1] + "/FSC2_4pop/", job_partition="nbi-short",numcores=1,job_time="0-02:00",submit_partition="nbi-medium",submit_time="2-00:00",mem=2000,num_jobs=500,calc_CI=True)
+

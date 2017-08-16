@@ -14,7 +14,7 @@ REQUIREMENTS:
 - bedtools 2.17 or higher
 - GATK 3.6 
 - fastsimcoal2 version 2.5.2.21
-- A directory containing a file named 'PopKey.csv'
+- A directory containing a file named 'PopKey.csv'.
 
 INTRODUCTION
 
@@ -47,7 +47,7 @@ Several of the ScanTools methods are OBJECTS containing information about the pa
 ScanTools methods that are FUNCTIONS to carry out operations (only required arguments are shown; see code for full list of arguments):
 
 **Important** 
-Most of these methods include a print1 argument that, if set to True, will print the shell scripts instead of submitting them to the cluster.  This is a useful check that you should always do before your first real execution of a method.  
+Most of these methods include a print1 argument that, if set to True, will print the shell scripts instead of submitting them to the cluster.  This is a useful check that you should always do before your first real execution of a method.  The argument names provided below are not the actual argument names required by each function.  Rather, the arguments below are descriptions of the actual arguments in the program.  Also, most of the methods have an option to change the partition, time, and memory requested for each job.  For methods that necessarily generate large intermediate files (.splitVCFS(), .calcbpm(), .generateFSC2input()), there is an option to use scratch (use_scratch=True and scratch_path=/path/to/scratch/directory).  However, this requires that the user to setup their directory on the scratch drive.
 
  - .removePop(pops_to_be_removed): takes a list of populations and removes them from '.pops'. E.g. test.removePops(['Pop1','Pop2']).  Even single populations should be specified in a list format.  '.min_ind' will be recalculated.
 
@@ -62,6 +62,10 @@ Most of these methods include a print1 argument that, if set to True, will print
  - .repolarize(recoded_file_directory):  Also should not be necessary for most part as it is typically called in '.splitVCFs' if a repolarization key is provided.  A repolarization key is simply a tab-delimited list of sites where each line contains the scaffold and position for a site.  This code will go through the recoded, numeric genotype files and flip the reference and alt alleles, modifying genotypes accordingly.
 
  - .getPloidies(recoded_file_directory):  Determines ploidy of each population from the recoded files and assigns them to a new method of the ScanTools parent object.
+
+ - .calcAFS(recoded_file_direcory, output_file_suffix, number_of_individuals_to_downsample_to, list_of_populations, allow_one_missing=True):  Calls calcAFS.py for each population in list_of_populations.  Calculates genome-wide allele frequency spectrum.
+
+ - .calcFreqs(self, recode_dir, outfile_name, sites_file, list_of_populations):  Calls calcFreqs_atSites.py.  Takes a list of sites in (sites_file, should be formatted so that each line simply has scaffold and position, with scaffold simply coded as an integer 0-8) and calculates the allele frequency in each population (list_of_populations) at each site
 
   - .calcwpm(recoded_file_directory, window_size, minimum_snps):  Calls wpm.py, which calculates within-population diversity metrics and neutrality test statistics in windows along the genome as well as genome-wide for each population.  Windows are specified in terms of base pairs.  Windows with fewer than the specified minimum SNPs will not be reported.  All populations are downsampled by default to the '.min_ind' value unless specified otherwise using 'sampind' argument.
 
@@ -84,3 +88,5 @@ Most of these methods include a print1 argument that, if set to True, will print
   - .FSC2(FSC2_Data_Parent_Directory):  This method parallelises job submission of fastsimcoal2, but requires a very specific set up of input files.  The output of '.generateFSC2input' should be a folder that contains the multi-dimensional SFS.  Place this folder in a new folder that will be the FSC2_Data_Parent_Directory.  This directory should also contain one or more template (.tpl) and estimates (.est) files whose format can be found in the fastsimcoal2 documentation.  For each sub-directory containing input data, this method will re-format and rename the .tpl and .est files to reflect the necessary information in the sub-directory multi-dimensional SFS and then submit these jobs to the cluster.  I've tried to make the code as general as possible, but this is one method that will likely require the user to read and understand the code in order to get things working well for them.  Also, a major potential source of errors is in the correct formatting of the .tpl and .est files, so it is worthwhile to ensure that these are correct (by running FSC2 on a subset of your sub-directories) before launching full-scale
 
   - .gatherFSC2output(FSC2_Data_Parent_Directory):  This method collects all information from the '.bestlhood' output files of FSC2 that is buried in the sub-directories and outputs the information into one of two files:  Likelihoods file and parameters file.
+
+  - .queryFSC2input

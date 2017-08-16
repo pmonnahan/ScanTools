@@ -15,9 +15,9 @@ def StartNew(shlist, maxjobs, chk_file_list):
     if jobindex < len(shlist):
         proc = subprocess.Popen(['sbatch', shlist[jobindex]])
         print("Started to Process %s", shlist[jobindex])
-        print("Job number ", jobindex + 1, " out of ", len(shlist), ".  ", (float(jobindex + 1) / float(len(shlist))) * 100.0, ' percent complete.')
-        jobindex += 1
         Processes.append(chk_file_list[jobindex])
+        print("Job number ", jobindex + 1, " out of ", len(shlist), ".  ", (float(jobindex + 1) / float(len(shlist))) * 100.0, ' percent complete.')
+        jobindex += 1 
 
 
 def CheckRunning(shlist, maxjobs, chk_file_list):
@@ -230,3 +230,4 @@ if __name__ == "__main__":
     while (len(Processes) > 0):  # Some thing still going on.
         time.sleep(float(args.s))  # You may wish to change the time for this
         CheckRunning(shell_script_list, args.nj, Chk_files)
+        print(Processes)

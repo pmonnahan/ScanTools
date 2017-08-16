@@ -443,63 +443,6 @@ class scantools:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate within population metrics")
 
 
-    def concatWPM(self, recode_dir, suffix, outname, pops='all'):
-        '''Purpose:  Concatenate _WPM.txt files corresponding to populations indicated in pops parameter.'''
-
-        if recode_dir.endswith("/") is False:
-            recode_dir += "/"
-
-        if os.path.exists(recode_dir) is True:
-            new = open(recode_dir + outname + "_WPM.txt", 'w')
-            if pops == 'all':
-                pops = self.pops
-            head = False
-            for i, pop in enumerate(pops):
-                try:
-                    with open(recode_dir + pop + suffix, 'r') as inf:
-                        for j, line in enumerate(inf):
-                            if j == 0 and head is False:
-                                new.write(line)
-                                head = True
-                            elif j != 0:
-                                new.write(line)
-                except FileNotFoundError:
-                    print("Did not find _WPM.txt file for population: ", pop)
-
-
-    def concatBPM(self, recode_dir, suffix, outname, pops='all', strict=False):
-        '''Purpose:  Concatenate _WPM.txt files corresponding to populations indicated in pops parameter.'''
-
-        if recode_dir.endswith("/") is False:
-            recode_dir += "/"
-
-        if os.path.exists(recode_dir) is True:
-            new = open(recode_dir + outname + "_BPM.txt", 'w')
-            if pops == 'all':
-                pops = self.pops
-            head = False
-            for file in os.listdir(recode_dir):
-                if file.endswith(suffix):
-                    if strict is False:
-                        if file.split("_")[0][:3] in pops or file.split("_")[0][3:] in pops:
-                            with open(recode_dir + file, 'r') as inf:
-                                for j, line in enumerate(inf):
-                                    if j == 0 and head is False:
-                                        new.write(line)
-                                        head = True
-                                    elif j != 0:
-                                        new.write(line)
-                    elif strict is True:
-                        if file.split("_")[0][:3] in pops and file.split("_")[0][3:] in pops:
-                            with open(recode_dir + file, 'r') as inf:
-                                for j, line in enumerate(inf):
-                                    if j == 0 and head is False:
-                                        new.write(line)
-                                        head = True
-                                    elif j != 0:
-                                        new.write(line)
-
-
     def calcbpm(self, recode_dir, pops, output_name, window_size, min_snps, print1=False, mem=16000, numcores=1, partition="nbi-medium", use_repol=True, keep_intermediates=False, time="0-12:00", use_scratch=False, scratch_path="/nbi/scratch/monnahap"):
         '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
            Notes: User provides a list of populations to be included.  For pairwise estimates, simply provide two populations
@@ -578,6 +521,7 @@ class scantools:
             print("'pops' argument must be a list of strings specifiying two or more population names as they appear in input file prefixes.  len(pops) was < 2")
         else:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate between population metrics")
+
 
     def calcPairwisebpm(self, recode_dir, pops, window_size, min_snps, print1=False, mem=16000, numcores=1, partition="nbi-medium", use_repol=True, keep_intermediates=False, time="0-01:00", overwrite=False, use_scratch=False, scratch_path="/nbi/scratch/monnahap/"):
         '''Purpose:  Calculate between population metrics including: Dxy, Fst (using Weir and Cockerham 1984), and Rho (Ronfort et al. 1998)
@@ -667,6 +611,83 @@ class scantools:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate between population metrics")
 
 
+##NOT FINISHED!!!!!
+    def calcFnD(self, recode_dir, p1, p2, p3, pO, window_size, min_snps, print1=False, mem=16000, numcores=1, partition="nbi-medium", use_repol=True, keep_intermediates=False, time="0-12:00", use_scratch=False, scratch_path="/nbi/scratch/monnahap"):
+        '''Purpose:  \
+           Notes: '''
+
+        if use_repol is True:
+            suffix = '.table.repol.txt'
+        else:
+            suffix = '.table.recode.txt'
+
+        if recode_dir.endswith("/") is False:
+            recode_dir += "/"
+
+        if use_scratch is True:
+            if scratch_path.endswith("/") is False:
+                scratch_path += "/"
+            tmpdir = scratch_path + recode_dir.split("/")[-2] + "/"
+            if os.path.exists(tmpdir) is False:
+                os.mkdir(tmpdir)
+        else:
+            tmpdir = recode_dir
+
+        output_name = ".".join([p1,p2,p3,pO]) + "_WS" + str(window_size) + "_MS" + str(min_snps)
+        if os.path.exists(recode_dir) is True:
+            pop_num = 0
+            file_string = ""
+            for pop in [p1, p2, p3, pO]:
+                try:
+                    a = open(recode_dir + pop + suffix, 'r')
+                    a.close()
+                    file_string += recode_dir + pop + suffix + " "
+                    pop_num += 1
+                except IOError:
+                    print("Did not find input file for pop ", pop)
+            if pop_num != 4:
+                print("Did not find all input files!!  Aborting.")
+                os.remove(recode_dir + output_name + '.concat.txt')
+            else:
+                shfile3 = open(recode_dir + output_name + '.FnD.sh', 'w')
+
+                shfile3.write('#!/bin/bash\n' +
+                              '#SBATCH -J ' + output_name + '.FnD.sh' + '\n' +
+                              '#SBATCH -e ' + self.oande + output_name + '.FnD.err' + '\n' +
+                              '#SBATCH -o ' + self.oande + output_name + '.FnD.out' + '\n' +
+                              '#SBATCH -p ' + str(partition) + '\n' +
+                              '#SBATCH -n ' + str(numcores) + '\n' +
+                              '#SBATCH -t ' + str(time) + '\n' +
+                              '#SBATCH --mem=' + str(mem) + '\n' +
+                              'source python-3.5.1\n' +
+                              'sort -k3,3 -k4,4n -m ' + file_string + '> ' + tmpdir + output_name + '.concat.txt\n' +
+                              'python3 ' + self.code_dir + '/calcFnD.py -i ' + tmpdir + output_name + '.concat.txt' + ' -o ' + recode_dir + ' -prefix ' + output_name + ' -ws ' + str(window_size) + ' -ms ' + str(min_snps) + '\n')
+                if keep_intermediates is False:
+                    shfile3.write('rm ' + tmpdir + output_name + '.concat.txt')
+                shfile3.close()
+
+                if print1 is False:
+                    cmd3 = ('sbatch -d singleton ' + recode_dir + output_name + '.FnD.sh')
+                    p3 = subprocess.Popen(cmd3, shell=True)
+                    sts3 = os.waitpid(p3.pid, 0)[1]
+
+                    self.log_file.write("###  Calculate f_D and D  ###\n" +
+                                        "Input Directory: " + recode_dir + "\n" +
+                                        "Window Size: " + str(window_size) + "\n" +
+                                        "Minimum SNPs in a window: " + str(min_snps) + "\n" +
+                                        "Use repolarized data: " + str(use_repol) + "\n" +
+                                        "Populations: " + ",".join([p1, p2, p3, pO]) + "\n")
+
+                else:
+                    file3 = open(recode_dir + output_name + '.FnD.sh', 'r')
+                    data3 = file3.read()
+                    print(data3)
+
+                os.remove(recode_dir + output_name + '.FnD.sh')
+        else:
+            print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate f_D and D")
+
+
     def calcAFS(self, recode_dir, data_name, sampind="-99", pops="-99", time="0-00:30", mem="8000", use_repol=True, print1=False, allow_one_missing=True, partition="nbi-short"):
         """Purpose:  calculate allele frequency spectrum for each population in pops list and downsample to number specified in sampind.  If no downsampling is specified the number of indviduals in the population (minus one if allow_one_missing=True) will be used."""
         if recode_dir.endswith("/") is False:
@@ -751,6 +772,63 @@ class scantools:
             data3 = file3.read()
             print(data3)
         os.remove('CalcFreqs.sh')
+
+
+    def concatWPM(self, recode_dir, suffix, outname, pops='all'):
+        '''Purpose:  Concatenate _WPM.txt files corresponding to populations indicated in pops parameter.'''
+
+        if recode_dir.endswith("/") is False:
+            recode_dir += "/"
+
+        if os.path.exists(recode_dir) is True:
+            new = open(recode_dir + outname + "_WPM.txt", 'w')
+            if pops == 'all':
+                pops = self.pops
+            head = False
+            for i, pop in enumerate(pops):
+                try:
+                    with open(recode_dir + pop + suffix, 'r') as inf:
+                        for j, line in enumerate(inf):
+                            if j == 0 and head is False:
+                                new.write(line)
+                                head = True
+                            elif j != 0:
+                                new.write(line)
+                except FileNotFoundError:
+                    print("Did not find _WPM.txt file for population: ", pop)
+
+
+    def concatBPM(self, recode_dir, suffix, outname, pops='all', strict=False):
+        '''Purpose:  Concatenate _WPM.txt files corresponding to populations indicated in pops parameter.'''
+
+        if recode_dir.endswith("/") is False:
+            recode_dir += "/"
+
+        if os.path.exists(recode_dir) is True:
+            new = open(recode_dir + outname + "_BPM.txt", 'w')
+            if pops == 'all':
+                pops = self.pops
+            head = False
+            for file in os.listdir(recode_dir):
+                if file.endswith(suffix):
+                    if strict is False:
+                        if file.split("_")[0][:3] in pops or file.split("_")[0][3:] in pops:
+                            with open(recode_dir + file, 'r') as inf:
+                                for j, line in enumerate(inf):
+                                    if j == 0 and head is False:
+                                        new.write(line)
+                                        head = True
+                                    elif j != 0:
+                                        new.write(line)
+                    elif strict is True:
+                        if file.split("_")[0][:3] in pops and file.split("_")[0][3:] in pops:
+                            with open(recode_dir + file, 'r') as inf:
+                                for j, line in enumerate(inf):
+                                    if j == 0 and head is False:
+                                        new.write(line)
+                                        head = True
+                                    elif j != 0:
+                                        new.write(line)
 
 
     def findOutliers(self, recode_dir, in_file, column_index_list, percentile, tails='upper'):

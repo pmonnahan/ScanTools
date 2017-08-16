@@ -18,13 +18,13 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
 
 
     scaff_lengths = [33684748, 19642879, 24872290, 23717143, 21575646, 25532148, 25060017, 23333815]  # Scaffold lengths determined from alygenomes.fasta
-    num_winds = sum([float(x) / float(window_size) for x in scaff_lengths])
-    per_scaff = [int(math.ceil(float(x) / float(window_size))) for x in scaff_lengths]
+    num_winds = sum([float(x) / float(window_size) for x in scaff_lengths])  # Determine total number of windows
+    per_scaff = [int(math.ceil(float(x) / float(window_size))) for x in scaff_lengths]  # Create list containing number of windows on each scaff
     wind_counts = []
-    for j in range(0, num_bootstraps):
+    for j in range(0, num_bootstraps):  # This loop populates a huge list of lists (one for each bootstrap replicate), wind_counts, with the number of times each window has been resampled.  Data for a window will be written the number of times specified by the corresponding entry in wind_count[x]
         wind_counts.append([0 for x in range(0, int(num_winds))])
         for x in range(0, int(num_winds)):
-            wind_counts[j][randint(0, int(num_winds) - 1)] += 1
+            wind_counts[j][randint(0, int(num_winds) - 1)] += 1  # Pick random window number and increment that entry of wind_count
 
     # Prepare output file
     outfile = output + outname + '_DSFS.obs'
@@ -40,6 +40,7 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
     else:
         data = sorted(data, key=lambda k: (int(k[2].split("_")[1]), int(k[3])))  # Sorts by scaffold then position, then population
     print("finished sorting input file")
+
     # Begin loop over data file
     snp_count = 0
     winexclcount = 0
@@ -73,18 +74,18 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
                 string += str(num_ind * ploidy) + "\t"
             string.strip("\t")
             get_pops = False
-            DSFS = {}
+            DSFS = {}  # DSFS holds the dsfs for all bootstrap replicates
             states_i = []
             for i, pop in enumerate(num_alleles):
                 states_i.append([jj for jj in range(0, pop + 1)])
             states = list(itertools.product(*states_i))
             num_states = len(states)
             dsfs = [0 for z in range(0, num_states + 1)]
-            for rep in range(0, num_bootstraps):
+            for rep in range(0, num_bootstraps):  # Create bootstrap replicate DSFS files and write header information within each
                 exec("out%d = open('%s%s.rep%d_DSFS.obs', 'w')" % (rep + 1, output, outname, rep + 1), globals())
                 exec("out%d.write('1 observations.  No. of demes and sample sizes are on next line')" % (rep + 1), globals())
                 exec('out%d.write("""\n""")' % (rep + 1), globals())
-                DSFS[str(rep)] = [0 for z in range(0, num_states + 1)]
+                DSFS[str(rep)] = [0 for z in range(0, num_states + 1)]  # Initiate a list entry in DSFS filled with 0's for each bootstrap replicate
                 exec("out%d.write('%s')" % (rep + 1, string), globals())
                 exec('out%d.write("""\n""")' % (rep + 1), globals())
             out.write(str(string) + "\n")
@@ -103,7 +104,7 @@ def generateFSC2input(input_file, output, outname, numpops, window_size, num_boo
             snp_count += 1
             scaff_num = int(Locus[0][2].split("_")[1])
             cur_pos = float(Locus[0][3])
-            wind_num = sum(per_scaff[:scaff_num - 1]) + int(math.ceil(cur_pos / float(window_size))) - 1
+            wind_num = sum(per_scaff[:scaff_num - 1]) + int(math.ceil(cur_pos / float(window_size))) - 1  # Figure out the index of wind_counts corresponding to the current scaffold and position.  
             # print(wind_num, sum(per_scaff[:scaff_num - 1]), int(math.ceil(cur_pos / float(window_size))))
             list_pos = 0
             for jj, aa in enumerate(ac_i):
