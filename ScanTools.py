@@ -688,7 +688,7 @@ class scantools:
             print("Did not find recode_dir.  Must run splitVCFs followed by recode before able to calculate f_D and D")
 
 
-    def calcAFS(self, recode_dir, data_name, sampind="-99", pops="-99", time="0-00:30", mem="8000", use_repol=True, print1=False, allow_one_missing=True, partition="nbi-short"):
+    def calcAFS(self, recode_dir, data_name, window_size="50000", num_reps="200", sampind="-99", pops="-99", time="0-00:30", mem="8000", use_repol=True, print1=False, allow_one_missing=True, partition="nbi-short"):
         """Purpose:  calculate allele frequency spectrum for each population in pops list and downsample to number specified in sampind.  If no downsampling is specified the number of indviduals in the population (minus one if allow_one_missing=True) will be used."""
         if recode_dir.endswith("/") is False:
             recode_dir += "/"
@@ -718,7 +718,7 @@ class scantools:
                           '#SBATCH -t ' + str(time) + '\n' +
                           '#SBATCH --mem=' + str(mem) + '\n' +
                           'source python-3.5.1\n' +
-                          'python3 ' + self.code_dir + '/calcAFS.py -i ' + infile + ' -o ' + recode_dir + ' -p ' + prefix + ' -sampind ' + str(si) + '\n')
+                          'python3 ' + self.code_dir + '/calcAFS.py -i ' + infile + ' -o ' + recode_dir + ' -p ' + prefix + ' -nreps ' + num_reps + ' -ws ' + window_size + '-sampind ' + str(si) + '\n')
             shfile3.close()
             if print1 is False:
                 cmd3 = ('sbatch ' + infile + '.afs.sh')
