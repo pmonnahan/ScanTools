@@ -10,6 +10,7 @@ parser.add_argument('-dp', type=int, metavar='min_depth', required=True, help='m
 parser.add_argument('-o', type=str, metavar='output_path', required=True, help='full path of output file')
 parser.add_argument('-gz', type=str, metavar='gzipped?', required=True, help='are vcfs gzipped (true) or not (false)')
 
+
 args = parser.parse_args()
 
 if args.v.endswith("/") is False:
@@ -20,13 +21,13 @@ for file in os.listdir(args.v):  # get names of vcf files in args.v directory
     if args.gz == 'true':
         if file[-3:] == '.gz':
             vcf_list.append(file)
-
+            file.split(".")[-2]
     elif args.gz == 'false':
         if file[-3:] == 'vcf':
             vcf_list.append(file)
 
     else:
-        print('error')
+        print('use "true" or "false" for -gz')
 
 
 

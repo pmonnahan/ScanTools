@@ -51,7 +51,6 @@ class scantools:
         for path in os.listdir(self.dir):
             if path.split("_")[0] == "VCF":
                 self.split_dirs.append(self.dir + path)
-        print("Be sure that you did 'unset SBATCH_PARTITION' prior to using ScanTools!!!")
 
 
     def removePop(self, pops_to_be_removed):

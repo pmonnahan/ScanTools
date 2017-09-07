@@ -25,6 +25,7 @@ def calcAFS(input_file, output, prefix, window_size, num_bootstraps, sampind=5):
 
     with open(input_file, 'r') as infile:
         for i, line in enumerate(infile):
+            # print(line)
 
             line = line.strip("\n")
             line = line.strip("\t")
@@ -56,7 +57,8 @@ def calcAFS(input_file, output, prefix, window_size, num_bootstraps, sampind=5):
                 for j, rep in enumerate(wind_counts):
                     for samp_num in range(0, rep[wind_num]):
                         BSFS[str(j)][sac] += 1
-
+        print(AFS)
+        print(BSFS['1'])
         for k, j in enumerate(AFS):
             out1.write(prefix + '\t-9\t' + str(k) + "\t" + str(j) + '\n')
         for g in range(0, num_bootstraps):

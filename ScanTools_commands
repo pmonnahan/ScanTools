@@ -288,5 +288,5 @@ ly.FSC2(ly.split_dirs[1] + "/FSC2_3pop_TetMig/", job_partition="nbi-short",numco
 
 Still need to run!!:
 
-ly.FSC2(ly.split_dirs[1] + "/FSC2_4pop/", job_partition="nbi-short",numcores=1,job_time="0-02:00",submit_partition="nbi-medium",submit_time="2-00:00",mem=2000,num_jobs=500,calc_CI=True)
+ly.FSC2(ly.split_dirs[1] + "/FSC2_4pop/", job_partition="nbi-medium",numcores=1,job_time="2-00:00",submit_partition="nbi-long",submit_time="7-00:00",mem=2000,num_jobs=200,calc_CI=True)
 
