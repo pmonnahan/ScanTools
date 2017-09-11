@@ -247,8 +247,6 @@ class scantools:
             recode_dir = split_dir + ".Recoded/"
             split_dir += "/"
 
-        self.recode_dirs.append(recode_dir)
-
         if os.path.exists(split_dir) is True:
             existing_files = []
             if os.path.exists(recode_dir) is False:
