@@ -1,5 +1,4 @@
-"""Calculate between-population divergence metrics.  Input is a tab delimited file with no header, containing Scaff, pos, ac, an, dp, and genotypes coded as 0-4.
-Input file custom: Filename should end with _XXX_raw.table.recode.txt, where XXX is three-letter population abbreviation
+"""Calculate between-population divergence metrics.  Ideally, this should be run from within the ScanTools pipeline because this will provide the proper input format and sorting that this code expects.  Input is a tab delimited file containing data from the multiple populations of interest.  The format of each line should should be: Population abbreviation, ploidy, scaffold, position, total alternative allele count (AC), total allele number (AN), Depth, and individual genotypes coded as 0-4.  Prior to running this script, the combined data file should be sorted by scaffold and position, such that data for the same site from different populations appear on consecutive lines.
 Calculations are roughly equivalent to F. Kolar's calculations for toy dataset.  
 His rho's:  0.176 and 0.226.  Mine: 0.169 and 0.197
 His Fst's:  0.05 and 0.099.  Mine: 0.093 and 0.131"""
