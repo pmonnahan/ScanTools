@@ -36,7 +36,10 @@ def calcwpm(input_file, output, prefix, sampind=5, window_size=50000, minimum_sn
                 out1 = open(outfile, 'w')
                 out1.write("pop\tploidy\tsampind\tscaff\tstart\tend\twin_size\tnum_snps\tnum_sites\tnum_singletons\tavg_freq\tavg_Ehet\tDiversity\tThetaW\tPi\tThetaH\tThetaL\tD\tH\tE\n")
                 oldscaff = scaff
+
+                ## This script should not be used for mixed ploidy populations ##
                 AN = int(sampind * int(float(ploidy)))
+                
                 n = float(AN)
                 p = []
                 Ehet = []

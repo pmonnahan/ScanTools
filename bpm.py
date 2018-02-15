@@ -5,11 +5,8 @@ His Fst's:  0.05 and 0.099.  Mine: 0.093 and 0.131"""
 
 import argparse
 
-# export PYTHONPATH="$PYTHONPATH:/Users/monnahap/Documents/Research/code/GenomeScan/"
-
-
-
 def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
+    """This function takes the arguments from argparse specified at the bottom of the script and calculates population differentiation statistics (Fst, Rho, and dxy).  Fst and Rho are based on the multi-locus implementation used in the software SPAGeDi, which are in turn based on Weir and Cockheram 1984"""
 
     def NestedAnova(locus_list):
         locus = []
