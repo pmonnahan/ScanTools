@@ -141,11 +141,13 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
     # Prepare output file
     outfile = output + outname + '_BPM.txt'
     out1 = open(outfile, 'w')
-    out1.write("outname\tscaff\tstart\tend\twin_size\tnum_snps\tRho\tFst\tdxy\tAFD\tFixedDiff\n")
+    out1.write("outname\tscaff\tstart\tend\twin_size\tnum_sites\tnum_snps\tRho\tFst\tdxy\tAFD\tFixedDiff\n")
 
     # Begin loop over data file
     snp_count = 0
     Snp_count = 0
+    site_count = 0
+    Site_count = 0
     start = 0.0
     end = window_size
     winexclcount = 0
@@ -189,10 +191,13 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                                 dn += 1
                                 Dn += 1
                         snp_count += 1
+                        site_count += 1
                         fst = [sum(x) for x in zip(fst, [fnum, fden])]  # Adds numerator and denominators from current site to running sums for window and genome respectively
                         rho = [sum(x) for x in zip(rho, [rnum, rden])]
                         Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
                         Rho = [sum(x) for x in zip(Rho, [rnum, rden])]
+                    else:
+                        site_count += 1
                     Locus = []  # Clear site information
                     Locus.append(line)  # Append current site to site info
                     old_pos = pos
@@ -208,6 +213,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                     rnum, rden, fnum, fden, poly = NestedAnova(Locus)
                     if poly is True:
                         snp_count += 1
+                        site_count += 1
                         fst = [sum(x) for x in zip(fst, [fnum, fden])]
                         rho = [sum(x) for x in zip(rho, [rnum, rden])]
                         Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
@@ -221,9 +227,12 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                             if a == 1.0:
                                 dn += 1
                                 Dn += 1
+                    else:
+                        site_count += 1
 
                 if snp_count >= minimum_snps:  # Report or exclude window
                     Snp_count += snp_count
+                    Site_count += site_count
                     num_wind += 1
                     try:
                         fst = fst[0] / fst[1]  # fst and rho and ratios of running sums of numerator and denominator calculations
@@ -231,8 +240,8 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
 
                         rho_i = fac / (1 + fac)
                         if num_pops == 2:
-                            dxy = dxy / float(snp_count)
-                            afd = afd / float(snp_count)
+                            dxy = dxy / float(site_count)
+                            afd = afd / float(site_count)
                         else:
                             dxy = "-9"
                             dn = "-9"
@@ -241,6 +250,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                                    str(start) + '\t' +
                                    str(end) + '\t' +
                                    str(window_size) + '\t' +
+                                   str(site_count) + '\t' +
                                    str(snp_count) + '\t' +
                                    str(rho_i) + '\t' +
                                    str(fst) + '\t' +
@@ -254,6 +264,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                     winexclcount += 1
                 # Reset running sums for current window
                 snp_count = 0
+                site_count = 0
                 fst = [0.0, 0.0]
                 rho = [0.0, 0.0]
                 dxy = 0.0
@@ -281,6 +292,8 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
         if poly is True:
             snp_count += 1
             Snp_count += 1
+            site_count += 1
+            Site_count += 1
             fst = [sum(x) for x in zip(fst, [fnum, fden])]
             rho = [sum(x) for x in zip(rho, [rnum, rden])]
             Fst = [sum(x) for x in zip(Fst, [fnum, fden])]
@@ -294,6 +307,9 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                 if a == 1.0:
                     dn += 1
                     Dn += 1
+        else:
+            site_count += 1
+            Site_count += 1
 
     if snp_count >= minimum_snps:  # Use or exclude window
         num_wind += 1
@@ -302,8 +318,8 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
             fac = rho[0] / rho[1]
             rho_i = fac / (1 + fac)
             if num_pops == 2:
-                dxy = dxy / float(snp_count)
-                afd = afd / float(snp_count)
+                dxy = dxy / float(site_count)
+                afd = afd / float(site_count)
             else:
                 dxy = "-9"
                 dn = "-9"
@@ -312,6 +328,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                        str(start) + '\t' +
                        str(end) + '\t' +
                        str(window_size) + '\t' +
+                       str(site_count) + '\t' +
                        str(snp_count) + '\t' +
                        str(rho_i) + '\t' +
                        str(fst) + '\t' +
@@ -328,8 +345,8 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
     rho_G = FAC / (1 + FAC)
     Fst_G = Fst[0] / Fst[1]
     if num_pops == 2:
-        Dxy = Dxy / float(Snp_count)
-        AFD = AFD / float(Snp_count)
+        Dxy = Dxy / float(Site_count)
+        AFD = AFD / float(Site_count)
     else:
         Dxy = "-9"
         Dn = "-9"
@@ -338,7 +355,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                "-9" + '\t' +
                "-9" + '\t' +
                str(window_size) + '\t' +
-               str(Snp_count) + '\t' +
+               str(Site_count) + '\t' +
                str(rho_G) + '\t' +
                str(Fst_G) + '\t' +
                str(Dxy) + '\t' +
