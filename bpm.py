@@ -356,6 +356,7 @@ def calcBPM(input_file, output, outname, window_size, minimum_snps, num_pops):
                "-9" + '\t' +
                str(window_size) + '\t' +
                str(Site_count) + '\t' +
+               str(Snp_count) + '\t' +
                str(rho_G) + '\t' +
                str(Fst_G) + '\t' +
                str(Dxy) + '\t' +
